@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<g fill="none" stroke="#FF6A00" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Browser window -->
+  <rect x="64" y="96" width="384" height="320" rx="24"/>
+  <path d="M64 152 H448"/>
+  <circle cx="96" cy="124" r="6"/>
+  <circle cx="120" cy="124" r="6"/>
+  <circle cx="144" cy="124" r="6"/>
+
+  <!-- Code symbols -->
+  <path d="M190 240 L150 276 L190 312"/>
+  <path d="M322 240 L362 276 L322 312"/>
+  <path d="M230 228 L282 324"/>
+</g>
+</svg>

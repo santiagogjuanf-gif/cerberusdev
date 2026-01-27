@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cerberus Control Room | Lead</title>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <style>
+    body{ min-height:100vh; }
+    .admin-bg{
+      position:fixed; inset:0; z-index:-1;
+      background:
+        radial-gradient(900px 500px at 20% 10%, rgba(43,124,255,.18), transparent 60%),
+        radial-gradient(800px 500px at 80% 70%, rgba(255,122,24,.16), transparent 60%),
+        rgba(7,10,16,1);
+    }
+    .wrap{ width:min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 20px 0 70px; }
+    .top{
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+      padding: 14px 0;
+    }
+    .top h1{ margin:0; font-size: 20px; }
+    .panel{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      border-radius: 18px;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
+    .btn2{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.03);
+      color: rgba(255,255,255,.88);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-size: 12px;
+    }
+    .btn2:hover{ border-color: rgba(255,122,24,.25); }
+    .danger:hover{ border-color: rgba(255,120,120,.35); }
+    .label{ color: rgba(255,255,255,.68); font-size: 12px; margin-top: 10px; }
+    .value{ margin-top: 6px; white-space: pre-wrap; line-height: 1.6; }
+    textarea{
+      width:100%;
+      min-height: 220px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.03);
+      color: rgba(255,255,255,.90);
+      border-radius: 14px;
+      padding: 12px;
+      outline:none;
+      resize: vertical;
+    }
+    textarea:focus{
+      border-color: rgba(255,122,24,.35);
+      box-shadow: 0 0 0 3px rgba(255,122,24,.12);
+    }
+    .badge{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding: 6px 10px; border-radius: 999px;
+      border:1px solid rgba(255,255,255,.14);
+      font-size: 12px;
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.85);
+      width: fit-content;
+    }
+    .b-new{ border-color: rgba(255,122,24,.35); }
+    .b-replied{ border-color: rgba(43,124,255,.35); }
+    .b-closed{ opacity:.75; }
+    .toast{ margin-top:10px; font-size: 12px; color: rgba(255,255,255,.72); }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-bg"></div>
+
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1 id="title">Lead</h1>
+        <div class="muted" style="color: rgba(255,255,255,.70); font-size: 12px;">Detalle del cliente</div>
+      </div>
+      <div class="row">
+        <a class="btn2" href="./dashboard">← Volver</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <div class="label">Nombre</div>
+        <div class="value" id="vName"></div>
+
+        <div class="label">Correo</div>
+        <div class="value" id="vEmail"></div>
+
+        <div class="label">Teléfono</div>
+        <div class="value" id="vPhone"></div>
+
+        <div class="label">Tipo de proyecto</div>
+        <div class="value" id="vType"></div>
+
+        <div class="label">Fecha</div>
+        <div class="value" id="vDate"></div>
+
+        <div class="label">Estado</div>
+        <div class="value" id="vStatus"></div>
+
+        <div class="label">Mensaje</div>
+        <div class="value" id="vMsg"></div>
+
+        <div class="row" style="margin-top:14px;">
+          <button class="btn2" id="btnImportant">☆ Importante</button>
+          <button class="btn2" id="btnReplied">Marcar Respondido</button>
+          <button class="btn2" id="btnClosed">Cerrar</button>
+          <button class="btn2 danger" id="btnDelete">Eliminar</button>
+        </div>
+
+        <div class="toast" id="toast"></div>
+      </div>
+
+      <div class="panel">
+        <div class="label">Notas internas (solo tú)</div>
+        <textarea id="notes" placeholder="Escribe aquí tus notas…"></textarea>
+
+        <div class="row" style="justify-content:flex-end; margin-top:12px;">
+          <button class="btn2" id="btnSaveNotes">Guardar notas</button>
+        </div>
+
+        <div class="toast" id="toast2"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const qs = new URLSearchParams(location.search);
+    const id = qs.get("id");
+
+    const el = (id) => document.getElementById(id);
+    const toast = el("toast");
+    const toast2 = el("toast2");
+
+    function badge(status){
+      if(status === "new") return '<span class="badge b-new">Nuevo</span>';
+      if(status === "replied") return '<span class="badge b-replied">Respondido</span>';
+      return '<span class="badge b-closed">Cerrado</span>';
+    }
+
+    function fmtDate(iso){
+      const d = new Date(iso);
+      return d.toLocaleString("es-MX", { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+    }
+
+    function setToast(msg, ok=true){
+      toast.textContent = msg;
+    }
+    function setToast2(msg){
+      toast2.textContent = msg;
+    }
+
+    let lead = null;
+
+    async function load(){
+      if(!id) {
+        setToast("Falta id en la URL", false);
+        return;
+      }
+      const r = await fetch(`./api/leads/${id}`);
+      const j = await r.json();
+      if(!j.ok) {
+        setToast("No se encontró el lead", false);
+        return;
+      }
+      lead = j.lead;
+
+      el("title").textContent = `Lead #${lead.id}`;
+      el("vName").textContent = lead.name || "";
+      el("vEmail").textContent = lead.email || "";
+      el("vPhone").textContent = lead.phone || "";
+      el("vType").textContent = lead.project_type || "";
+      el("vDate").textContent = fmtDate(lead.created_at);
+      el("vStatus").innerHTML = badge(lead.status);
+      el("vMsg").textContent = lead.message || "";
+      el("notes").value = lead.internal_notes || "";
+
+      const bImp = el("btnImportant");
+      if(lead.is_important) {
+        bImp.textContent = "★ Importante";
+        bImp.style.color = "#ffcc55";
+      } else {
+        bImp.textContent = "☆ Importante";
+        bImp.style.color = "";
+      }
+    }
+
+    async function setStatus(status){
+      await fetch(`./api/leads/${id}/status`, {
+        method:"PATCH",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ status })
+      });
+      await load();
+      setToast("✅ Estado actualizado");
+    }
+
+    async function toggleImportant(){
+      const make = !lead.is_important;
+      await fetch(`./api/leads/${id}/important`, {
+        method:"PATCH",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ is_important: make })
+      });
+      await load();
+      setToast("✅ Importante actualizado");
+    }
+
+    async function saveNotes(){
+      const text = el("notes").value;
+      const r = await fetch(`./api/leads/${id}/notes`, {
+        method:"PATCH",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ internal_notes: text })
+      });
+      if(r.ok) {
+        setToast2("✅ Notas guardadas");
+      } else {
+        setToast2("❌ Error al guardar");
+      }
+      await load();
+    }
+
+    async function del(){
+      if(!confirm("¿Eliminar definitivamente este lead?")) return;
+      await fetch(`./api/leads/${id}`, { method:"DELETE" });
+      location.href = "./dashboard";
+    }
+
+    el("btnReplied").addEventListener("click", () => setStatus("replied"));
+    el("btnClosed").addEventListener("click", () => setStatus("closed"));
+    el("btnImportant").addEventListener("click", toggleImportant);
+    el("btnSaveNotes").addEventListener("click", saveNotes);
+    el("btnDelete").addEventListener("click", del);
+
+    load();
+  </script>
+</body>
+</html>

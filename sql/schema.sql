@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS admin_users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_login_at TIMESTAMP NULL
+);
+
+CREATE TABLE IF NOT EXISTS leads (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(120) NOT NULL,
+  phone VARCHAR(40) NULL,
+  project_type VARCHAR(60) NULL,
+  message TEXT NOT NULL,
+  status ENUM('new','replied','closed') DEFAULT 'new',
+  internal_notes TEXT NULL,
+  is_important BOOLEAN DEFAULT 0
+);

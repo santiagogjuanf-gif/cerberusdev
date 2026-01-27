@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cerberus Dev | Contacto</title>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+</head>
+<body>
+  <div data-include="/partials/header.html"></div>
+
+  <main class="page">
+    <div class="container">
+      <h1 class="h-title" data-reveal>Contacto</h1>
+      <p class="h-sub" data-reveal>
+        Cuéntame tu idea y te propongo una solución clara.<br/>
+        <strong>Tiempo promedio de respuesta: 24–48 horas.</strong>
+      </p>
+
+      <div class="card" data-reveal>
+        <form class="form" id="contactForm">
+          <div class="form__grid">
+            <label class="field">
+              <span>Nombre</span>
+              <input name="name" required autocomplete="name" />
+            </label>
+
+            <label class="field">
+              <span>Correo</span>
+              <input type="email" name="email" required autocomplete="email" />
+            </label>
+
+            <label class="field">
+              <span>Teléfono (opcional)</span>
+              <input name="phone" autocomplete="tel" />
+            </label>
+
+            <label class="field">
+              <span>Tipo de proyecto</span>
+              <select name="project_type">
+                <option value="">Seleccionar…</option>
+                <option style="color: black;">Sitio web / Landing</option>
+                <option style="color: black;">Sistema interno / Dashboard</option>
+                <option style="color: black;">API / Integración</option>
+                <option style="color: black;">Panel administrativo</option>
+                <option style="color: black;">Automatización / Bot</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Mensaje</span>
+            <textarea name="message" rows="6" required placeholder="Cuéntame qué necesitas…"></textarea>
+          </label>
+
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px;">
+            <button class="btn" type="submit">Enviar</button>
+            <div style="color:rgba(255,255,255,.70);font-size:16px;">
+              También puedes escribir a: <strong>cerberus.dev@hotmail.com</strong>
+            </div>
+          </div>
+
+          <div class="toast" id="contactToast" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <div data-include="/partials/footer.html"></div>
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

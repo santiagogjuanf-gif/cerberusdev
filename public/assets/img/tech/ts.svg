@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Transparent background -->
+  <!-- Shield -->
+  <path d="M256 64
+           C210 64 146 78 120 92
+           V252
+           C120 342 178 412 256 448
+           C334 412 392 342 392 252
+           V92
+           C366 78 302 64 256 64 Z"
+        fill="#FF6A00" />
+  
+  <!-- Inner highlight (subtle cut) -->
+  <path d="M256 88
+           C218 88 162 100 142 112
+           V248
+           C142 324 190 384 256 414
+           C322 384 370 324 370 248
+           V112
+           C350 100 294 88 256 88 Z"
+        fill="none" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="10" />
+
+  <!-- TS letters -->
+  <text x="256" y="310"
+        text-anchor="middle"
+        font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial"
+        font-size="172"
+        font-weight="800"
+        fill="#FFFFFF">TS</text>
+</svg>

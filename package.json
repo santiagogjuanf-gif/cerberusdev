@@ -1,0 +1,16 @@
+{
+  "name": "cerberus-control-room",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "express-rate-limit": "^7.5.1",
+    "express-session": "^1.19.0",
+    "mysql2": "^3.16.1"
+  }
+}
