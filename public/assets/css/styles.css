@@ -132,15 +132,20 @@ img { max-width: 100%; display: block; }
 
 /* Language switch button */
 .lang-switch {
-  margin-left: 6px; padding: 6px 14px;
+  margin-left: 6px; padding: 7px 16px;
+  display: inline-flex; align-items: center; gap: 6px;
   font-family: var(--font-mono); font-size: 12px; font-weight: 700;
-  color: var(--orange); background: rgba(255,122,24,0.08);
-  border: 1px solid rgba(255,122,24,0.25); border-radius: 50px;
-  cursor: pointer; transition: all var(--transition); letter-spacing: 1px;
+  color: var(--text-muted); background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 50px;
+  cursor: pointer; transition: all var(--transition); letter-spacing: 0.5px;
 }
 .lang-switch:hover {
-  background: rgba(255,122,24,0.15); border-color: var(--orange);
+  background: rgba(255,122,24,0.1); border-color: rgba(255,122,24,0.4);
+  color: var(--orange);
 }
+.lang-globe { font-size: 15px; line-height: 1; }
+.lang-label { font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+.lang-arrow { font-size: 10px; opacity: 0.6; margin-left: -2px; }
 
 /* Nav toggle */
 .nav-toggle {

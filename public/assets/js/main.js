@@ -194,13 +194,18 @@ function applyTranslations(lang) {
 function updateLangButtons(lang) {
   const label = lang === "es" ? "ES" : "EN";
   document.querySelectorAll(".lang-switch").forEach(btn => {
-    btn.textContent = label;
+    const labelEl = btn.querySelector(".lang-label");
+    if (labelEl) {
+      labelEl.textContent = label;
+    } else {
+      btn.textContent = label;
+    }
   });
 }
 
 function setupLangSwitch() {
   document.addEventListener("click", (e) => {
-    if (!e.target.classList.contains("lang-switch")) return;
+    if (!e.target.closest(".lang-switch")) return;
     const current = getCurrentLang();
     setLang(current === "es" ? "en" : "es");
   });

@@ -46,6 +46,90 @@ router.get("/lead", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "admin", "lead.html"));
 });
 
+// Blog admin page
+router.get("/blog-admin", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "blog-admin.html"));
+});
+
+// ── Blog Admin API ──
+
+// List all posts (including drafts)
+router.get("/api/blog/posts", requireAuth, async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT p.*, c.name AS category_name
+      FROM blog_posts p
+      LEFT JOIN blog_categories c ON p.category_id = c.id
+      ORDER BY p.created_at DESC
+    `);
+    res.json({ ok: true, posts: rows });
+  } catch (err) {
+    console.error("[BLOG ADMIN]", err);
+    res.json({ ok: true, posts: [] });
+  }
+});
+
+// List categories
+router.get("/api/blog/categories", requireAuth, async (req, res) => {
+  try {
+    const [rows] = await db.execute("SELECT * FROM blog_categories ORDER BY name ASC");
+    res.json({ ok: true, categories: rows });
+  } catch (err) {
+    console.error("[BLOG ADMIN]", err);
+    res.json({ ok: true, categories: [] });
+  }
+});
+
+// Create or update post
+router.post("/api/blog/posts", requireAuth, async (req, res) => {
+  try {
+    const { id, title, slug, excerpt, content, category_id, image_url, is_published } = req.body;
+    const postSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+    if (id) {
+      await db.execute(`
+        UPDATE blog_posts SET title=?, slug=?, excerpt=?, content=?, category_id=?, image_url=?, is_published=?
+        WHERE id=?
+      `, [title, postSlug, excerpt || null, content || "", category_id || null, image_url || null, is_published ? 1 : 0, id]);
+    } else {
+      await db.execute(`
+        INSERT INTO blog_posts (title, slug, excerpt, content, category_id, image_url, is_published)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `, [title, postSlug, excerpt || null, content || "", category_id || null, image_url || null, is_published ? 1 : 0]);
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[BLOG ADMIN]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Delete post
+router.post("/api/blog/posts/:id/delete", requireAuth, async (req, res) => {
+  try {
+    await db.execute("DELETE FROM blog_posts WHERE id = ?", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[BLOG ADMIN]", err);
+    res.status(500).json({ ok: false });
+  }
+});
+
+// Create category
+router.post("/api/blog/categories", requireAuth, async (req, res) => {
+  try {
+    const { name } = req.body;
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    await db.execute("INSERT INTO blog_categories (name, slug) VALUES (?, ?)", [name, slug]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[BLOG ADMIN]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Leads API ──
+
 // API – list leads
 router.get("/api/leads", requireAuth, async (req, res) => {
   const [rows] = await db.execute(

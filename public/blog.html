@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cerberus Dev | Blog</title>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+</head>
+<body>
+  <div data-include="/partials/header.html"></div>
+
+  <main class="page">
+    <section class="hero hero--small">
+      <div class="hero-bg"></div>
+      <div class="container">
+        <div class="hero-content">
+          <div class="section-label" data-reveal data-i18n="blog.label">Publicaciones</div>
+          <h1 class="h-title" data-reveal data-i18n="blog.title">Blog</h1>
+          <p class="h-sub" data-reveal data-i18n="blog.sub">Articulos, tutoriales y recursos sobre desarrollo web, tecnologia y buenas practicas.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="blog-layout">
+          <div>
+            <div class="blog-grid" id="blogGrid">
+              <!-- Posts loaded via JS -->
+            </div>
+            <div class="blog-empty" id="blogEmpty" style="display:none;">
+              <div class="card" style="text-align:center;padding:60px 32px;">
+                <div style="font-size:48px;margin-bottom:16px;">&#x1F4DD;</div>
+                <h3 class="card-title" data-i18n="blog.no_posts">No hay publicaciones disponibles.</h3>
+                <p class="card-desc" style="max-width:400px;margin:12px auto 0;">Pronto publicaremos contenido. Vuelve a visitarnos.</p>
+              </div>
+            </div>
+          </div>
+          <aside class="blog-sidebar">
+            <div class="sidebar-card">
+              <div class="sidebar-title" data-i18n="blog.categories">Categorias</div>
+              <div class="sidebar-cats" id="blogCats">
+                <button class="sidebar-cat is-active" data-cat="">
+                  <span data-i18n="blog.all">Todas</span>
+                  <span class="sidebar-cat-count" id="catCountAll">0</span>
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-include="/partials/footer.html"></div>
+  <script src="/assets/js/i18n-data.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/blog.js"></script>
+</body>
+</html>

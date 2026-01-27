@@ -30,17 +30,18 @@ app.use("/api/contact", require("./routes/contact"));
 // Public API – Blog
 app.use("/api/blog", require("./routes/blog"));
 
-// Admin redirect (exact match)
-app.get(process.env.ADMIN_PATH, (req, res) => {
-  return res.redirect(process.env.ADMIN_PATH + "/");
-});
+// Admin panel (only if ADMIN_PATH is configured)
+const ADMIN_PATH = process.env.ADMIN_PATH;
+if (ADMIN_PATH) {
+  app.get(ADMIN_PATH, (req, res) => {
+    return res.redirect(ADMIN_PATH + "/");
+  });
+  app.use(ADMIN_PATH, require("./routes/admin"));
+}
 
-// Admin panel
-app.use(process.env.ADMIN_PATH, require("./routes/admin"));
-
-// Fallback – only serve index.html for "page" requests (not assets/api/partials)
+// Fallback – serve the matching HTML page or index.html for clean URLs
 app.get("*", (req, res) => {
-  // Don't serve index.html for partial, asset, api, or upload requests
+  // Don't serve pages for partial, asset, api, or upload requests
   if (
     req.path.startsWith("/partials/") ||
     req.path.startsWith("/assets/") ||
@@ -50,10 +51,25 @@ app.get("*", (req, res) => {
   ) {
     return res.status(404).json({ error: "not_found" });
   }
+
+  // Try to serve the specific HTML file first (e.g. /blog -> blog.html)
+  const clean = req.path.replace(/^\/+|\/+$/g, "");
+  if (clean) {
+    const filePath = path.join(__dirname, "public", clean + ".html");
+    return res.sendFile(filePath, (err) => {
+      if (err) {
+        // File doesn't exist, serve index.html as fallback
+        res.sendFile(path.join(__dirname, "public", "index.html"));
+      }
+    });
+  }
+
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.listen(PORT, () => {
   console.log(`Server running: http://localhost:${PORT}`);
-  console.log(`Admin panel: http://localhost:${PORT}${process.env.ADMIN_PATH}/login`);
+  if (ADMIN_PATH) {
+    console.log(`Admin panel: http://localhost:${PORT}${ADMIN_PATH}/login`);
+  }
 });
