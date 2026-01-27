@@ -15,9 +15,9 @@
       <div class="hero-bg"></div>
       <div class="container">
         <div class="hero-content">
-          <div class="section-label" data-reveal>Lo que hacemos</div>
-          <h1 class="h-title" data-reveal>Servicios</h1>
-          <p class="h-sub" data-reveal>
+          <div class="section-label" data-reveal data-i18n="services.label">Lo que hacemos</div>
+          <h1 class="h-title" data-reveal data-i18n="services.title">Servicios</h1>
+          <p class="h-sub" data-reveal data-i18n="services.sub">
             Soluciones enfocadas en estabilidad, control y crecimiento real para tu negocio.
           </p>
         </div>
@@ -29,33 +29,33 @@
         <div class="grid services-grid" data-reveal-stagger>
           <div class="card service-card">
             <img class="service-icon" src="/assets/img/services/web.svg" alt="Desarrollo web">
-            <h3 class="service-title">Desarrollo Web</h3>
-            <p class="service-desc">Sitios modernos, rápidos y bien estructurados, enfocados en rendimiento y experiencia de usuario.</p>
+            <h3 class="service-title" data-i18n="services.s1_title">Desarrollo Web</h3>
+            <p class="service-desc" data-i18n="services.s1_desc">Sitios modernos, rápidos y bien estructurados, enfocados en rendimiento y experiencia de usuario.</p>
           </div>
           <div class="card service-card">
             <img class="service-icon" src="/assets/img/services/system.svg" alt="Sistemas internos">
-            <h3 class="service-title">Sistemas Internos</h3>
-            <p class="service-desc">Sistemas a la medida para control operativo, reportes, flujos de trabajo y usuarios con roles.</p>
+            <h3 class="service-title" data-i18n="services.s2_title">Sistemas Internos</h3>
+            <p class="service-desc" data-i18n="services.s2_desc">Sistemas a la medida para control operativo, reportes, flujos de trabajo y usuarios con roles.</p>
           </div>
           <div class="card service-card">
             <img class="service-icon" src="/assets/img/services/api.png" alt="APIs">
-            <h3 class="service-title">APIs &amp; Backend</h3>
-            <p class="service-desc">Desarrollo de APIs seguras y mantenibles con Node.js y Express para integraciones confiables.</p>
+            <h3 class="service-title" data-i18n="services.s3_title">APIs &amp; Backend</h3>
+            <p class="service-desc" data-i18n="services.s3_desc">Desarrollo de APIs seguras y mantenibles con Node.js y Express para integraciones confiables.</p>
           </div>
           <div class="card service-card">
             <img class="service-icon" src="/assets/img/services/dashboard.svg" alt="Paneles">
-            <h3 class="service-title">Paneles Administrativos</h3>
-            <p class="service-desc">Dashboards claros y funcionales para gestión de datos, usuarios, métricas y operaciones.</p>
+            <h3 class="service-title" data-i18n="services.s4_title">Paneles Administrativos</h3>
+            <p class="service-desc" data-i18n="services.s4_desc">Dashboards claros y funcionales para gestión de datos, usuarios, métricas y operaciones.</p>
           </div>
           <div class="card service-card">
             <img class="service-icon" src="/assets/img/services/bot.svg" alt="Automatización">
-            <h3 class="service-title">Automatización &amp; Bots</h3>
-            <p class="service-desc">Automatización de procesos y bots personalizados para reducir tiempos y errores operativos.</p>
+            <h3 class="service-title" data-i18n="services.s5_title">Automatización &amp; Bots</h3>
+            <p class="service-desc" data-i18n="services.s5_desc">Automatización de procesos y bots personalizados para reducir tiempos y errores operativos.</p>
           </div>
           <div class="card service-card">
             <img class="service-icon" src="/assets/img/services/sup.png" alt="Soporte">
-            <h3 class="service-title">Soporte &amp; Evolución</h3>
-            <p class="service-desc">Mantenimiento, mejoras y evolución del sistema después de la entrega según tus necesidades.</p>
+            <h3 class="service-title" data-i18n="services.s6_title">Soporte &amp; Evolución</h3>
+            <p class="service-desc" data-i18n="services.s6_desc">Mantenimiento, mejoras y evolución del sistema después de la entrega según tus necesidades.</p>
           </div>
         </div>
       </div>
@@ -64,15 +64,16 @@
     <section class="section" style="padding-top:0;">
       <div class="container">
         <div class="card" data-reveal style="text-align:center;padding:48px 32px;">
-          <h3 class="card-title">¿Tienes un proyecto en mente?</h3>
-          <p class="card-desc" style="max-width:500px;margin:0 auto 24px;">Cuéntanos tu idea y te proponemos una solución clara, sin compromisos.</p>
-          <a class="btn" href="/contacto.html">Hablemos</a>
+          <h3 class="card-title" data-i18n="services.cta_title">¿Tienes un proyecto en mente?</h3>
+          <p class="card-desc" style="max-width:500px;margin:0 auto 24px;" data-i18n="services.cta_desc">Cuéntanos tu idea y te proponemos una solución clara, sin compromisos.</p>
+          <a class="btn" href="/contacto" data-i18n="services.cta_btn">Hablemos</a>
         </div>
       </div>
     </section>
   </main>
 
   <div data-include="/partials/footer.html"></div>
+  <script src="/assets/js/i18n-data.js"></script>
   <script src="/assets/js/main.js"></script>
 </body>
 </html>

@@ -15,9 +15,9 @@
       <div class="hero-bg"></div>
       <div class="container">
         <div class="hero-content">
-          <div class="section-label" data-reveal>Portafolio</div>
-          <h1 class="h-title" data-reveal>Proyectos</h1>
-          <p class="h-sub" data-reveal>Trabajos representativos desarrollados con enfoque técnico y profesional.</p>
+          <div class="section-label" data-reveal data-i18n="projects.label">Portafolio</div>
+          <h1 class="h-title" data-reveal data-i18n="projects.title">Proyectos</h1>
+          <p class="h-sub" data-reveal data-i18n="projects.sub">Trabajos representativos desarrollados con enfoque técnico y profesional.</p>
         </div>
       </div>
     </section>
@@ -27,39 +27,45 @@
         <div class="grid grid-2" data-reveal-stagger>
           <div class="card project-card">
             <span class="project-number">01</span>
-            <span class="project-tag">Sistema Web</span>
-            <h3 class="card-title">Sistema de reportes interno</h3>
-            <p class="card-desc">Plataforma web para gestión de reportes operativos, control de usuarios, roles, evidencias y seguimiento de procesos internos.</p>
+            <span class="project-tag" data-i18n="projects.p1_tag">Sistema Web</span>
+            <img class="project-img" src="/assets/img/projects/project-01.jpg" alt="Project" onerror="this.style.display='none'">
+            <h3 class="card-title" data-i18n="projects.p1_title">Sistema de reportes interno</h3>
+            <p class="card-desc" data-i18n="projects.p1_desc">Plataforma web para gestión de reportes operativos, control de usuarios, roles, evidencias y seguimiento de procesos internos.</p>
           </div>
           <div class="card project-card">
             <span class="project-number">02</span>
-            <span class="project-tag">Auditoría</span>
-            <h3 class="card-title">Sistema de auditoría y control</h3>
-            <p class="card-desc">Sistema para validación de información y detección de inconsistencias, enfocado en cumplimiento y control interno.</p>
+            <span class="project-tag" data-i18n="projects.p2_tag">Auditoría</span>
+            <img class="project-img" src="/assets/img/projects/project-02.jpg" alt="Project" onerror="this.style.display='none'">
+            <h3 class="card-title" data-i18n="projects.p2_title">Sistema de auditoría y control</h3>
+            <p class="card-desc" data-i18n="projects.p2_desc">Sistema para validación de información y detección de inconsistencias, enfocado en cumplimiento y control interno.</p>
           </div>
           <div class="card project-card">
             <span class="project-number">03</span>
-            <span class="project-tag">Automatización</span>
-            <h3 class="card-title">Bot de automatización</h3>
-            <p class="card-desc">Bot personalizado para automatizar tareas repetitivas, mejorar tiempos de respuesta y reducir errores operativos.</p>
+            <span class="project-tag" data-i18n="projects.p3_tag">Automatización</span>
+            <img class="project-img" src="/assets/img/projects/project-03.jpg" alt="Project" onerror="this.style.display='none'">
+            <h3 class="card-title" data-i18n="projects.p3_title">Bot de automatización</h3>
+            <p class="card-desc" data-i18n="projects.p3_desc">Bot personalizado para automatizar tareas repetitivas, mejorar tiempos de respuesta y reducir errores operativos.</p>
           </div>
           <div class="card project-card">
             <span class="project-number">04</span>
-            <span class="project-tag">Dashboard</span>
-            <h3 class="card-title">Panel administrativo</h3>
-            <p class="card-desc">Dashboard web con autenticación, gestión de usuarios, métricas y control de información en tiempo real.</p>
+            <span class="project-tag" data-i18n="projects.p4_tag">Dashboard</span>
+            <img class="project-img" src="/assets/img/projects/project-04.jpg" alt="Project" onerror="this.style.display='none'">
+            <h3 class="card-title" data-i18n="projects.p4_title">Panel administrativo</h3>
+            <p class="card-desc" data-i18n="projects.p4_desc">Dashboard web con autenticación, gestión de usuarios, métricas y control de información en tiempo real.</p>
           </div>
           <div class="card project-card">
             <span class="project-number">05</span>
-            <span class="project-tag">Backend</span>
-            <h3 class="card-title">APIs privadas</h3>
-            <p class="card-desc">APIs desarrolladas en Node.js para integración entre sistemas, manejo de datos y lógica de negocio segura.</p>
+            <span class="project-tag" data-i18n="projects.p5_tag">Backend</span>
+            <img class="project-img" src="/assets/img/projects/project-05.jpg" alt="Project" onerror="this.style.display='none'">
+            <h3 class="card-title" data-i18n="projects.p5_title">APIs privadas</h3>
+            <p class="card-desc" data-i18n="projects.p5_desc">APIs desarrolladas en Node.js para integración entre sistemas, manejo de datos y lógica de negocio segura.</p>
           </div>
           <div class="card project-card">
             <span class="project-number">06</span>
-            <span class="project-tag">Confidencial</span>
-            <h3 class="card-title">Proyectos bajo NDA</h3>
-            <p class="card-desc">Algunos trabajos no pueden ser detallados públicamente por acuerdos de confidencialidad, pero forman parte de nuestra experiencia profesional.</p>
+            <span class="project-tag" data-i18n="projects.p6_tag">Confidencial</span>
+            <img class="project-img" src="/assets/img/projects/project-06.jpg" alt="Project" onerror="this.style.display='none'">
+            <h3 class="card-title" data-i18n="projects.p6_title">Proyectos bajo NDA</h3>
+            <p class="card-desc" data-i18n="projects.p6_desc">Algunos trabajos no pueden ser detallados públicamente por acuerdos de confidencialidad, pero forman parte de nuestra experiencia profesional.</p>
           </div>
         </div>
       </div>
@@ -68,15 +74,16 @@
     <section class="section" style="padding-top:0;">
       <div class="container">
         <div class="card" data-reveal style="text-align:center;padding:48px 32px;">
-          <h3 class="card-title">¿Quieres ver tu proyecto aquí?</h3>
-          <p class="card-desc" style="max-width:500px;margin:0 auto 24px;">Conversemos sobre tu idea y construyamos algo sólido juntos.</p>
-          <a class="btn" href="/contacto.html">Iniciar proyecto</a>
+          <h3 class="card-title" data-i18n="projects.cta_title">¿Quieres ver tu proyecto aquí?</h3>
+          <p class="card-desc" style="max-width:500px;margin:0 auto 24px;" data-i18n="projects.cta_desc">Conversemos sobre tu idea y construyamos algo sólido juntos.</p>
+          <a class="btn" href="/contacto" data-i18n="projects.cta_btn">Iniciar proyecto</a>
         </div>
       </div>
     </section>
   </main>
 
   <div data-include="/partials/footer.html"></div>
+  <script src="/assets/js/i18n-data.js"></script>
   <script src="/assets/js/main.js"></script>
 </body>
 </html>
