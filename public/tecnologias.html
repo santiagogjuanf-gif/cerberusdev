@@ -15,9 +15,9 @@
       <div class="hero-bg"></div>
       <div class="container">
         <div class="hero-content">
-          <div class="section-label" data-reveal>Nuestro Stack</div>
-          <h1 class="h-title" data-reveal>Tecnologías</h1>
-          <p class="h-sub" data-reveal>Elegimos la tecnología según tu necesidad, no por moda. Proyectos rápidos, escalables y mantenibles.</p>
+          <div class="section-label" data-reveal data-i18n="tech.label">Nuestro Stack</div>
+          <h1 class="h-title" data-reveal data-i18n="tech.title">Tecnologías</h1>
+          <p class="h-sub" data-reveal data-i18n="tech.sub">Elegimos la tecnología según tu necesidad, no por moda. Proyectos rápidos, escalables y mantenibles.</p>
         </div>
       </div>
     </section>
@@ -25,11 +25,11 @@
     <section class="section">
       <div class="container">
         <div class="card" data-reveal style="margin-bottom:40px;">
-          <div class="section-label">Stack Principal</div>
-          <p class="card-desc">Node.js + Express &bull; MySQL / SQL Server &bull; Front-end moderno (HTML / CSS / JS / TS)</p>
+          <div class="section-label" data-i18n="tech.stack_label">Stack Principal</div>
+          <p class="card-desc" data-i18n="tech.stack_desc">Node.js + Express &bull; MySQL / SQL Server &bull; Front-end moderno (HTML / CSS / JS / TS)</p>
         </div>
 
-        <div data-reveal><div class="section-label">Herramientas que usamos</div></div>
+        <div data-reveal><div class="section-label" data-i18n="tech.tools_label">Herramientas que usamos</div></div>
 
         <div class="tech-grid" data-reveal-stagger>
           <div class="tech"><img src="/assets/img/tech/html.svg" alt="HTML"><span>HTML5</span></div>
@@ -53,13 +53,13 @@
         <div class="grid grid-2" data-reveal-stagger>
           <div class="card">
             <div class="card-number">01</div>
-            <h3 class="card-title">Web apps en móvil</h3>
-            <p class="card-desc">Creamos interfaces responsivas y, si el proyecto lo requiere, configuramos la web como PWA para instalarse directamente en el teléfono.</p>
+            <h3 class="card-title" data-i18n="tech.card1_title">Web apps en móvil</h3>
+            <p class="card-desc" data-i18n="tech.card1_desc">Creamos interfaces responsivas y, si el proyecto lo requiere, configuramos la web como PWA para instalarse directamente en el teléfono.</p>
           </div>
           <div class="card">
             <div class="card-number">02</div>
-            <h3 class="card-title">Código abierto</h3>
-            <p class="card-desc">Trabajamos exclusivamente con tecnologías open source. Sin licencias, sin costos ocultos. Solo herramientas probadas y confiables.</p>
+            <h3 class="card-title" data-i18n="tech.card2_title">Código abierto</h3>
+            <p class="card-desc" data-i18n="tech.card2_desc">Trabajamos exclusivamente con tecnologías open source. Sin licencias, sin costos ocultos. Solo herramientas probadas y confiables.</p>
           </div>
         </div>
       </div>
@@ -67,6 +67,7 @@
   </main>
 
   <div data-include="/partials/footer.html"></div>
+  <script src="/assets/js/i18n-data.js"></script>
   <script src="/assets/js/main.js"></script>
 </body>
 </html>

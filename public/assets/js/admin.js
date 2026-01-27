@@ -82,7 +82,7 @@ function render() {
   tbody.innerHTML = rows.map(l => {
     const isOn = Number(l.is_important) === 1;
     return `
-      <tr>
+      <tr class="${isOn ? "is-starred" : ""}">
         <td class="col-star">
           <button class="star-btn ${isOn ? "on" : ""}" title="Importante" data-act="star" data-id="${l.id}">
             ${isOn ? "\u2605" : "\u2606"}
@@ -95,12 +95,7 @@ function render() {
         <td class="col-date">${fmtDate(l.created_at)}</td>
         <td class="col-actions">
           <div class="row-actions">
-            <button class="small-btn" data-act="view" data-id="${l.id}">Ver</button>
             <a class="small-btn" href="./lead?id=${l.id}">Detalle</a>
-            <button class="small-btn" data-act="notes" data-id="${l.id}">Notas</button>
-            <button class="small-btn" data-act="status" data-to="replied" data-id="${l.id}">Respondido</button>
-            <button class="small-btn" data-act="status" data-to="closed" data-id="${l.id}">Cerrar</button>
-            <button class="small-btn danger" data-act="delete" data-id="${l.id}">Eliminar</button>
           </div>
         </td>
       </tr>
@@ -121,61 +116,10 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 
-function getLead(id) {
-  return ALL.find(x => String(x.id) === String(id));
-}
-
 async function onAction(e) {
   const btn = e.currentTarget;
   const id = btn.dataset.id;
   const act = btn.dataset.act;
-
-  if (act === "view") {
-    const lead = getLead(id);
-    const html = `
-      <div style="display:grid;gap:12px">
-        <div><strong style="color:rgba(255,255,255,0.5)">Nombre:</strong> ${escapeHtml(lead?.name || "")}</div>
-        <div><strong style="color:rgba(255,255,255,0.5)">Email:</strong> ${escapeHtml(lead?.email || "")}</div>
-        <div><strong style="color:rgba(255,255,255,0.5)">Telefono:</strong> ${escapeHtml(lead?.phone || "")}</div>
-        <div><strong style="color:rgba(255,255,255,0.5)">Tipo:</strong> ${escapeHtml(lead?.project_type || "")}</div>
-        <div><strong style="color:rgba(255,255,255,0.5)">Estado:</strong> ${badge(lead?.status)}</div>
-        <div><strong style="color:rgba(255,255,255,0.5)">Fecha:</strong> ${fmtDate(lead?.created_at)}</div>
-        <div>
-          <strong style="color:rgba(255,255,255,0.5)">Mensaje:</strong><br>
-          <p style="white-space:pre-wrap;margin-top:6px;">${escapeHtml(lead?.message || "")}</p>
-        </div>
-      </div>
-    `;
-    $("#viewBody").innerHTML = html;
-    openModal("modalView");
-    return;
-  }
-
-  if (act === "notes") {
-    const lead = getLead(id);
-    notesLeadId = id;
-    $("#notesText").value = lead?.internal_notes || "";
-    openModal("modalNotes");
-    return;
-  }
-
-  if (act === "status") {
-    const to = btn.dataset.to;
-    await api(`./api/leads/${id}/status`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: to })
-    });
-    await refresh();
-    return;
-  }
-
-  if (act === "delete") {
-    if (!confirm("Eliminar definitivamente este lead?")) return;
-    await api(`./api/leads/${id}/delete`, { method: "POST" });
-    await refresh();
-    return;
-  }
 
   if (act === "star") {
     await api(`./api/leads/${id}/important`, { method: "POST" });
@@ -183,18 +127,6 @@ async function onAction(e) {
     return;
   }
 }
-
-$("#notesSaveBtn")?.addEventListener("click", async () => {
-  if (!notesLeadId) return;
-  const notes = $("#notesText").value || "";
-  await api(`./api/leads/${notesLeadId}/notes`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ notes })
-  });
-  closeModal("modalNotes");
-  await refresh();
-});
 
 async function refresh() {
   const [leads, sum] = await Promise.all([

@@ -15,9 +15,9 @@
       <div class="hero-bg"></div>
       <div class="container">
         <div class="hero-content">
-          <div class="section-label" data-reveal>Hablemos</div>
-          <h1 class="h-title" data-reveal>Contacto</h1>
-          <p class="h-sub" data-reveal>Cuéntanos tu idea y te proponemos una solución clara. Tiempo promedio de respuesta: <strong>24-48 horas.</strong></p>
+          <div class="section-label" data-reveal data-i18n="contact.label">Hablemos</div>
+          <h1 class="h-title" data-reveal data-i18n="contact.title">Contacto</h1>
+          <p class="h-sub" data-reveal data-i18n="contact.sub">Cuéntanos tu idea y te proponemos una solución clara. Tiempo promedio de respuesta: <strong>24-48 horas.</strong></p>
         </div>
       </div>
     </section>
@@ -28,46 +28,69 @@
           <form class="form" id="contactForm">
             <div class="form__grid">
               <label class="field">
-                <span>Nombre</span>
+                <span data-i18n="contact.name">Nombre</span>
                 <input name="name" required autocomplete="name" placeholder="Tu nombre completo"/>
               </label>
               <label class="field">
-                <span>Correo</span>
+                <span data-i18n="contact.email">Correo</span>
                 <input type="email" name="email" required autocomplete="email" placeholder="tu@correo.com"/>
               </label>
               <label class="field">
-                <span>Teléfono (opcional)</span>
+                <span data-i18n="contact.phone">Teléfono (opcional)</span>
                 <input name="phone" autocomplete="tel" placeholder="+52 000 000 0000"/>
               </label>
               <label class="field">
-                <span>Tipo de proyecto</span>
+                <span data-i18n="contact.type">Tipo de proyecto</span>
                 <select name="project_type">
-                  <option value="">Seleccionar...</option>
-                  <option>Sitio web / Landing</option>
-                  <option>Sistema interno / Dashboard</option>
-                  <option>API / Integración</option>
-                  <option>Panel administrativo</option>
-                  <option>Automatización / Bot</option>
-                  <option>Otro</option>
+                  <option value="" data-i18n="contact.opt_select">Seleccionar...</option>
+                  <option data-i18n="contact.opt_web">Sitio web / Landing</option>
+                  <option data-i18n="contact.opt_system">Sistema interno / Dashboard</option>
+                  <option data-i18n="contact.opt_api">API / Integración</option>
+                  <option data-i18n="contact.opt_panel">Panel administrativo</option>
+                  <option data-i18n="contact.opt_bot">Automatización / Bot</option>
+                  <option data-i18n="contact.opt_other">Otro</option>
                 </select>
               </label>
             </div>
             <label class="field">
-              <span>Mensaje</span>
+              <span data-i18n="contact.message">Mensaje</span>
               <textarea name="message" rows="6" required placeholder="Cuéntanos qué necesitas, qué problema quieres resolver o qué idea tienes en mente..."></textarea>
             </label>
             <div class="contact-info">
-              <button class="btn" type="submit">Enviar solicitud</button>
-              <div class="contact-email">También puedes escribir a: <strong>cerberus.dev@hotmail.com</strong></div>
+              <button class="btn" type="submit" data-i18n="contact.send">Enviar solicitud</button>
+              <div class="contact-email" data-i18n="contact.also">También puedes escribir a: <strong>cerberus.dev@hotmail.com</strong></div>
             </div>
             <div class="toast" id="contactToast" aria-live="polite"></div>
           </form>
         </div>
       </div>
     </section>
+
+    <section class="section" style="padding-top:0;">
+      <div class="container">
+        <div class="contact-cards" data-reveal-stagger>
+          <div class="contact-card">
+            <div class="contact-card-icon">&#x1F310;</div>
+            <h4 data-i18n="contact.info_address_label">Nuestra direccion:</h4>
+            <p data-i18n="contact.info_address">Blvd. Agua Caliente 9955, Piso 5, Calete, Tijuana, Baja California, C.P. 22044</p>
+          </div>
+          <div class="contact-card">
+            <div class="contact-card-icon">&#x2709;</div>
+            <h4 data-i18n="contact.info_email_label">Nuestro buzon:</h4>
+            <p data-i18n="contact.info_email">info@cerberusdev.com</p>
+          </div>
+          <div class="contact-card">
+            <div class="contact-card-icon">&#x1F4DE;</div>
+            <h4 data-i18n="contact.info_phone_label">Nuestro telefono:</h4>
+            <p><span data-i18n="contact.info_phone_mx">Mex: +52-(664)-120-9284</span><br><span data-i18n="contact.info_phone_us">USA: +1-(619)-737-7914</span></p>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <div data-include="/partials/footer.html"></div>
+  <script src="/assets/js/i18n-data.js"></script>
   <script src="/assets/js/main.js"></script>
 </body>
 </html>

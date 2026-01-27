@@ -15,11 +15,12 @@
     <header class="admin-top">
       <div class="admin-brand">
         <div class="admin-title">Cerberus Control Room</div>
-        <div class="admin-sub">Panel privado &bull; Leads &amp; Contacto</div>
+        <div class="admin-sub">Panel privado &bull; Leads &amp; Blog</div>
       </div>
       <div class="admin-actions">
-        <div class="admin-user" id="adminUser">Sesión activa</div>
-        <a class="btn btn--ghost" href="./logout">Cerrar sesión</a>
+        <a class="btn btn--ghost" href="./blog-admin">Blog</a>
+        <div class="admin-user" id="adminUser">Sesion activa</div>
+        <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
       </div>
     </header>
 
@@ -37,8 +38,8 @@
         <div class="kpi-value" id="kpiClosed">0</div>
       </div>
       <div class="kpi kpi-wide">
-        <div class="kpi-label">Acciones rápidas</div>
-        <div class="kpi-note">Marca importantes &bull; Agrega notas internas &bull; Cambia estados</div>
+        <div class="kpi-label">Acciones rapidas</div>
+        <div class="kpi-note">Marca importantes con la estrella &bull; Haz clic en Detalle para ver toda la info</div>
       </div>
     </section>
 
@@ -46,7 +47,7 @@
       <div class="admin-card-head">
         <div>
           <div class="admin-card-title">Bandeja de leads</div>
-          <div class="admin-card-sub">Ordenado por importante y más reciente</div>
+          <div class="admin-card-sub">Ordenado por importante y mas reciente</div>
         </div>
         <div class="admin-filters">
           <button class="chip is-on" data-filter="all">Todos</button>
@@ -63,10 +64,10 @@
               <th class="col-star">&#x2605;</th>
               <th>Cliente</th>
               <th>Email</th>
-              <th>Teléfono</th>
+              <th>Telefono</th>
               <th>Estado</th>
               <th class="col-date">Fecha</th>
-              <th class="col-actions">Acciones</th>
+              <th class="col-actions">Accion</th>
             </tr>
           </thead>
           <tbody id="leadsTbody"></tbody>
@@ -74,42 +75,6 @@
       </div>
     </section>
   </main>
-
-  <!-- Modal: Ver detalle -->
-  <div class="modal" id="modalView" aria-hidden="true">
-    <div class="modal__backdrop" data-close="modalView"></div>
-    <div class="modal__panel">
-      <div class="modal__top">
-        <div class="modal__title">Detalle del lead</div>
-        <button class="icon-btn" data-close="modalView">&#x2715;</button>
-      </div>
-      <div class="modal__body" id="viewBody"></div>
-      <div class="modal__bottom">
-        <button class="btn btn--ghost" data-close="modalView">Cerrar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: Notas -->
-  <div class="modal" id="modalNotes" aria-hidden="true">
-    <div class="modal__backdrop" data-close="modalNotes"></div>
-    <div class="modal__panel">
-      <div class="modal__top">
-        <div class="modal__title">Notas internas</div>
-        <button class="icon-btn" data-close="modalNotes">&#x2715;</button>
-      </div>
-      <div class="modal__body">
-        <div class="field">
-          <span>Notas (solo tú las ves)</span>
-          <textarea id="notesText" rows="7" placeholder="Escribe aquí..."></textarea>
-        </div>
-      </div>
-      <div class="modal__bottom">
-        <button class="btn btn--ghost" data-close="modalNotes">Cancelar</button>
-        <button class="btn" id="notesSaveBtn">Guardar</button>
-      </div>
-    </div>
-  </div>
 
   <script src="/assets/js/admin.js"></script>
 </body>

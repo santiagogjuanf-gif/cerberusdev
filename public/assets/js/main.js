@@ -4,21 +4,24 @@ async function includePartials() {
   const nodes = document.querySelectorAll("[data-include]");
   await Promise.all([...nodes].map(async (el) => {
     const url = el.getAttribute("data-include");
-    const res = await fetch(url, { cache: "no-cache" });
-    el.innerHTML = await res.text();
+    try {
+      const res = await fetch(url, { cache: "no-cache" });
+      if (!res.ok) throw new Error(`${res.status}`);
+      el.innerHTML = await res.text();
+    } catch (err) {
+      console.warn("[Partials] Failed to load:", url, err.message);
+      el.innerHTML = "";
+    }
   }));
 }
 
 function markActiveNav() {
-  const path = location.pathname.replace(/\/+$/, "");
+  const raw = location.pathname.replace(/\/+$/, "").replace(/\.html$/, "");
+  const path = raw || "/";
   const links = document.querySelectorAll(".nav-link, .mobile__link");
   links.forEach(a => {
-    const href = a.getAttribute("href");
-    if (!href) return;
-    const isActive = href === path ||
-      href === path + ".html" ||
-      ((path === "" || path === "/") && href === "/index.html");
-    a.classList.toggle("is-active", isActive);
+    const href = (a.getAttribute("href") || "").replace(/\.html$/, "").replace(/\/+$/, "") || "/";
+    a.classList.toggle("is-active", href === path);
   });
 }
 
@@ -91,7 +94,9 @@ function setupViewTransitions() {
     if (!a) return;
     const href = a.getAttribute("href");
     if (!href || href.startsWith("http") || href.startsWith("#") || href.startsWith("mailto:")) return;
-    if (!href.endsWith(".html")) return;
+    if (href.startsWith("/assets/") || href.startsWith("/uploads/")) return;
+    // Only transition internal page links
+    if (!href.startsWith("/")) return;
     e.preventDefault();
     document.startViewTransition(() => { window.location.href = href; });
   });
@@ -131,9 +136,9 @@ function setupContactForm() {
       });
       if (!r.ok) throw new Error("bad");
       form.reset();
-      showToast("Solicitud enviada. Recibirás una confirmación por correo.", true);
+      showToast("Solicitud enviada. Recibiras una confirmacion por correo.", true);
     } catch {
-      showToast("No se pudo enviar. Intenta de nuevo o escríbenos directamente.", false);
+      showToast("No se pudo enviar. Intenta de nuevo o escribenos directamente.", false);
     } finally {
       btn.textContent = originalText;
       btn.disabled = false;
@@ -141,8 +146,80 @@ function setupContactForm() {
   });
 }
 
+// ===== i18n system =====
+function getCurrentLang() {
+  return localStorage.getItem("cerberus_lang") || "es";
+}
+
+function setLang(lang) {
+  localStorage.setItem("cerberus_lang", lang);
+  applyTranslations(lang);
+  updateLangButtons(lang);
+  document.documentElement.lang = lang;
+}
+
+function applyTranslations(lang) {
+  if (typeof I18N === "undefined") return;
+  const dict = I18N[lang];
+  if (!dict) return;
+
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    const val = dict[key];
+    if (val === undefined) return;
+
+    // For elements with HTML content (like contact.sub)
+    if (val.includes("<")) {
+      el.innerHTML = val;
+    } else {
+      el.textContent = val;
+    }
+  });
+
+  // Handle placeholders
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => {
+    const key = el.getAttribute("data-i18n-ph");
+    const val = dict[key];
+    if (val !== undefined) el.placeholder = val;
+  });
+
+  // Handle select options
+  document.querySelectorAll("[data-i18n-opt]").forEach(el => {
+    const key = el.getAttribute("data-i18n-opt");
+    const val = dict[key];
+    if (val !== undefined) el.textContent = val;
+  });
+}
+
+function updateLangButtons(lang) {
+  const label = lang === "es" ? "ES" : "EN";
+  document.querySelectorAll(".lang-switch").forEach(btn => {
+    btn.textContent = label;
+  });
+}
+
+function setupLangSwitch() {
+  document.addEventListener("click", (e) => {
+    if (!e.target.classList.contains("lang-switch")) return;
+    const current = getCurrentLang();
+    setLang(current === "es" ? "en" : "es");
+  });
+
+  // Apply on load
+  const lang = getCurrentLang();
+  updateLangButtons(lang);
+  if (lang !== "es") {
+    applyTranslations(lang);
+  }
+  document.documentElement.lang = lang;
+}
+
 (async function init() {
-  await includePartials();
+  try {
+    await includePartials();
+  } catch (err) {
+    console.warn("[Init] Partials load error:", err);
+  }
   markActiveNav();
   setupStickyHeader();
   setupMobileMenu();
@@ -150,4 +227,5 @@ function setupContactForm() {
   setupViewTransitions();
   setYear();
   setupContactForm();
+  setupLangSwitch();
 })();
