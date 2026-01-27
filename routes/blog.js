@@ -69,4 +69,60 @@ router.get("/categories", async (req, res) => {
   }
 });
 
+// Get approved comments for a post
+router.get("/posts/:slug/comments", async (req, res) => {
+  try {
+    const { slug } = req.params;
+    // Get post id from slug
+    const [[post]] = await db.execute("SELECT id FROM blog_posts WHERE slug = ? AND is_published = 1", [slug]);
+    if (!post) return res.json({ ok: true, comments: [] });
+
+    const [rows] = await db.execute(
+      "SELECT id, author_name, comment, created_at FROM blog_comments WHERE post_id = ? AND is_approved = 1 ORDER BY created_at DESC",
+      [post.id]
+    );
+    res.json({ ok: true, comments: rows });
+  } catch (err) {
+    console.error("[BLOG ERROR]", err);
+    res.json({ ok: true, comments: [] });
+  }
+});
+
+// Submit a comment (public)
+router.post("/posts/:slug/comments", async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { author_name, comment } = req.body;
+
+    if (!author_name || !comment) {
+      return res.status(400).json({ ok: false, error: "name_and_comment_required" });
+    }
+
+    // Get post
+    const [[post]] = await db.execute("SELECT id, title FROM blog_posts WHERE slug = ? AND is_published = 1", [slug]);
+    if (!post) return res.status(404).json({ ok: false, error: "post_not_found" });
+
+    // Insert comment (pending approval)
+    await db.execute(
+      "INSERT INTO blog_comments (post_id, author_name, comment) VALUES (?, ?, ?)",
+      [post.id, author_name.substring(0, 100), comment.substring(0, 2000)]
+    );
+
+    // Create admin notification
+    try {
+      await db.execute(
+        "INSERT INTO admin_notifications (type, ref_id, title, body) VALUES ('comment', ?, ?, ?)",
+        [post.id, `Nuevo comentario en: ${post.title}`, `${author_name} dejo un comentario`]
+      );
+    } catch (e) {
+      console.warn("[NOTIF] Could not create notification:", e.message);
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[BLOG ERROR]", err);
+    res.status(500).json({ ok: false });
+  }
+});
+
 module.exports = router;

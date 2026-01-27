@@ -52,6 +52,11 @@ app.get("*", (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
 
+  // Blog post detail: /blog/some-slug -> blog-post.html
+  if (/^\/blog\/.+/.test(req.path)) {
+    return res.sendFile(path.join(__dirname, "public", "blog-post.html"));
+  }
+
   // Try to serve the specific HTML file first (e.g. /blog -> blog.html)
   const clean = req.path.replace(/^\/+|\/+$/g, "");
   if (clean) {

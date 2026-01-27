@@ -104,6 +104,16 @@ router.post("/", async (req, res) => {
 
     console.log(`[NEW LEAD] ${name} <${email}>`);
 
+    // Create admin notification
+    try {
+      await db.execute(
+        "INSERT INTO admin_notifications (type, ref_id, title, body) VALUES ('lead', 0, ?, ?)",
+        [`Nuevo lead: ${name}`, `${email} - ${project_type || "Sin tipo"}`]
+      );
+    } catch (e) {
+      console.warn("[NOTIF] Could not create notification:", e.message);
+    }
+
     // Send emails in background (don't block the response)
     sendAutoReply(name, email, project_type);
     notifyAdmin(name, email, phone, project_type, message);
