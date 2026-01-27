@@ -2,22 +2,88 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <base href="./">
   <title>Cerberus Control Room</title>
   <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
   <link rel="stylesheet" href="/assets/css/styles.css">
+  <style>
+    body {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: #060910;
+    }
+    .login-bg {
+      position: fixed; inset: 0; z-index: -1;
+      background:
+        radial-gradient(ellipse 600px 400px at 50% 30%, rgba(255,122,24,0.12), transparent 60%),
+        radial-gradient(ellipse 500px 300px at 60% 70%, rgba(43,124,255,0.08), transparent 60%);
+    }
+    .login-bg::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0);
+      background-size: 40px 40px;
+    }
+    .login-card {
+      max-width: 420px; width: 100%; padding: 40px 32px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px; backdrop-filter: blur(20px);
+      position: relative; overflow: hidden;
+    }
+    .login-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, #FF7A18, transparent);
+    }
+    .login-logo {
+      width: 48px; height: 48px; object-fit: contain; margin: 0 auto 16px;
+      filter: drop-shadow(0 4px 12px rgba(255,122,24,0.3));
+    }
+    .login-title {
+      text-align: center; font-size: 22px; font-weight: 800;
+      color: rgba(255,255,255,0.92); margin-bottom: 6px;
+    }
+    .login-sub {
+      text-align: center; font-size: 13px;
+      color: rgba(255,255,255,0.5); margin-bottom: 32px;
+    }
+    .login-field {
+      width: 100%; padding: 14px 18px; margin-bottom: 16px;
+      font-family: inherit; font-size: 15px;
+      color: rgba(255,255,255,0.92);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 10px; outline: none;
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .login-field:focus {
+      border-color: #FF7A18;
+      box-shadow: 0 0 0 3px rgba(255,122,24,0.25);
+    }
+    .login-field::placeholder { color: rgba(255,255,255,0.3); }
+    .login-btn {
+      width: 100%; padding: 14px; margin-top: 8px;
+      font-family: inherit; font-size: 15px; font-weight: 600;
+      color: #000; background: linear-gradient(135deg, #FF7A18, #FF9A45);
+      border: none; border-radius: 50px; cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(255,122,24,0.25);
+    }
+  </style>
 </head>
-<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#070A10">
-  <form method="POST" action="login" style="max-width:420px;width:100%">
-    <h2 style="text-align:center;color:#fff">Cerberus Control Room</h2>
-
-    <input name="username" placeholder="Usuario" required
-      style="width:100%;padding:12px;margin:10px 0">
-
-    <input type="password" name="password" placeholder="Contraseña" required
-      style="width:100%;padding:12px;margin:10px 0">
-
-    <button style="width:100%;padding:12px">Entrar</button>
-  </form>
+<body>
+  <div class="login-bg"></div>
+  <div class="login-card">
+    <img class="login-logo" src="/assets/img/cerberus-mark.png" alt="Cerberus">
+    <div class="login-title">Control Room</div>
+    <div class="login-sub">Panel privado &bull; Acceso restringido</div>
+    <form method="POST" action="login">
+      <input class="login-field" name="username" placeholder="Usuario" required autocomplete="username">
+      <input class="login-field" type="password" name="password" placeholder="Contraseña" required autocomplete="current-password">
+      <button class="login-btn" type="submit">Entrar</button>
+    </form>
+  </div>
 </body>
 </html>

@@ -4,10 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
-
   <title>Cerberus Control Room</title>
-
-  <!-- Usa tu base, pero agregamos CSS solo del panel -->
   <link rel="stylesheet" href="/assets/css/styles.css"/>
   <link rel="stylesheet" href="/assets/css/admin.css"/>
 </head>
@@ -18,9 +15,8 @@
     <header class="admin-top">
       <div class="admin-brand">
         <div class="admin-title">Cerberus Control Room</div>
-        <div class="admin-sub">Panel privado • Leads & Contacto</div>
+        <div class="admin-sub">Panel privado &bull; Leads &amp; Contacto</div>
       </div>
-
       <div class="admin-actions">
         <div class="admin-user" id="adminUser">Sesión activa</div>
         <a class="btn btn--ghost" href="./logout">Cerrar sesión</a>
@@ -29,35 +25,34 @@
 
     <section class="admin-kpis" id="kpis">
       <div class="kpi">
-        <div class="kpi-label">Nuevos 🧿</div>
+        <div class="kpi-label">Nuevos</div>
         <div class="kpi-value" id="kpiNew">0</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Respondidos ✅</div>
+        <div class="kpi-label">Respondidos</div>
         <div class="kpi-value" id="kpiReplied">0</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Cerrados ⛔</div>
+        <div class="kpi-label">Cerrados</div>
         <div class="kpi-value" id="kpiClosed">0</div>
       </div>
       <div class="kpi kpi-wide">
-        <div class="kpi-label">Tip</div>
-        <div class="kpi-note">⭐ Marca importantes • 📝 Notas internas • 👁 Ver detalle</div>
+        <div class="kpi-label">Acciones rápidas</div>
+        <div class="kpi-note">Marca importantes &bull; Agrega notas internas &bull; Cambia estados</div>
       </div>
     </section>
 
     <section class="admin-card">
       <div class="admin-card-head">
         <div>
-          <div class="admin-card-title">Bandeja</div>
+          <div class="admin-card-title">Bandeja de leads</div>
           <div class="admin-card-sub">Ordenado por importante y más reciente</div>
         </div>
-
         <div class="admin-filters">
-          <button class="chip is-on" data-filter="all">Todos 🧿</button>
-          <button class="chip" data-filter="new">Nuevos 🆕</button>
-          <button class="chip" data-filter="replied">Respondidos✅</button>
-          <button class="chip" data-filter="closed">Cerrados⛔</button>
+          <button class="chip is-on" data-filter="all">Todos</button>
+          <button class="chip" data-filter="new">Nuevos</button>
+          <button class="chip" data-filter="replied">Respondidos</button>
+          <button class="chip" data-filter="closed">Cerrados</button>
         </div>
       </div>
 
@@ -65,7 +60,7 @@
         <table class="table" id="leadsTable">
           <thead>
             <tr>
-              <th class="col-star">★</th>
+              <th class="col-star">&#x2605;</th>
               <th>Cliente</th>
               <th>Email</th>
               <th>Teléfono</th>
@@ -74,47 +69,41 @@
               <th class="col-actions">Acciones</th>
             </tr>
           </thead>
-          <tbody id="leadsTbody">
-            <!-- JS pinta aquí -->
-          </tbody>
+          <tbody id="leadsTbody"></tbody>
         </table>
       </div>
     </section>
   </main>
 
-  <!-- MODAL: Ver detalle -->
+  <!-- Modal: Ver detalle -->
   <div class="modal" id="modalView" aria-hidden="true">
     <div class="modal__backdrop" data-close="modalView"></div>
     <div class="modal__panel">
       <div class="modal__top">
         <div class="modal__title">Detalle del lead</div>
-        <button class="icon-btn" data-close="modalView">✕</button>
+        <button class="icon-btn" data-close="modalView">&#x2715;</button>
       </div>
-
       <div class="modal__body" id="viewBody"></div>
-
       <div class="modal__bottom">
         <button class="btn btn--ghost" data-close="modalView">Cerrar</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: Notas -->
+  <!-- Modal: Notas -->
   <div class="modal" id="modalNotes" aria-hidden="true">
     <div class="modal__backdrop" data-close="modalNotes"></div>
     <div class="modal__panel">
       <div class="modal__top">
         <div class="modal__title">Notas internas</div>
-        <button class="icon-btn" data-close="modalNotes">✕</button>
+        <button class="icon-btn" data-close="modalNotes">&#x2715;</button>
       </div>
-
       <div class="modal__body">
         <div class="field">
           <span>Notas (solo tú las ves)</span>
-          <textarea id="notesText" rows="7" placeholder="Escribe aquí…"></textarea>
+          <textarea id="notesText" rows="7" placeholder="Escribe aquí..."></textarea>
         </div>
       </div>
-
       <div class="modal__bottom">
         <button class="btn btn--ghost" data-close="modalNotes">Cancelar</button>
         <button class="btn" id="notesSaveBtn">Guardar</button>

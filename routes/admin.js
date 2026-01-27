@@ -10,7 +10,6 @@ router.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "admin", "login.html"));
 });
 
-
 // Login action
 router.post("/login", rateLimit, async (req, res) => {
   const { username, password } = req.body;
@@ -22,13 +21,13 @@ router.post("/login", rateLimit, async (req, res) => {
 
   if (!user) {
     console.log("[LOGIN FAIL] user not found");
-    return res.redirect(process.env.ADMIN_PATH + "/");
+    return res.redirect(process.env.ADMIN_PATH + "/login");
   }
 
   const ok = await bcrypt.compare(password, user.password_hash);
   if (!ok) {
     console.log("[LOGIN FAIL] wrong password");
-    return res.redirect(process.env.ADMIN_PATH + "/");
+    return res.redirect(process.env.ADMIN_PATH + "/login");
   }
 
   req.session.user = { id: user.id, username: user.username };
@@ -42,12 +41,25 @@ router.get("/dashboard", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "admin", "dashboard.html"));
 });
 
+// Lead detail page
+router.get("/lead", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "lead.html"));
+});
+
 // API – list leads
 router.get("/api/leads", requireAuth, async (req, res) => {
   const [rows] = await db.execute(
     "SELECT * FROM leads ORDER BY is_important DESC, created_at DESC"
   );
   res.json({ ok: true, leads: rows });
+});
+
+// API – single lead
+router.get("/api/leads/:id", requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const [[lead]] = await db.execute("SELECT * FROM leads WHERE id = ?", [id]);
+  if (!lead) return res.status(404).json({ ok: false, error: "not_found" });
+  res.json({ ok: true, lead });
 });
 
 // API – summary
@@ -59,11 +71,13 @@ router.get("/api/summary", requireAuth, async (req, res) => {
       SUM(status='closed') AS closed_count
     FROM leads
   `);
-
-  // Logout
-router.get("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect(process.env.ADMIN_PATH + "/");
+  res.json({
+    ok: true,
+    summary: {
+      new: Number(row.new_count || 0),
+      replied: Number(row.replied_count || 0),
+      closed: Number(row.closed_count || 0)
+    }
   });
 });
 
@@ -82,8 +96,8 @@ router.post("/api/leads/:id/status", requireAuth, async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  if (!["new","replied","closed"].includes(status)) {
-    return res.status(400).json({ ok:false, error:"bad_status" });
+  if (!["new", "replied", "closed"].includes(status)) {
+    return res.status(400).json({ ok: false, error: "bad_status" });
   }
 
   await db.execute("UPDATE leads SET status = ? WHERE id = ?", [status, id]);
@@ -105,14 +119,10 @@ router.post("/api/leads/:id/delete", requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
-
-  res.json({
-    ok: true,
-    summary: {
-      new: Number(row.new_count || 0),
-      replied: Number(row.replied_count || 0),
-      closed: Number(row.closed_count || 0)
-    }
+// Logout
+router.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect(process.env.ADMIN_PATH + "/login");
   });
 });
 
