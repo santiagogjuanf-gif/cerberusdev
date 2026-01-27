@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>CerberusD | Proyectos</title>
+  <title>Cerberus Dev | Proyectos</title>
   <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
   <link rel="stylesheet" href="/assets/css/styles.css"/>
 </head>
@@ -11,72 +11,67 @@
   <div data-include="/partials/header.html"></div>
 
   <main class="page">
-    <section class="hero">
+    <section class="hero hero--small">
       <div class="hero-bg"></div>
       <div class="container">
-        <h1 class="h-title" data-reveal>Proyectos</h1>
-        <p class="h-sub" data-reveal>
-          Algunos trabajos representativos desarrollados con enfoque técnico y profesional.
-        </p>
+        <div class="hero-content">
+          <div class="section-label" data-reveal>Portafolio</div>
+          <h1 class="h-title" data-reveal>Proyectos</h1>
+          <p class="h-sub" data-reveal>Trabajos representativos desarrollados con enfoque técnico y profesional.</p>
+        </div>
       </div>
     </section>
 
     <section class="section">
       <div class="container">
-
-        <div class="grid cards services-grid">
-
-          <div class="card service-card" data-reveal>
-            <img class="service-icon" src="/assets/img/services/web.svg" alt="Desarrollo web">
-            <div class="service-title">Sistema de reportes interno</div>
-            <p class="service-desc">
-              Plataforma web para gestión de reportes operativos, control de usuarios,
-              roles, evidencias y seguimiento de procesos internos.
-            </p>
+        <div class="grid grid-2" data-reveal-stagger>
+          <div class="card project-card">
+            <span class="project-number">01</span>
+            <span class="project-tag">Sistema Web</span>
+            <h3 class="card-title">Sistema de reportes interno</h3>
+            <p class="card-desc">Plataforma web para gestión de reportes operativos, control de usuarios, roles, evidencias y seguimiento de procesos internos.</p>
           </div>
-
-          <div class="card service-card" data-reveal>
-            <div class="service-title">Sistema de auditoría y control</div>
-            <p class="service-desc">
-              Desarrollo de sistema para validación de información y detección
-              de inconsistencias, enfocado en cumplimiento y control interno.
-            </p>
+          <div class="card project-card">
+            <span class="project-number">02</span>
+            <span class="project-tag">Auditoría</span>
+            <h3 class="card-title">Sistema de auditoría y control</h3>
+            <p class="card-desc">Sistema para validación de información y detección de inconsistencias, enfocado en cumplimiento y control interno.</p>
           </div>
-
-          <div class="card service-card" data-reveal>
-            <div class="service-title">Bot de automatización</div>
-            <p class="service-desc">
-              Bot personalizado para automatizar tareas repetitivas,
-              mejorar tiempos de respuesta y reducir errores operativos.
-            </p>
+          <div class="card project-card">
+            <span class="project-number">03</span>
+            <span class="project-tag">Automatización</span>
+            <h3 class="card-title">Bot de automatización</h3>
+            <p class="card-desc">Bot personalizado para automatizar tareas repetitivas, mejorar tiempos de respuesta y reducir errores operativos.</p>
           </div>
-
-          <div class="card service-card" data-reveal>
-            <div class="service-title">Panel administrativo</div>
-            <p class="service-desc">
-              Dashboard web con autenticación, gestión de usuarios,
-              métricas y control de información en tiempo real.
-            </p>
+          <div class="card project-card">
+            <span class="project-number">04</span>
+            <span class="project-tag">Dashboard</span>
+            <h3 class="card-title">Panel administrativo</h3>
+            <p class="card-desc">Dashboard web con autenticación, gestión de usuarios, métricas y control de información en tiempo real.</p>
           </div>
-
-          <div class="card service-card" data-reveal>
-            <div class="service-title">APIs privadas</div>
-            <p class="service-desc">
-              APIs desarrolladas en Node.js para integración entre sistemas,
-              manejo de datos y lógica de negocio segura.
-            </p>
+          <div class="card project-card">
+            <span class="project-number">05</span>
+            <span class="project-tag">Backend</span>
+            <h3 class="card-title">APIs privadas</h3>
+            <p class="card-desc">APIs desarrolladas en Node.js para integración entre sistemas, manejo de datos y lógica de negocio segura.</p>
           </div>
-
-          <div class="card service-card" data-reveal>
-            <div class="service-title">Proyectos confidenciales</div>
-            <p class="service-desc">
-              Algunos trabajos no pueden ser detallados públicamente,
-              pero forman parte de la experiencia y el enfoque profesional del estudio.
-            </p>
+          <div class="card project-card">
+            <span class="project-number">06</span>
+            <span class="project-tag">Confidencial</span>
+            <h3 class="card-title">Proyectos bajo NDA</h3>
+            <p class="card-desc">Algunos trabajos no pueden ser detallados públicamente por acuerdos de confidencialidad, pero forman parte de nuestra experiencia profesional.</p>
           </div>
-
         </div>
+      </div>
+    </section>
 
+    <section class="section" style="padding-top:0;">
+      <div class="container">
+        <div class="card" data-reveal style="text-align:center;padding:48px 32px;">
+          <h3 class="card-title">¿Quieres ver tu proyecto aquí?</h3>
+          <p class="card-desc" style="max-width:500px;margin:0 auto 24px;">Conversemos sobre tu idea y construyamos algo sólido juntos.</p>
+          <a class="btn" href="/contacto.html">Iniciar proyecto</a>
+        </div>
       </div>
     </section>
   </main>

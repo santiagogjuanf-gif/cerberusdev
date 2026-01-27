@@ -1,6 +1,5 @@
-// public/assets/js/main.js
+// Cerberus Dev – Main JS
 
-// 1) Include de partials (header/footer) para no duplicar código en todas las páginas
 async function includePartials() {
   const nodes = document.querySelectorAll("[data-include]");
   await Promise.all([...nodes].map(async (el) => {
@@ -10,24 +9,39 @@ async function includePartials() {
   }));
 }
 
-// 2) Marcar link activo según página
 function markActiveNav() {
   const path = location.pathname.replace(/\/+$/, "");
   const links = document.querySelectorAll(".nav-link, .mobile__link");
   links.forEach(a => {
     const href = a.getAttribute("href");
     if (!href) return;
-    a.classList.toggle("is-active", href === path || (path === "" && href === "/index.html"));
+    const isActive = href === path ||
+      href === path + ".html" ||
+      ((path === "" || path === "/") && href === "/index.html");
+    a.classList.toggle("is-active", isActive);
   });
 }
 
-// 3) Menú mobile
+function setupStickyHeader() {
+  const header = document.getElementById("siteHeader");
+  if (!header) return;
+  let ticking = false;
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        header.classList.toggle("scrolled", window.scrollY > 40);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+}
+
 function setupMobileMenu() {
   const mobile = document.getElementById("mobileNav");
   const navToggle = document.getElementById("navToggle");
   const mobileClose = document.getElementById("mobileClose");
   const mobileBackdrop = document.getElementById("mobileBackdrop");
-
   if (!mobile || !navToggle) return;
 
   function openMobile() {
@@ -46,21 +60,16 @@ function setupMobileMenu() {
   navToggle.addEventListener("click", openMobile);
   mobileClose?.addEventListener("click", closeMobile);
   mobileBackdrop?.addEventListener("click", closeMobile);
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeMobile();
-  });
-
-  document.querySelectorAll(".mobile__link").forEach(a => {
-    a.addEventListener("click", closeMobile);
-  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMobile(); });
+  document.querySelectorAll(".mobile__link").forEach(a => a.addEventListener("click", closeMobile));
 }
 
-// 4) Animaciones modernas: reveal on scroll (IntersectionObserver)
 function setupRevealAnimations() {
-  const els = document.querySelectorAll("[data-reveal]");
+  const singles = document.querySelectorAll("[data-reveal]");
+  const staggers = document.querySelectorAll("[data-reveal-stagger]");
   if (!("IntersectionObserver" in window)) {
-    els.forEach(el => el.classList.add("is-in"));
+    singles.forEach(el => el.classList.add("is-in"));
+    staggers.forEach(el => el.classList.add("is-in"));
     return;
   }
   const io = new IntersectionObserver((entries) => {
@@ -70,59 +79,51 @@ function setupRevealAnimations() {
         io.unobserve(e.target);
       }
     });
-  }, { threshold: 0.12 });
-
-  els.forEach(el => io.observe(el));
+  }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
+  singles.forEach(el => io.observe(el));
+  staggers.forEach(el => io.observe(el));
 }
 
-// 5) View Transitions (si el navegador lo soporta) para transiciones entre páginas
 function setupViewTransitions() {
-  const supports = "startViewTransition" in document;
-  if (!supports) return;
-
+  if (!("startViewTransition" in document)) return;
   document.addEventListener("click", (e) => {
     const a = e.target.closest("a");
     if (!a) return;
     const href = a.getAttribute("href");
-    if (!href || href.startsWith("http") || href.startsWith("#")) return;
-
-    // solo para navegación interna
+    if (!href || href.startsWith("http") || href.startsWith("#") || href.startsWith("mailto:")) return;
     if (!href.endsWith(".html")) return;
-
     e.preventDefault();
-    document.startViewTransition(() => {
-      window.location.href = href;
-    });
+    document.startViewTransition(() => { window.location.href = href; });
   });
 }
 
-// 6) Footer year
 function setYear() {
   const y = document.getElementById("year");
   if (y) y.textContent = String(new Date().getFullYear());
 }
 
-// 7) Contact form (solo en contacto.html)
 function setupContactForm() {
   const form = document.getElementById("contactForm");
   const toast = document.getElementById("contactToast");
   if (!form) return;
 
-  function show(msg, ok = true) {
+  function showToast(msg, ok = true) {
     if (!toast) return;
     toast.textContent = msg;
-    toast.classList.toggle("is-ok", ok);
-    toast.classList.toggle("is-bad", !ok);
-    toast.classList.add("is-show");
-    setTimeout(() => toast.classList.remove("is-show"), 3500);
+    toast.className = "toast is-show " + (ok ? "is-ok" : "is-bad");
+    setTimeout(() => { toast.className = "toast"; }, 4000);
   }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const fd = new FormData(form);
-    const payload = Object.fromEntries(fd.entries());
+    const btn = form.querySelector('button[type="submit"]');
+    const originalText = btn.textContent;
+    btn.textContent = "Enviando...";
+    btn.disabled = true;
 
     try {
+      const fd = new FormData(form);
+      const payload = Object.fromEntries(fd.entries());
       const r = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -130,17 +131,20 @@ function setupContactForm() {
       });
       if (!r.ok) throw new Error("bad");
       form.reset();
-      show("✅ Solicitud enviada. Respuesta en 24–48 horas.", true);
+      showToast("Solicitud enviada. Recibirás una confirmación por correo.", true);
     } catch {
-      show("❌ No se pudo enviar. Intenta de nuevo.", false);
+      showToast("No se pudo enviar. Intenta de nuevo o escríbenos directamente.", false);
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
     }
   });
 }
 
-// Init
 (async function init() {
   await includePartials();
   markActiveNav();
+  setupStickyHeader();
   setupMobileMenu();
   setupRevealAnimations();
   setupViewTransitions();
