@@ -128,6 +128,72 @@ router.post("/api/blog/categories", requireAuth, async (req, res) => {
   }
 });
 
+// ── Notifications API ──
+
+router.get("/api/notifications", requireAuth, async (req, res) => {
+  try {
+    const [rows] = await db.execute(
+      "SELECT * FROM admin_notifications ORDER BY created_at DESC LIMIT 50"
+    );
+    res.json({ ok: true, notifications: rows });
+  } catch (err) {
+    console.error("[NOTIF]", err);
+    res.json({ ok: true, notifications: [] });
+  }
+});
+
+router.post("/api/notifications/read-all", requireAuth, async (req, res) => {
+  try {
+    await db.execute("UPDATE admin_notifications SET is_read = 1 WHERE is_read = 0");
+    res.json({ ok: true });
+  } catch (err) {
+    res.json({ ok: true });
+  }
+});
+
+// ── Comments API (admin) ──
+
+router.get("/api/blog/comments", requireAuth, async (req, res) => {
+  try {
+    const { post_id } = req.query;
+    let sql = `
+      SELECT bc.*, bp.title AS post_title
+      FROM blog_comments bc
+      LEFT JOIN blog_posts bp ON bc.post_id = bp.id
+    `;
+    const params = [];
+    if (post_id) {
+      sql += " WHERE bc.post_id = ?";
+      params.push(post_id);
+    }
+    sql += " ORDER BY bc.created_at DESC";
+    const [rows] = await db.execute(sql, params);
+    res.json({ ok: true, comments: rows });
+  } catch (err) {
+    console.error("[COMMENTS]", err);
+    res.json({ ok: true, comments: [] });
+  }
+});
+
+router.post("/api/blog/comments/:id/approve", requireAuth, async (req, res) => {
+  try {
+    const { approved } = req.body;
+    await db.execute("UPDATE blog_comments SET is_approved = ?, is_read = 1 WHERE id = ?", [approved ? 1 : 0, req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false });
+  }
+});
+
+router.post("/api/blog/comments/:id/delete", requireAuth, async (req, res) => {
+  try {
+    await db.execute("DELETE FROM blog_comments WHERE id = ?", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false });
+  }
+});
+
 // ── Leads API ──
 
 // API – list leads

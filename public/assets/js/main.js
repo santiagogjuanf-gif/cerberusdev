@@ -219,6 +219,55 @@ function setupLangSwitch() {
   document.documentElement.lang = lang;
 }
 
+// ===== Cookie consent + language picker =====
+function setupCookieConsent() {
+  if (localStorage.getItem("cerberus_consent")) return;
+
+  const overlay = document.createElement("div");
+  overlay.id = "cookieOverlay";
+  overlay.innerHTML = `
+    <div class="cookie-modal">
+      <div class="cookie-modal__icon">&#x1F30E;</div>
+      <h2 class="cookie-modal__title">Bienvenido / Welcome</h2>
+      <p class="cookie-modal__desc">Selecciona tu idioma de preferencia.<br>Choose your preferred language.</p>
+      <div class="cookie-modal__langs">
+        <button class="cookie-lang-btn" data-pick-lang="es">
+          <span class="cookie-lang-flag">&#127474;&#127485;</span>
+          <span>Espanol</span>
+        </button>
+        <button class="cookie-lang-btn" data-pick-lang="en">
+          <span class="cookie-lang-flag">&#127482;&#127480;</span>
+          <span>English</span>
+        </button>
+      </div>
+      <div class="cookie-modal__notice">
+        <p>Este sitio usa cookies para recordar tu idioma y mejorar tu experiencia.<br>
+        This site uses cookies to remember your language and improve your experience.</p>
+      </div>
+      <button class="cookie-accept-btn" id="cookieAccept" disabled>Aceptar cookies / Accept cookies</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  let selectedLang = null;
+  overlay.querySelectorAll("[data-pick-lang]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedLang = btn.dataset.pickLang;
+      overlay.querySelectorAll("[data-pick-lang]").forEach(b => b.classList.remove("is-selected"));
+      btn.classList.add("is-selected");
+      document.getElementById("cookieAccept").disabled = false;
+    });
+  });
+
+  document.getElementById("cookieAccept").addEventListener("click", () => {
+    if (!selectedLang) return;
+    localStorage.setItem("cerberus_consent", "1");
+    setLang(selectedLang);
+    overlay.classList.add("is-closing");
+    setTimeout(() => overlay.remove(), 400);
+  });
+}
+
 (async function init() {
   try {
     await includePartials();
@@ -233,4 +282,5 @@ function setupLangSwitch() {
   setYear();
   setupContactForm();
   setupLangSwitch();
+  setupCookieConsent();
 })();

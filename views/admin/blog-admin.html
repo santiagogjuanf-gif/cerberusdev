@@ -18,7 +18,7 @@
         <div class="admin-sub">Crear, editar y publicar articulos</div>
       </div>
       <div class="admin-actions">
-        <a class="btn btn--ghost" href="./dashboard">Leads</a>
+        <a class="btn btn--ghost" href="./dashboard">&larr; Volver al panel</a>
         <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
       </div>
     </header>
@@ -28,6 +28,7 @@
       <button class="admin-nav-btn is-active" data-tab="posts">Publicaciones</button>
       <button class="admin-nav-btn" data-tab="editor">Nuevo articulo</button>
       <button class="admin-nav-btn" data-tab="categories">Categorias</button>
+      <button class="admin-nav-btn" data-tab="comments">Comentarios</button>
     </nav>
 
     <!-- TAB: Posts list -->
@@ -112,6 +113,34 @@
       </div>
     </section>
 
+    <!-- TAB: Comments -->
+    <section class="admin-card" id="tabComments" style="display:none;">
+      <div class="admin-card-head">
+        <div>
+          <div class="admin-card-title">Comentarios del blog</div>
+          <div class="admin-card-sub">Aprueba o elimina comentarios de los visitantes</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="commentsTable">
+          <thead>
+            <tr>
+              <th>Autor</th>
+              <th>Comentario</th>
+              <th>Articulo</th>
+              <th>Estado</th>
+              <th class="col-date">Fecha</th>
+              <th class="col-actions">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="commentsTbody"></tbody>
+        </table>
+      </div>
+      <div id="commentsEmpty" style="display:none;text-align:center;padding:48px 24px;color:rgba(255,255,255,0.5);">
+        Sin comentarios todavia.
+      </div>
+    </section>
+
     <!-- TAB: Categories -->
     <section class="admin-card" id="tabCategories" style="display:none;">
       <div class="admin-card-head">
@@ -144,10 +173,10 @@
       document.getElementById("tabPosts").style.display = tab === "posts" ? "" : "none";
       document.getElementById("tabEditor").style.display = tab === "editor" ? "" : "none";
       document.getElementById("tabCategories").style.display = tab === "categories" ? "" : "none";
+      document.getElementById("tabComments").style.display = tab === "comments" ? "" : "none";
 
-      if (tab === "editor" && !$("#postId").value) {
-        resetForm();
-      }
+      if (tab === "editor" && !$("#postId").value) resetForm();
+      if (tab === "comments") loadComments();
     });
   });
 
@@ -158,6 +187,7 @@
     document.getElementById("tabPosts").style.display = name === "posts" ? "" : "none";
     document.getElementById("tabEditor").style.display = name === "editor" ? "" : "none";
     document.getElementById("tabCategories").style.display = name === "categories" ? "" : "none";
+    document.getElementById("tabComments").style.display = name === "comments" ? "" : "none";
   }
 
   // ── API helper ──
@@ -344,6 +374,81 @@
     try {
       return new Date(iso).toLocaleString("es-MX", { year: "numeric", month: "2-digit", day: "2-digit" });
     } catch { return iso || ""; }
+  }
+
+  // ── Comments ──
+  let allComments = [];
+
+  async function loadComments() {
+    try {
+      const res = await api("./api/blog/comments");
+      allComments = res.comments || [];
+      renderComments();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderComments() {
+    const tbody = $("#commentsTbody");
+    const empty = $("#commentsEmpty");
+
+    if (allComments.length === 0) {
+      tbody.innerHTML = "";
+      empty.style.display = "";
+      return;
+    }
+    empty.style.display = "none";
+
+    tbody.innerHTML = allComments.map(c => `
+      <tr>
+        <td><strong>${esc(c.author_name)}</strong></td>
+        <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(c.comment)}</td>
+        <td>${esc(c.post_title || "—")}</td>
+        <td>${Number(c.is_approved) === 1
+          ? '<span class="badge replied">Aprobado</span>'
+          : '<span class="badge new">Pendiente</span>'
+        }</td>
+        <td class="col-date">${fmtDate(c.created_at)}</td>
+        <td class="col-actions">
+          <div class="row-actions">
+            ${Number(c.is_approved) !== 1
+              ? `<button class="small-btn" data-approve="${c.id}">Aprobar</button>`
+              : `<button class="small-btn" data-reject="${c.id}">Rechazar</button>`
+            }
+            <button class="small-btn danger" data-del-comment="${c.id}">Eliminar</button>
+          </div>
+        </td>
+      </tr>
+    `).join("");
+
+    tbody.querySelectorAll("[data-approve]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        await api(`./api/blog/comments/${btn.dataset.approve}/approve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ approved: true })
+        });
+        loadComments();
+      });
+    });
+    tbody.querySelectorAll("[data-reject]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        await api(`./api/blog/comments/${btn.dataset.reject}/approve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ approved: false })
+        });
+        loadComments();
+      });
+    });
+    tbody.querySelectorAll("[data-del-comment]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("Eliminar este comentario?")) return;
+        await api(`./api/blog/comments/${btn.dataset.delComment}/delete`, { method: "POST" });
+        loadComments();
+      });
+    });
   }
 
   // ── Init ──
