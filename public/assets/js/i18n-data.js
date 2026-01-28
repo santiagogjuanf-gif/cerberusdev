@@ -9,7 +9,6 @@ const I18N = {
     "nav.about": "Quienes Somos",
     "nav.blog": "Blog",
     "nav.contact": "Contacto",
-    "nav.cta": "Iniciar proyecto",
     "nav.menu": "Menu",
 
     // Home
@@ -163,7 +162,6 @@ const I18N = {
     "nav.about": "About Us",
     "nav.blog": "Blog",
     "nav.contact": "Contact",
-    "nav.cta": "Start project",
     "nav.menu": "Menu",
 
     // Home

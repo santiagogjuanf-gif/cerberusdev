@@ -1,6 +1,5 @@
 let ALL = [];
 let filter = "all";
-let notesLeadId = null;
 
 const $ = (q) => document.querySelector(q);
 
@@ -28,24 +27,9 @@ function setChips() {
   });
 }
 
-function openModal(id) {
-  const m = document.getElementById(id);
-  m.classList.add("is-open");
-  m.setAttribute("aria-hidden", "false");
-}
-
-function closeModal(id) {
-  const m = document.getElementById(id);
-  m.classList.remove("is-open");
-  m.setAttribute("aria-hidden", "true");
-}
-
 document.addEventListener("click", (e) => {
-  const close = e.target.getAttribute?.("data-close");
-  if (close) closeModal(close);
-
   const chip = e.target.closest?.(".chip");
-  if (chip) {
+  if (chip && chip.dataset.filter) {
     filter = chip.dataset.filter;
     setChips();
     render();
@@ -70,6 +54,9 @@ async function load() {
 
   ALL = leads.leads || [];
   render();
+
+  // Load notifications & comments count
+  loadNotifications();
 }
 
 function render() {
@@ -124,7 +111,6 @@ async function onAction(e) {
   if (act === "star") {
     await api(`./api/leads/${id}/important`, { method: "POST" });
     await refresh();
-    return;
   }
 }
 
@@ -138,6 +124,77 @@ async function refresh() {
   $("#kpiReplied").textContent = sum.summary.replied;
   $("#kpiClosed").textContent = sum.summary.closed;
   render();
+}
+
+// ── Notifications ──
+async function loadNotifications() {
+  try {
+    const res = await api("./api/notifications");
+    const notifs = res.notifications || [];
+    const unread = notifs.filter(n => !Number(n.is_read));
+
+    // Comments KPI
+    const kpiComments = $("#kpiComments");
+    if (kpiComments) {
+      const commentNotifs = unread.filter(n => n.type === "comment");
+      kpiComments.textContent = commentNotifs.length;
+    }
+
+    // Badge
+    const bdg = $("#notifBadge");
+    if (bdg) {
+      if (unread.length > 0) {
+        bdg.style.display = "";
+        bdg.textContent = unread.length > 99 ? "99+" : String(unread.length);
+      } else {
+        bdg.style.display = "none";
+      }
+    }
+
+    // Render list
+    const list = $("#notifList");
+    if (list) {
+      if (notifs.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.4);">Sin notificaciones</div>';
+      } else {
+        list.innerHTML = notifs.slice(0, 20).map(n => `
+          <div class="notif-item ${Number(n.is_read) ? '' : 'is-unread'}">
+            <div class="notif-item-icon">${n.type === "lead" ? "&#x1F4E9;" : "&#x1F4AC;"}</div>
+            <div class="notif-item-body">
+              <div class="notif-item-title">${escapeHtml(n.title)}</div>
+              <div class="notif-item-text">${escapeHtml(n.body || "")}</div>
+              <div class="notif-item-time">${fmtDate(n.created_at)}</div>
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+  } catch (err) {
+    console.warn("[Notifications]", err);
+  }
+}
+
+// Toggle notifications panel
+const notifBtn = $("#notifBtn");
+const notifPanel = $("#notifPanel");
+if (notifBtn && notifPanel) {
+  notifBtn.addEventListener("click", () => {
+    const isVisible = notifPanel.style.display !== "none";
+    notifPanel.style.display = isVisible ? "none" : "";
+  });
+}
+
+// Mark all read
+const markAllBtn = $("#markAllRead");
+if (markAllBtn) {
+  markAllBtn.addEventListener("click", async () => {
+    try {
+      await api("./api/notifications/read-all", { method: "POST" });
+      loadNotifications();
+    } catch (err) {
+      console.warn("[Notifications]", err);
+    }
+  });
 }
 
 load().catch(err => {

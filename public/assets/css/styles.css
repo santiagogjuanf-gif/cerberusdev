@@ -132,15 +132,20 @@ img { max-width: 100%; display: block; }
 
 /* Language switch button */
 .lang-switch {
-  margin-left: 6px; padding: 6px 14px;
+  margin-left: 6px; padding: 7px 16px;
+  display: inline-flex; align-items: center; gap: 6px;
   font-family: var(--font-mono); font-size: 12px; font-weight: 700;
-  color: var(--orange); background: rgba(255,122,24,0.08);
-  border: 1px solid rgba(255,122,24,0.25); border-radius: 50px;
-  cursor: pointer; transition: all var(--transition); letter-spacing: 1px;
+  color: var(--text-muted); background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 50px;
+  cursor: pointer; transition: all var(--transition); letter-spacing: 0.5px;
 }
 .lang-switch:hover {
-  background: rgba(255,122,24,0.15); border-color: var(--orange);
+  background: rgba(255,122,24,0.1); border-color: rgba(255,122,24,0.4);
+  color: var(--orange);
 }
+.lang-globe { font-size: 15px; line-height: 1; }
+.lang-label { font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+.lang-arrow { font-size: 10px; opacity: 0.6; margin-left: -2px; }
 
 /* Nav toggle */
 .nav-toggle {
@@ -647,6 +652,107 @@ img { max-width: 100%; display: block; }
   .service-card { padding: 28px 20px; }
   .hero--small { padding: 120px 0 40px; }
 }
+
+/* ===== Cookie Consent + Language Picker Modal ===== */
+#cookieOverlay {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.75); backdrop-filter: blur(12px);
+  animation: fadeIn 0.4s ease;
+}
+#cookieOverlay.is-closing { animation: fadeOut 0.4s ease forwards; }
+@keyframes fadeOut { to { opacity: 0; } }
+
+.cookie-modal {
+  width: min(460px, calc(100% - 32px)); padding: 40px 32px;
+  background: rgba(12,15,24,0.97); border: 1px solid var(--border);
+  border-radius: 20px; text-align: center;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  animation: cookieSlideUp 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes cookieSlideUp {
+  from { opacity: 0; transform: translateY(40px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.cookie-modal__icon { font-size: 48px; margin-bottom: 16px; }
+.cookie-modal__title {
+  font-size: 24px; font-weight: 800; color: var(--text);
+  margin-bottom: 8px; letter-spacing: -0.5px;
+}
+.cookie-modal__desc {
+  font-size: 15px; color: var(--text-muted); line-height: 1.6;
+  margin-bottom: 28px;
+}
+.cookie-modal__langs {
+  display: flex; gap: 12px; justify-content: center; margin-bottom: 24px;
+}
+.cookie-lang-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 28px; background: rgba(255,255,255,0.04);
+  border: 2px solid var(--border); border-radius: 14px;
+  color: var(--text-muted); font-size: 16px; font-weight: 600;
+  cursor: pointer; transition: all 0.25s ease; font-family: var(--font);
+}
+.cookie-lang-btn:hover {
+  border-color: rgba(255,122,24,0.4); background: rgba(255,122,24,0.06);
+  color: var(--text);
+}
+.cookie-lang-btn.is-selected {
+  border-color: var(--orange); background: rgba(255,122,24,0.12);
+  color: var(--orange); box-shadow: 0 0 0 3px var(--orange-glow);
+}
+.cookie-lang-flag { font-size: 24px; line-height: 1; }
+
+.cookie-modal__notice {
+  padding: 16px; background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border); border-radius: 12px;
+  margin-bottom: 24px;
+}
+.cookie-modal__notice p {
+  font-size: 12px; color: var(--text-muted); line-height: 1.6; margin: 0;
+}
+
+.cookie-accept-btn {
+  width: 100%; padding: 16px; font-family: var(--font);
+  font-size: 15px; font-weight: 700; color: #000;
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  border: none; border-radius: 50px; cursor: pointer;
+  transition: all 0.3s ease;
+}
+.cookie-accept-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px var(--orange-glow);
+}
+.cookie-accept-btn:disabled {
+  opacity: 0.4; cursor: not-allowed;
+}
+
+/* ===== Blog Empty State ===== */
+.blog-empty .card { backdrop-filter: blur(10px); }
+
+/* ===== Blog Comments Section ===== */
+.comments-section { margin-top: 48px; }
+.comments-title {
+  font-size: 22px; font-weight: 800; color: var(--text);
+  margin-bottom: 24px; padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.comment-item {
+  padding: 20px; margin-bottom: 16px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); transition: all var(--transition);
+}
+.comment-item:hover { border-color: var(--border-hover); }
+.comment-author {
+  font-size: 15px; font-weight: 700; color: var(--orange);
+  margin-bottom: 4px;
+}
+.comment-date { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+.comment-text { font-size: 15px; color: var(--text-body); line-height: 1.7; }
+
+.comment-form { margin-top: 24px; }
+.comment-form .field { margin-bottom: 16px; }
 
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.3s; }

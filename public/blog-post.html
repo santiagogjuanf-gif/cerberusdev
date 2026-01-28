@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cerberus Dev | Blog</title>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+</head>
+<body>
+  <div data-include="/partials/header.html"></div>
+
+  <main class="page">
+    <section class="hero hero--small">
+      <div class="hero-bg"></div>
+      <div class="container">
+        <div class="hero-content">
+          <a href="/blog" class="section-label" data-reveal style="text-decoration:none;" data-i18n="blog.back">&larr; Volver al blog</a>
+          <h1 class="h-title" data-reveal id="postTitle">Cargando...</h1>
+          <p class="h-sub" data-reveal id="postMeta"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:32px;">
+      <div class="container">
+        <article class="blog-post" id="postContent">
+          <div style="text-align:center;color:rgba(255,255,255,0.4);padding:40px;">Cargando publicacion...</div>
+        </article>
+
+        <!-- Comments Section -->
+        <div class="blog-post comments-section" id="commentsSection">
+          <h3 class="comments-title" id="commentsTitle">Comentarios</h3>
+
+          <div id="commentsList"></div>
+
+          <div class="comment-form card" style="margin-top:24px;padding:28px;">
+            <h4 style="font-size:18px;font-weight:700;margin-bottom:16px;color:rgba(255,255,255,0.92);">Deja un comentario</h4>
+            <form id="commentForm">
+              <div class="field">
+                <span>Tu nombre</span>
+                <input name="author_name" required placeholder="Escribe tu nombre" maxlength="100"/>
+              </div>
+              <div class="field" style="margin-top:16px;">
+                <span>Comentario</span>
+                <textarea name="comment" required placeholder="Escribe tu comentario o pregunta..." rows="4" maxlength="2000"></textarea>
+              </div>
+              <div style="margin-top:16px;">
+                <button class="btn" type="submit">Enviar comentario</button>
+              </div>
+              <div class="toast" id="commentToast"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-include="/partials/footer.html"></div>
+  <script src="/assets/js/i18n-data.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script>
+  (function() {
+    // Get slug from URL: /blog/my-post-slug
+    const parts = location.pathname.split("/").filter(Boolean);
+    const slug = parts[1]; // /blog/SLUG
+    if (!slug || slug === "blog") return;
+
+    const postTitle = document.getElementById("postTitle");
+    const postMeta = document.getElementById("postMeta");
+    const postContent = document.getElementById("postContent");
+    const commentsList = document.getElementById("commentsList");
+    const commentsTitle = document.getElementById("commentsTitle");
+
+    function esc(s) {
+      return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    function fmtDate(iso) {
+      try {
+        return new Date(iso).toLocaleDateString("es-MX", { year:"numeric", month:"long", day:"numeric" });
+      } catch { return ""; }
+    }
+
+    // Load post
+    fetch(`/api/blog/posts/${slug}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok || !data.post) {
+          postTitle.textContent = "Publicacion no encontrada";
+          postContent.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">Esta publicacion no existe o no esta disponible.</div>';
+          return;
+        }
+        const p = data.post;
+        document.title = `Cerberus Dev | ${p.title}`;
+        postTitle.textContent = p.title;
+        postMeta.innerHTML = `${p.category_name ? '<span style="color:var(--orange);">' + esc(p.category_name) + '</span> &bull; ' : ''}${fmtDate(p.created_at)}`;
+
+        // Render content (HTML from admin)
+        postContent.innerHTML = `
+          ${p.image_url ? '<img style="width:100%;border-radius:16px;margin-bottom:24px;border:1px solid var(--border);" src="' + esc(p.image_url) + '" alt="' + esc(p.title) + '" onerror="this.style.display=\'none\'">' : ''}
+          <div class="blog-post-content">${p.content || ''}</div>
+        `;
+      })
+      .catch(() => {
+        postTitle.textContent = "Error al cargar";
+      });
+
+    // Load comments
+    fetch(`/api/blog/posts/${slug}/comments`)
+      .then(r => r.json())
+      .then(data => {
+        const comments = data.comments || [];
+        commentsTitle.textContent = `Comentarios (${comments.length})`;
+
+        if (comments.length === 0) {
+          commentsList.innerHTML = '<p style="color:rgba(255,255,255,0.4);margin-bottom:16px;">Se el primero en comentar.</p>';
+          return;
+        }
+
+        commentsList.innerHTML = comments.map(c => `
+          <div class="comment-item">
+            <div class="comment-author">${esc(c.author_name)}</div>
+            <div class="comment-date">${fmtDate(c.created_at)}</div>
+            <div class="comment-text">${esc(c.comment)}</div>
+          </div>
+        `).join("");
+      });
+
+    // Submit comment
+    const form = document.getElementById("commentForm");
+    const toast = document.getElementById("commentToast");
+
+    function showToast(msg, ok) {
+      toast.textContent = msg;
+      toast.className = "toast is-show " + (ok ? "is-ok" : "is-bad");
+      setTimeout(() => { toast.className = "toast"; }, 5000);
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector('button[type="submit"]');
+      btn.textContent = "Enviando...";
+      btn.disabled = true;
+
+      try {
+        const fd = new FormData(form);
+        const res = await fetch(`/api/blog/posts/${slug}/comments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            author_name: fd.get("author_name"),
+            comment: fd.get("comment")
+          })
+        });
+        if (!res.ok) throw new Error("bad");
+        form.reset();
+        showToast("Comentario enviado. Sera visible despues de ser aprobado.", true);
+      } catch {
+        showToast("Error al enviar. Intenta de nuevo.", false);
+      } finally {
+        btn.textContent = "Enviar comentario";
+        btn.disabled = false;
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

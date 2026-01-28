@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <title>Cerberus Control Room – Blog</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+  <link rel="stylesheet" href="/assets/css/admin.css"/>
+</head>
+<body>
+  <main class="admin-wrap">
+    <div class="admin-bg"></div>
+
+    <header class="admin-top">
+      <div class="admin-brand">
+        <div class="admin-title">Blog Manager</div>
+        <div class="admin-sub">Crear, editar y publicar articulos</div>
+      </div>
+      <div class="admin-actions">
+        <a class="btn btn--ghost" href="./dashboard">&larr; Volver al panel</a>
+        <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
+      </div>
+    </header>
+
+    <!-- Nav tabs -->
+    <nav class="admin-nav">
+      <button class="admin-nav-btn is-active" data-tab="posts">Publicaciones</button>
+      <button class="admin-nav-btn" data-tab="editor">Nuevo articulo</button>
+      <button class="admin-nav-btn" data-tab="categories">Categorias</button>
+      <button class="admin-nav-btn" data-tab="comments">Comentarios</button>
+    </nav>
+
+    <!-- TAB: Posts list -->
+    <section class="admin-card" id="tabPosts">
+      <div class="admin-card-head">
+        <div>
+          <div class="admin-card-title">Todas las publicaciones</div>
+          <div class="admin-card-sub">Publicados y borradores</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="postsTable">
+          <thead>
+            <tr>
+              <th>Titulo</th>
+              <th>Categoria</th>
+              <th>Estado</th>
+              <th class="col-date">Fecha</th>
+              <th class="col-actions">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="postsTbody"></tbody>
+        </table>
+      </div>
+      <div id="postsEmpty" style="display:none;text-align:center;padding:48px 24px;color:rgba(255,255,255,0.5);">
+        No hay publicaciones. Crea tu primer articulo.
+      </div>
+    </section>
+
+    <!-- TAB: Editor -->
+    <section class="admin-card" id="tabEditor" style="display:none;">
+      <div class="admin-card-head">
+        <div>
+          <div class="admin-card-title" id="editorTitle">Nuevo articulo</div>
+          <div class="admin-card-sub">Escribe y publica contenido para el blog</div>
+        </div>
+      </div>
+      <div style="padding:24px;">
+        <form class="admin-form" id="postForm">
+          <input type="hidden" name="id" id="postId"/>
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Titulo</label>
+              <input name="title" id="postTitleInput" required placeholder="Titulo del articulo"/>
+            </div>
+            <div class="field">
+              <label>Slug (URL)</label>
+              <input name="slug" id="postSlug" placeholder="se-genera-automaticamente"/>
+            </div>
+          </div>
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Categoria</label>
+              <select name="category_id" id="postCategory">
+                <option value="">Sin categoria</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Imagen (URL)</label>
+              <input name="image_url" id="postImage" placeholder="https://ejemplo.com/imagen.jpg"/>
+            </div>
+          </div>
+          <div class="field">
+            <label>Extracto</label>
+            <input name="excerpt" id="postExcerpt" placeholder="Breve descripcion del articulo (opcional)"/>
+          </div>
+          <div class="field">
+            <label>Contenido (HTML)</label>
+            <textarea name="content" id="postContent" rows="14" placeholder="Escribe el contenido del articulo en HTML..."></textarea>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;margin-top:12px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:rgba(255,255,255,0.7);">
+              <input type="checkbox" name="is_published" id="postPublished" value="1"/>
+              Publicar (visible en el blog)
+            </label>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:24px;">
+            <button class="btn" type="submit">Guardar</button>
+            <button class="btn btn--ghost" type="button" id="cancelEdit">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- TAB: Comments -->
+    <section class="admin-card" id="tabComments" style="display:none;">
+      <div class="admin-card-head">
+        <div>
+          <div class="admin-card-title">Comentarios del blog</div>
+          <div class="admin-card-sub">Aprueba o elimina comentarios de los visitantes</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="commentsTable">
+          <thead>
+            <tr>
+              <th>Autor</th>
+              <th>Comentario</th>
+              <th>Articulo</th>
+              <th>Estado</th>
+              <th class="col-date">Fecha</th>
+              <th class="col-actions">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="commentsTbody"></tbody>
+        </table>
+      </div>
+      <div id="commentsEmpty" style="display:none;text-align:center;padding:48px 24px;color:rgba(255,255,255,0.5);">
+        Sin comentarios todavia.
+      </div>
+    </section>
+
+    <!-- TAB: Categories -->
+    <section class="admin-card" id="tabCategories" style="display:none;">
+      <div class="admin-card-head">
+        <div>
+          <div class="admin-card-title">Categorias</div>
+          <div class="admin-card-sub">Organiza tus publicaciones</div>
+        </div>
+      </div>
+      <div style="padding:24px;">
+        <form id="catForm" style="display:flex;gap:12px;margin-bottom:24px;max-width:400px;">
+          <input name="name" required placeholder="Nueva categoria" style="flex:1;padding:12px 16px;font-family:inherit;font-size:14px;color:rgba(255,255,255,0.9);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);border-radius:10px;outline:none;"/>
+          <button class="btn" type="submit" style="padding:12px 24px;">Crear</button>
+        </form>
+        <div id="catList" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  const $ = (q) => document.querySelector(q);
+  let allPosts = [];
+  let allCats = [];
+
+  // ── Tabs ──
+  document.querySelectorAll("[data-tab]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-tab]").forEach(b => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      const tab = btn.dataset.tab;
+      document.getElementById("tabPosts").style.display = tab === "posts" ? "" : "none";
+      document.getElementById("tabEditor").style.display = tab === "editor" ? "" : "none";
+      document.getElementById("tabCategories").style.display = tab === "categories" ? "" : "none";
+      document.getElementById("tabComments").style.display = tab === "comments" ? "" : "none";
+
+      if (tab === "editor" && !$("#postId").value) resetForm();
+      if (tab === "comments") loadComments();
+    });
+  });
+
+  function showTab(name) {
+    document.querySelectorAll("[data-tab]").forEach(b => {
+      b.classList.toggle("is-active", b.dataset.tab === name);
+    });
+    document.getElementById("tabPosts").style.display = name === "posts" ? "" : "none";
+    document.getElementById("tabEditor").style.display = name === "editor" ? "" : "none";
+    document.getElementById("tabCategories").style.display = name === "categories" ? "" : "none";
+    document.getElementById("tabComments").style.display = name === "comments" ? "" : "none";
+  }
+
+  // ── API helper ──
+  async function api(url, opts) {
+    const res = await fetch(url, opts);
+    return res.json();
+  }
+
+  // ── Load data ──
+  async function loadAll() {
+    const [postsRes, catsRes] = await Promise.all([
+      api("./api/blog/posts"),
+      api("./api/blog/categories")
+    ]);
+    allPosts = postsRes.posts || [];
+    allCats = catsRes.categories || [];
+    renderPosts();
+    renderCats();
+    renderCatSelect();
+  }
+
+  // ── Render posts table ──
+  function renderPosts() {
+    const tbody = $("#postsTbody");
+    const empty = $("#postsEmpty");
+
+    if (allPosts.length === 0) {
+      tbody.innerHTML = "";
+      empty.style.display = "";
+      return;
+    }
+    empty.style.display = "none";
+
+    tbody.innerHTML = allPosts.map(p => `
+      <tr>
+        <td><strong>${esc(p.title)}</strong></td>
+        <td>${esc(p.category_name || "—")}</td>
+        <td>${Number(p.is_published) === 1
+          ? '<span class="badge replied">Publicado</span>'
+          : '<span class="badge">Borrador</span>'
+        }</td>
+        <td class="col-date">${fmtDate(p.created_at)}</td>
+        <td class="col-actions">
+          <div class="row-actions">
+            <button class="small-btn" data-edit="${p.id}">Editar</button>
+            <button class="small-btn danger" data-delete="${p.id}">Eliminar</button>
+          </div>
+        </td>
+      </tr>
+    `).join("");
+
+    // Bind edit/delete
+    tbody.querySelectorAll("[data-edit]").forEach(btn => {
+      btn.addEventListener("click", () => editPost(Number(btn.dataset.edit)));
+    });
+    tbody.querySelectorAll("[data-delete]").forEach(btn => {
+      btn.addEventListener("click", () => deletePost(Number(btn.dataset.delete)));
+    });
+  }
+
+  // ── Render categories ──
+  function renderCats() {
+    const wrap = $("#catList");
+    if (allCats.length === 0) {
+      wrap.innerHTML = '<span style="color:rgba(255,255,255,0.4);">Sin categorias aun.</span>';
+      return;
+    }
+    wrap.innerHTML = allCats.map(c => `
+      <div class="chip is-on" style="cursor:default;">${esc(c.name)}</div>
+    `).join("");
+  }
+
+  function renderCatSelect() {
+    const sel = $("#postCategory");
+    const val = sel.value;
+    sel.innerHTML = '<option value="">Sin categoria</option>';
+    allCats.forEach(c => {
+      sel.innerHTML += `<option value="${c.id}">${esc(c.name)}</option>`;
+    });
+    sel.value = val;
+  }
+
+  // ── Edit post ──
+  function editPost(id) {
+    const p = allPosts.find(x => x.id === id);
+    if (!p) return;
+    $("#postId").value = p.id;
+    $("#postTitleInput").value = p.title;
+    $("#postSlug").value = p.slug || "";
+    $("#postExcerpt").value = p.excerpt || "";
+    $("#postContent").value = p.content || "";
+    $("#postCategory").value = p.category_id || "";
+    $("#postImage").value = p.image_url || "";
+    $("#postPublished").checked = Number(p.is_published) === 1;
+    $("#editorTitle").textContent = "Editar articulo";
+    showTab("editor");
+  }
+
+  // ── Delete post ──
+  async function deletePost(id) {
+    if (!confirm("Eliminar esta publicacion?")) return;
+    await api(`./api/blog/posts/${id}/delete`, { method: "POST" });
+    await loadAll();
+  }
+
+  // ── Form submit ──
+  $("#postForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const payload = {
+      id: fd.get("id") || null,
+      title: fd.get("title"),
+      slug: fd.get("slug"),
+      excerpt: fd.get("excerpt"),
+      content: fd.get("content"),
+      category_id: fd.get("category_id") || null,
+      image_url: fd.get("image_url"),
+      is_published: fd.get("is_published") === "1"
+    };
+
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.textContent = "Guardando...";
+    btn.disabled = true;
+
+    try {
+      await api("./api/blog/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      resetForm();
+      await loadAll();
+      showTab("posts");
+    } catch (err) {
+      alert("Error al guardar: " + err.message);
+    } finally {
+      btn.textContent = "Guardar";
+      btn.disabled = false;
+    }
+  });
+
+  function resetForm() {
+    $("#postForm").reset();
+    $("#postId").value = "";
+    $("#editorTitle").textContent = "Nuevo articulo";
+  }
+
+  $("#cancelEdit").addEventListener("click", () => {
+    resetForm();
+    showTab("posts");
+  });
+
+  // ── Category form ──
+  $("#catForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = e.target.name.value.trim();
+    if (!name) return;
+
+    await api("./api/blog/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name })
+    });
+    e.target.reset();
+    await loadAll();
+  });
+
+  // ── Auto-slug ──
+  $("#postTitleInput").addEventListener("input", () => {
+    if (!$("#postId").value) {
+      const t = $("#postTitleInput").value;
+      $("#postSlug").value = t.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    }
+  });
+
+  // ── Helpers ──
+  function esc(s) {
+    return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function fmtDate(iso) {
+    try {
+      return new Date(iso).toLocaleString("es-MX", { year: "numeric", month: "2-digit", day: "2-digit" });
+    } catch { return iso || ""; }
+  }
+
+  // ── Comments ──
+  let allComments = [];
+
+  async function loadComments() {
+    try {
+      const res = await api("./api/blog/comments");
+      allComments = res.comments || [];
+      renderComments();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderComments() {
+    const tbody = $("#commentsTbody");
+    const empty = $("#commentsEmpty");
+
+    if (allComments.length === 0) {
+      tbody.innerHTML = "";
+      empty.style.display = "";
+      return;
+    }
+    empty.style.display = "none";
+
+    tbody.innerHTML = allComments.map(c => `
+      <tr>
+        <td><strong>${esc(c.author_name)}</strong></td>
+        <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(c.comment)}</td>
+        <td>${esc(c.post_title || "—")}</td>
+        <td>${Number(c.is_approved) === 1
+          ? '<span class="badge replied">Aprobado</span>'
+          : '<span class="badge new">Pendiente</span>'
+        }</td>
+        <td class="col-date">${fmtDate(c.created_at)}</td>
+        <td class="col-actions">
+          <div class="row-actions">
+            ${Number(c.is_approved) !== 1
+              ? `<button class="small-btn" data-approve="${c.id}">Aprobar</button>`
+              : `<button class="small-btn" data-reject="${c.id}">Rechazar</button>`
+            }
+            <button class="small-btn danger" data-del-comment="${c.id}">Eliminar</button>
+          </div>
+        </td>
+      </tr>
+    `).join("");
+
+    tbody.querySelectorAll("[data-approve]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        await api(`./api/blog/comments/${btn.dataset.approve}/approve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ approved: true })
+        });
+        loadComments();
+      });
+    });
+    tbody.querySelectorAll("[data-reject]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        await api(`./api/blog/comments/${btn.dataset.reject}/approve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ approved: false })
+        });
+        loadComments();
+      });
+    });
+    tbody.querySelectorAll("[data-del-comment]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("Eliminar este comentario?")) return;
+        await api(`./api/blog/comments/${btn.dataset.delComment}/delete`, { method: "POST" });
+        loadComments();
+      });
+    });
+  }
+
+  // ── Init ──
+  loadAll().catch(err => console.error(err));
+  </script>
+</body>
+</html>
