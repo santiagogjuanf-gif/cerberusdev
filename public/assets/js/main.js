@@ -232,11 +232,9 @@ function setupCookieConsent() {
       <p class="cookie-modal__desc">Selecciona tu idioma de preferencia.<br>Choose your preferred language.</p>
       <div class="cookie-modal__langs">
         <button class="cookie-lang-btn" data-pick-lang="es">
-          <span class="cookie-lang-flag">&#127474;&#127485;</span>
-          <span>Espanol</span>
+          <span>Español</span>
         </button>
         <button class="cookie-lang-btn" data-pick-lang="en">
-          <span class="cookie-lang-flag">&#127482;&#127480;</span>
           <span>English</span>
         </button>
       </div>
