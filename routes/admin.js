@@ -51,6 +51,11 @@ router.get("/blog-admin", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "admin", "blog-admin.html"));
 });
 
+// Projects admin page
+router.get("/projects-admin", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "projects-admin.html"));
+});
+
 // ── Blog Admin API ──
 
 // List all posts (including drafts)
@@ -190,6 +195,82 @@ router.post("/api/blog/comments/:id/delete", requireAuth, async (req, res) => {
     await db.execute("DELETE FROM blog_comments WHERE id = ?", [req.params.id]);
     res.json({ ok: true });
   } catch (err) {
+    res.status(500).json({ ok: false });
+  }
+});
+
+// ── Projects Admin API ──
+
+// List all projects (including unpublished)
+router.get("/api/projects", requireAuth, async (req, res) => {
+  try {
+    const [rows] = await db.execute("SELECT * FROM projects ORDER BY created_at DESC");
+    for (const p of rows) {
+      const [techs] = await db.execute(
+        "SELECT id, tech_name, tech_icon FROM project_technologies WHERE project_id = ?",
+        [p.id]
+      );
+      p.technologies = techs;
+    }
+    res.json({ ok: true, projects: rows });
+  } catch (err) {
+    console.error("[PROJECTS ADMIN]", err);
+    res.json({ ok: true, projects: [] });
+  }
+});
+
+// Create or update project
+router.post("/api/projects", requireAuth, async (req, res) => {
+  try {
+    const { id, title, slug, tag, description, content, image_url, date, is_published, technologies } = req.body;
+    const projSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+    if (id) {
+      await db.execute(`
+        UPDATE projects SET title=?, slug=?, tag=?, description=?, content=?, image_url=?, date=?, is_published=?
+        WHERE id=?
+      `, [title, projSlug, tag || null, description || null, content || "", image_url || null, date || null, is_published ? 1 : 0, id]);
+
+      // Update technologies: delete old, insert new
+      await db.execute("DELETE FROM project_technologies WHERE project_id = ?", [id]);
+      if (technologies && technologies.length > 0) {
+        for (const t of technologies) {
+          await db.execute(
+            "INSERT INTO project_technologies (project_id, tech_name, tech_icon) VALUES (?, ?, ?)",
+            [id, t.tech_name, t.tech_icon]
+          );
+        }
+      }
+    } else {
+      const [result] = await db.execute(`
+        INSERT INTO projects (title, slug, tag, description, content, image_url, date, is_published)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `, [title, projSlug, tag || null, description || null, content || "", image_url || null, date || null, is_published ? 1 : 0]);
+
+      const newId = result.insertId;
+      if (technologies && technologies.length > 0) {
+        for (const t of technologies) {
+          await db.execute(
+            "INSERT INTO project_technologies (project_id, tech_name, tech_icon) VALUES (?, ?, ?)",
+            [newId, t.tech_name, t.tech_icon]
+          );
+        }
+      }
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[PROJECTS ADMIN]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Delete project
+router.post("/api/projects/:id/delete", requireAuth, async (req, res) => {
+  try {
+    await db.execute("DELETE FROM projects WHERE id = ?", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[PROJECTS ADMIN]", err);
     res.status(500).json({ ok: false });
   }
 });

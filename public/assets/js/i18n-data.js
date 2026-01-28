@@ -79,6 +79,9 @@ const I18N = {
     "projects.p6_tag": "Confidencial",
     "projects.p6_title": "Proyectos bajo NDA",
     "projects.p6_desc": "Algunos trabajos no pueden ser detallados publicamente por acuerdos de confidencialidad, pero forman parte de nuestra experiencia profesional.",
+    "projects.no_projects": "Proximamente",
+    "projects.no_projects_desc": "Estamos preparando nuestro portafolio. Vuelve pronto para ver nuestros proyectos.",
+    "projects.back_link": "\u2190 Volver a proyectos",
     "projects.cta_title": "Quieres ver tu proyecto aqui?",
     "projects.cta_desc": "Conversemos sobre tu idea y construyamos algo solido juntos.",
     "projects.cta_btn": "Iniciar proyecto",
@@ -108,6 +111,16 @@ const I18N = {
     "about.info2_desc": "Sistemas internos, paneles administrativos, automatizacion y soluciones a medida para multiples industrias.",
     "about.info3_title": "Compromiso",
     "about.info3_desc": "No solo entregamos codigo. Acompañamos al cliente durante y despues del proyecto con soporte real.",
+
+    // About – Why work with us
+    "about.why_label": "// VENTAJAS",
+    "about.why_title": "Por que trabajar con nosotros",
+    "about.why1_title": "Zona horaria conveniente",
+    "about.why1_desc": "Operamos desde Mexico (GMT-6), lo que nos permite colaborar en horarios comodos tanto para clientes en Latinoamerica como en Estados Unidos.",
+    "about.why2_title": "Equipo bilingue",
+    "about.why2_desc": "Nos comunicamos en espanol e ingles de forma nativa. Documentacion, reuniones y soporte en el idioma que prefieras.",
+    "about.why3_title": "+5 anos de experiencia",
+    "about.why3_desc": "Mas de 5 anos construyendo sistemas internos, paneles, APIs y soluciones a medida para empresas de distintos sectores.",
 
     // Contact
     "contact.label": "Hablemos",
@@ -232,6 +245,9 @@ const I18N = {
     "projects.p6_tag": "Confidential",
     "projects.p6_title": "Projects under NDA",
     "projects.p6_desc": "Some projects cannot be detailed publicly due to confidentiality agreements, but they are part of our professional experience.",
+    "projects.no_projects": "Coming soon",
+    "projects.no_projects_desc": "We're preparing our portfolio. Come back soon to see our projects.",
+    "projects.back_link": "\u2190 Back to projects",
     "projects.cta_title": "Want to see your project here?",
     "projects.cta_desc": "Let's talk about your idea and build something solid together.",
     "projects.cta_btn": "Start project",
@@ -261,6 +277,16 @@ const I18N = {
     "about.info2_desc": "Internal systems, admin panels, automation and custom solutions for multiple industries.",
     "about.info3_title": "Commitment",
     "about.info3_desc": "We don't just deliver code. We accompany the client during and after the project with real support.",
+
+    // About – Why work with us
+    "about.why_label": "// ADVANTAGES",
+    "about.why_title": "Why work with us",
+    "about.why1_title": "Convenient timezone",
+    "about.why1_desc": "We operate from Mexico (GMT-6), enabling seamless collaboration with clients in Latin America and the United States.",
+    "about.why2_title": "Bilingual team",
+    "about.why2_desc": "We communicate in Spanish and English natively. Documentation, meetings and support in your preferred language.",
+    "about.why3_title": "+5 years of experience",
+    "about.why3_desc": "Over 5 years building internal systems, admin panels, APIs and custom solutions for companies across different industries.",
 
     // Contact
     "contact.label": "Let's talk",

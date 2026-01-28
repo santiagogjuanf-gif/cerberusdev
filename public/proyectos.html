@@ -17,55 +17,16 @@
         <div class="hero-content">
           <div class="section-label" data-reveal data-i18n="projects.label">Portafolio</div>
           <h1 class="h-title" data-reveal data-i18n="projects.title">Proyectos</h1>
-          <p class="h-sub" data-reveal data-i18n="projects.sub">Trabajos representativos desarrollados con enfoque técnico y profesional.</p>
+          <p class="h-sub" data-reveal data-i18n="projects.sub">Trabajos representativos desarrollados con enfoque tecnico y profesional.</p>
         </div>
       </div>
     </section>
 
     <section class="section">
       <div class="container">
-        <div class="grid grid-2" data-reveal-stagger>
-          <div class="card project-card">
-            <span class="project-number">01</span>
-            <span class="project-tag" data-i18n="projects.p1_tag">Sistema Web</span>
-            <img class="project-img" src="/assets/img/projects/project-01.jpg" alt="Project" onerror="this.style.display='none'">
-            <h3 class="card-title" data-i18n="projects.p1_title">Sistema de reportes interno</h3>
-            <p class="card-desc" data-i18n="projects.p1_desc">Plataforma web para gestión de reportes operativos, control de usuarios, roles, evidencias y seguimiento de procesos internos.</p>
-          </div>
-          <div class="card project-card">
-            <span class="project-number">02</span>
-            <span class="project-tag" data-i18n="projects.p2_tag">Auditoría</span>
-            <img class="project-img" src="/assets/img/projects/project-02.jpg" alt="Project" onerror="this.style.display='none'">
-            <h3 class="card-title" data-i18n="projects.p2_title">Sistema de auditoría y control</h3>
-            <p class="card-desc" data-i18n="projects.p2_desc">Sistema para validación de información y detección de inconsistencias, enfocado en cumplimiento y control interno.</p>
-          </div>
-          <div class="card project-card">
-            <span class="project-number">03</span>
-            <span class="project-tag" data-i18n="projects.p3_tag">Automatización</span>
-            <img class="project-img" src="/assets/img/projects/project-03.jpg" alt="Project" onerror="this.style.display='none'">
-            <h3 class="card-title" data-i18n="projects.p3_title">Bot de automatización</h3>
-            <p class="card-desc" data-i18n="projects.p3_desc">Bot personalizado para automatizar tareas repetitivas, mejorar tiempos de respuesta y reducir errores operativos.</p>
-          </div>
-          <div class="card project-card">
-            <span class="project-number">04</span>
-            <span class="project-tag" data-i18n="projects.p4_tag">Dashboard</span>
-            <img class="project-img" src="/assets/img/projects/project-04.jpg" alt="Project" onerror="this.style.display='none'">
-            <h3 class="card-title" data-i18n="projects.p4_title">Panel administrativo</h3>
-            <p class="card-desc" data-i18n="projects.p4_desc">Dashboard web con autenticación, gestión de usuarios, métricas y control de información en tiempo real.</p>
-          </div>
-          <div class="card project-card">
-            <span class="project-number">05</span>
-            <span class="project-tag" data-i18n="projects.p5_tag">Backend</span>
-            <img class="project-img" src="/assets/img/projects/project-05.jpg" alt="Project" onerror="this.style.display='none'">
-            <h3 class="card-title" data-i18n="projects.p5_title">APIs privadas</h3>
-            <p class="card-desc" data-i18n="projects.p5_desc">APIs desarrolladas en Node.js para integración entre sistemas, manejo de datos y lógica de negocio segura.</p>
-          </div>
-          <div class="card project-card">
-            <span class="project-number">06</span>
-            <span class="project-tag" data-i18n="projects.p6_tag">Confidencial</span>
-            <img class="project-img" src="/assets/img/projects/project-06.jpg" alt="Project" onerror="this.style.display='none'">
-            <h3 class="card-title" data-i18n="projects.p6_title">Proyectos bajo NDA</h3>
-            <p class="card-desc" data-i18n="projects.p6_desc">Algunos trabajos no pueden ser detallados públicamente por acuerdos de confidencialidad, pero forman parte de nuestra experiencia profesional.</p>
+        <div class="grid grid-2" data-reveal-stagger id="projectsGrid">
+          <div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.4);padding:40px;">
+            Cargando proyectos...
           </div>
         </div>
       </div>
@@ -74,8 +35,8 @@
     <section class="section" style="padding-top:0;">
       <div class="container">
         <div class="card" data-reveal style="text-align:center;padding:48px 32px;">
-          <h3 class="card-title" data-i18n="projects.cta_title">¿Quieres ver tu proyecto aquí?</h3>
-          <p class="card-desc" style="max-width:500px;margin:0 auto 24px;" data-i18n="projects.cta_desc">Conversemos sobre tu idea y construyamos algo sólido juntos.</p>
+          <h3 class="card-title" data-i18n="projects.cta_title">¿Quieres ver tu proyecto aqui?</h3>
+          <p class="card-desc" style="max-width:500px;margin:0 auto 24px;" data-i18n="projects.cta_desc">Conversemos sobre tu idea y construyamos algo solido juntos.</p>
           <a class="btn" href="/contacto" data-i18n="projects.cta_btn">Iniciar proyecto</a>
         </div>
       </div>
@@ -85,5 +46,54 @@
   <div data-include="/partials/footer.html"></div>
   <script src="/assets/js/i18n-data.js"></script>
   <script src="/assets/js/main.js"></script>
+  <script>
+  (function() {
+    const grid = document.getElementById("projectsGrid");
+
+    function esc(s) {
+      return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    fetch("/api/projects")
+      .then(r => r.json())
+      .then(data => {
+        const projects = data.projects || [];
+
+        if (projects.length === 0) {
+          grid.innerHTML = `
+            <div style="grid-column:1/-1;text-align:center;padding:60px 24px;">
+              <div class="card" style="display:inline-block;padding:48px 40px;max-width:500px;">
+                <div style="font-size:48px;margin-bottom:16px;">&#x1F4C2;</div>
+                <h3 class="card-title" data-i18n="projects.no_projects">Proximamente</h3>
+                <p class="card-desc" data-i18n="projects.no_projects_desc">Estamos preparando nuestro portafolio. Vuelve pronto para ver nuestros proyectos.</p>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = projects.map((p, i) => {
+          const num = String(i + 1).padStart(2, "0");
+          const techIcons = (p.technologies || []).map(t =>
+            `<img src="${esc(t.tech_icon)}" alt="${esc(t.tech_name)}" title="${esc(t.tech_name)}" style="width:24px;height:24px;object-fit:contain;">`
+          ).join("");
+
+          return `
+            <a href="/proyectos/${esc(p.slug)}" class="card project-card" style="text-decoration:none;color:inherit;">
+              <span class="project-number">${num}</span>
+              ${p.tag ? '<span class="project-tag">' + esc(p.tag) + '</span>' : ''}
+              ${p.image_url ? '<img class="project-img" src="' + esc(p.image_url) + '" alt="' + esc(p.title) + '" onerror="this.style.display=\'none\'">' : ''}
+              <h3 class="card-title">${esc(p.title)}</h3>
+              <p class="card-desc">${esc(p.description || '')}</p>
+              ${techIcons ? '<div class="project-tech-icons" style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">' + techIcons + '</div>' : ''}
+            </a>
+          `;
+        }).join("");
+      })
+      .catch(() => {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.4);padding:40px;">Error al cargar proyectos.</div>';
+      });
+  })();
+  </script>
 </body>
 </html>

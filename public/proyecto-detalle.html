@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cerberus Dev | Proyecto</title>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+</head>
+<body>
+  <div data-include="/partials/header.html"></div>
+
+  <main class="page">
+    <section class="hero hero--small">
+      <div class="hero-bg"></div>
+      <div class="container">
+        <div class="hero-content">
+          <a href="/proyectos" class="section-label" data-reveal style="text-decoration:none;" data-i18n="projects.back_link">&larr; Volver a proyectos</a>
+          <h1 class="h-title" data-reveal id="projTitle">Cargando...</h1>
+          <p class="h-sub" data-reveal id="projMeta"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:32px;">
+      <div class="container">
+        <article class="blog-post" id="projContent">
+          <div style="text-align:center;color:rgba(255,255,255,0.4);padding:40px;">Cargando proyecto...</div>
+        </article>
+
+        <!-- Technologies used -->
+        <div class="proj-techs-section" id="projTechsSection" style="display:none;">
+          <h3 class="proj-techs-title" id="projTechsTitle">Tecnologias utilizadas</h3>
+          <div class="proj-techs-grid" id="projTechsGrid"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-include="/partials/footer.html"></div>
+  <script src="/assets/js/i18n-data.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script>
+  (function() {
+    const parts = location.pathname.split("/").filter(Boolean);
+    const slug = parts[1];
+    if (!slug || slug === "proyectos") return;
+
+    const projTitle = document.getElementById("projTitle");
+    const projMeta = document.getElementById("projMeta");
+    const projContent = document.getElementById("projContent");
+    const projTechsSection = document.getElementById("projTechsSection");
+    const projTechsGrid = document.getElementById("projTechsGrid");
+
+    function esc(s) {
+      return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    function fmtDate(d) {
+      try {
+        return new Date(d).toLocaleDateString("es-MX", { year:"numeric", month:"long", day:"numeric" });
+      } catch { return ""; }
+    }
+
+    fetch(`/api/projects/${slug}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok || !data.project) {
+          projTitle.textContent = "Proyecto no encontrado";
+          projContent.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">Este proyecto no existe o no esta disponible.</div>';
+          return;
+        }
+        const p = data.project;
+        document.title = `Cerberus Dev | ${p.title}`;
+        projTitle.textContent = p.title;
+
+        const metaParts = [];
+        if (p.tag) metaParts.push('<span style="color:var(--orange);">' + esc(p.tag) + '</span>');
+        if (p.date) metaParts.push(fmtDate(p.date));
+        projMeta.innerHTML = metaParts.join(' &bull; ');
+
+        projContent.innerHTML = `
+          ${p.image_url ? '<img style="width:100%;border-radius:16px;margin-bottom:24px;border:1px solid var(--border);" src="' + esc(p.image_url) + '" alt="' + esc(p.title) + '" onerror="this.style.display=\'none\'">' : ''}
+          ${p.description ? '<p style="font-size:17px;color:var(--text-body);line-height:1.8;margin-bottom:24px;">' + esc(p.description) + '</p>' : ''}
+          <div class="blog-post-content">${p.content || ''}</div>
+        `;
+
+        // Show technologies
+        if (p.technologies && p.technologies.length > 0) {
+          projTechsSection.style.display = "";
+          projTechsGrid.innerHTML = p.technologies.map(t => `
+            <div class="tech">
+              <img src="${esc(t.tech_icon)}" alt="${esc(t.tech_name)}">
+              <span>${esc(t.tech_name)}</span>
+            </div>
+          `).join("");
+        }
+      })
+      .catch(() => {
+        projTitle.textContent = "Error al cargar";
+      });
+  })();
+  </script>
+</body>
+</html>

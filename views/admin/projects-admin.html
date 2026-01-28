@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <title>Cerberus Control | Proyectos</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+  <link rel="stylesheet" href="/assets/css/admin.css"/>
+</head>
+<body>
+  <main class="admin-wrap">
+    <div class="admin-bg"></div>
+
+    <header class="admin-top">
+      <div class="admin-brand">
+        <div class="admin-title">Projects Manager</div>
+        <div class="admin-sub">Crear, editar y publicar proyectos del portafolio</div>
+      </div>
+      <div class="admin-actions">
+        <a class="btn btn--ghost" href="./dashboard">&larr; Volver al panel</a>
+        <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
+      </div>
+    </header>
+
+    <!-- Nav tabs -->
+    <nav class="admin-nav">
+      <button class="admin-nav-btn is-active" data-tab="list">Proyectos</button>
+      <button class="admin-nav-btn" data-tab="editor">Nuevo proyecto</button>
+    </nav>
+
+    <!-- TAB: Projects list -->
+    <section class="admin-card" id="tabList">
+      <div class="admin-card-head">
+        <div>
+          <div class="admin-card-title">Todos los proyectos</div>
+          <div class="admin-card-sub">Publicados y borradores</div>
+        </div>
+      </div>
+      <div class="blog-admin-grid" id="projectsGrid">
+        <div style="grid-column:1/-1;text-align:center;padding:48px 24px;color:rgba(255,255,255,0.4);">
+          Cargando proyectos...
+        </div>
+      </div>
+      <div id="projectsEmpty" style="display:none;text-align:center;padding:48px 24px;color:rgba(255,255,255,0.5);">
+        Sin proyectos todavia. Crea el primero.
+      </div>
+    </section>
+
+    <!-- TAB: Editor -->
+    <section class="admin-card" id="tabEditor" style="display:none;">
+      <div class="admin-card-head">
+        <div>
+          <div class="admin-card-title" id="editorTitle">Nuevo proyecto</div>
+          <div class="admin-card-sub">Completa la informacion del proyecto</div>
+        </div>
+      </div>
+      <div style="padding:24px;">
+        <form class="admin-form" id="projectForm" autocomplete="off">
+          <input type="hidden" id="projId">
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Titulo</label>
+              <input id="projTitle" required placeholder="Nombre del proyecto" maxlength="255">
+            </div>
+            <div class="field">
+              <label>Slug (URL)</label>
+              <input id="projSlug" placeholder="auto-generado-del-titulo" maxlength="255">
+            </div>
+          </div>
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Etiqueta (tag)</label>
+              <input id="projTag" placeholder="Ej: Sistema Web, Dashboard, API..." maxlength="100">
+            </div>
+            <div class="field">
+              <label>Fecha</label>
+              <input id="projDate" type="date">
+            </div>
+          </div>
+          <div class="field">
+            <label>Descripcion corta</label>
+            <textarea id="projDesc" rows="3" placeholder="Descripcion breve del proyecto..." maxlength="1000" style="min-height:80px;"></textarea>
+          </div>
+          <div class="field">
+            <label>Contenido (HTML)</label>
+            <textarea id="projContent" rows="10" placeholder="Contenido completo del proyecto en HTML..."></textarea>
+          </div>
+          <div class="field">
+            <label>URL de imagen principal</label>
+            <input id="projImage" placeholder="/uploads/projects/mi-imagen.jpg" maxlength="500">
+            <img id="projImagePreview" class="image-preview" style="display:none;">
+          </div>
+
+          <!-- Technologies checkboxes -->
+          <div class="field">
+            <label>Tecnologias utilizadas</label>
+            <div class="tech-checkboxes" id="techCheckboxes"></div>
+          </div>
+
+          <div class="field">
+            <label>
+              <input type="checkbox" id="projPublished"> Publicar proyecto
+            </label>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-top:24px;">
+            <button class="btn" type="submit">Guardar</button>
+            <button class="btn btn--ghost" type="button" id="cancelEdit">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <style>
+    .tech-checkboxes {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+      margin-top: 8px;
+    }
+    .tech-check-item {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 16px 8px; background: rgba(255,255,255,0.03);
+      border: 2px solid rgba(255,255,255,0.08); border-radius: 12px;
+      cursor: pointer; transition: all 0.2s; user-select: none;
+    }
+    .tech-check-item:hover {
+      border-color: rgba(255,122,24,0.3); background: rgba(255,122,24,0.04);
+    }
+    .tech-check-item.is-selected {
+      border-color: rgba(255,122,24,0.6); background: rgba(255,122,24,0.1);
+      box-shadow: 0 0 0 2px rgba(255,122,24,0.2);
+    }
+    .tech-check-item img {
+      width: 36px; height: 36px; object-fit: contain;
+    }
+    .tech-check-item span {
+      font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.6);
+      text-align: center;
+    }
+    .tech-check-item.is-selected span { color: #FF9A45; }
+    @media (max-width: 640px) {
+      .tech-checkboxes { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+
+  <script>
+  (function() {
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+
+    // Available technologies (match files in /assets/img/tech/)
+    const TECHNOLOGIES = [
+      { name: "HTML5", icon: "/assets/img/tech/html.svg" },
+      { name: "CSS3", icon: "/assets/img/tech/css.svg" },
+      { name: "JavaScript", icon: "/assets/img/tech/js.svg" },
+      { name: "TypeScript", icon: "/assets/img/tech/ts.svg" },
+      { name: "Angular", icon: "/assets/img/tech/angular.svg" },
+      { name: "Node.js", icon: "/assets/img/tech/node.svg" },
+      { name: "Express", icon: "/assets/img/tech/express.svg" },
+      { name: "MySQL", icon: "/assets/img/tech/mysql.svg" },
+      { name: "SQL Server", icon: "/assets/img/tech/mssql.svg" },
+      { name: "Windows Server", icon: "/assets/img/tech/windows-server.svg" },
+      { name: "Git", icon: "/assets/img/tech/git.svg" },
+      { name: "GitHub", icon: "/assets/img/tech/github.svg" }
+    ];
+
+    let allProjects = [];
+    let selectedTechs = new Set();
+
+    // ── Tabs ──
+    $$("[data-tab]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        $$("[data-tab]").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        const tab = btn.dataset.tab;
+        $("#tabList").style.display = tab === "list" ? "" : "none";
+        $("#tabEditor").style.display = tab === "editor" ? "" : "none";
+        if (tab === "editor" && !$("#projId").value) resetForm();
+      });
+    });
+
+    function showTab(name) {
+      $$("[data-tab]").forEach(b => b.classList.toggle("is-active", b.dataset.tab === name));
+      $("#tabList").style.display = name === "list" ? "" : "none";
+      $("#tabEditor").style.display = name === "editor" ? "" : "none";
+    }
+
+    // ── API helper ──
+    async function api(url, opts) {
+      const res = await fetch(url, opts);
+      return res.json();
+    }
+
+    function esc(s) {
+      return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    function fmtDate(d) {
+      try {
+        return new Date(d).toLocaleDateString("es-MX", { year: "numeric", month: "2-digit", day: "2-digit" });
+      } catch { return d || ""; }
+    }
+
+    // ── Build tech checkboxes ──
+    function buildTechCheckboxes() {
+      const container = $("#techCheckboxes");
+      container.innerHTML = TECHNOLOGIES.map(t => `
+        <div class="tech-check-item" data-tech-name="${esc(t.name)}" data-tech-icon="${esc(t.icon)}">
+          <img src="${t.icon}" alt="${esc(t.name)}">
+          <span>${esc(t.name)}</span>
+        </div>
+      `).join("");
+
+      container.querySelectorAll(".tech-check-item").forEach(el => {
+        el.addEventListener("click", () => {
+          const name = el.dataset.techName;
+          if (selectedTechs.has(name)) {
+            selectedTechs.delete(name);
+            el.classList.remove("is-selected");
+          } else {
+            selectedTechs.add(name);
+            el.classList.add("is-selected");
+          }
+        });
+      });
+    }
+
+    function setSelectedTechs(techs) {
+      selectedTechs.clear();
+      $$(".tech-check-item").forEach(el => el.classList.remove("is-selected"));
+
+      (techs || []).forEach(t => {
+        selectedTechs.add(t.tech_name);
+        const el = document.querySelector(`.tech-check-item[data-tech-name="${t.tech_name}"]`);
+        if (el) el.classList.add("is-selected");
+      });
+    }
+
+    function getSelectedTechs() {
+      const result = [];
+      selectedTechs.forEach(name => {
+        const tech = TECHNOLOGIES.find(t => t.name === name);
+        if (tech) result.push({ tech_name: tech.name, tech_icon: tech.icon });
+      });
+      return result;
+    }
+
+    // ── Load projects ──
+    async function loadProjects() {
+      try {
+        const res = await api("./api/projects");
+        allProjects = res.projects || [];
+        renderProjects();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderProjects() {
+      const grid = $("#projectsGrid");
+      const empty = $("#projectsEmpty");
+
+      if (allProjects.length === 0) {
+        grid.innerHTML = "";
+        empty.style.display = "";
+        return;
+      }
+      empty.style.display = "none";
+
+      grid.innerHTML = allProjects.map(p => `
+        <div class="blog-admin-card">
+          ${p.image_url
+            ? `<img src="${esc(p.image_url)}" alt="${esc(p.title)}" onerror="this.style.display='none'">`
+            : `<div style="height:120px;background:rgba(255,122,24,0.05);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.2);font-size:32px;">&#x1F4C1;</div>`
+          }
+          <div class="blog-admin-card-body">
+            <h4>${esc(p.title)}</h4>
+            <div class="blog-admin-card-meta">
+              ${p.tag ? esc(p.tag) + ' &bull; ' : ''}
+              ${Number(p.is_published) ? '<span style="color:#22c55e;">Publicado</span>' : '<span style="color:#FF9A45;">Borrador</span>'}
+              ${p.date ? ' &bull; ' + fmtDate(p.date) : ''}
+            </div>
+            <p>${esc(p.description || '').substring(0, 120)}${(p.description || '').length > 120 ? '...' : ''}</p>
+            <div class="blog-admin-card-actions">
+              <button class="small-btn" data-edit="${p.id}">Editar</button>
+              <button class="small-btn danger" data-del="${p.id}">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+
+      grid.querySelectorAll("[data-edit]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const proj = allProjects.find(p => p.id === Number(btn.dataset.edit));
+          if (proj) editProject(proj);
+        });
+      });
+
+      grid.querySelectorAll("[data-del]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("Eliminar este proyecto?")) return;
+          await api(`./api/projects/${btn.dataset.del}/delete`, { method: "POST" });
+          loadProjects();
+        });
+      });
+    }
+
+    // ── Editor ──
+    function resetForm() {
+      $("#projId").value = "";
+      $("#projTitle").value = "";
+      $("#projSlug").value = "";
+      $("#projTag").value = "";
+      $("#projDate").value = "";
+      $("#projDesc").value = "";
+      $("#projContent").value = "";
+      $("#projImage").value = "";
+      $("#projPublished").checked = false;
+      $("#projImagePreview").style.display = "none";
+      $("#editorTitle").textContent = "Nuevo proyecto";
+      selectedTechs.clear();
+      $$(".tech-check-item").forEach(el => el.classList.remove("is-selected"));
+    }
+
+    function editProject(p) {
+      $("#projId").value = p.id;
+      $("#projTitle").value = p.title;
+      $("#projSlug").value = p.slug;
+      $("#projTag").value = p.tag || "";
+      $("#projDate").value = p.date ? p.date.substring(0, 10) : "";
+      $("#projDesc").value = p.description || "";
+      $("#projContent").value = p.content || "";
+      $("#projImage").value = p.image_url || "";
+      $("#projPublished").checked = Number(p.is_published) === 1;
+      $("#editorTitle").textContent = "Editar: " + p.title;
+
+      if (p.image_url) {
+        $("#projImagePreview").src = p.image_url;
+        $("#projImagePreview").style.display = "block";
+      } else {
+        $("#projImagePreview").style.display = "none";
+      }
+
+      setSelectedTechs(p.technologies || []);
+      showTab("editor");
+    }
+
+    // Image preview
+    $("#projImage").addEventListener("input", () => {
+      const url = $("#projImage").value.trim();
+      if (url) {
+        $("#projImagePreview").src = url;
+        $("#projImagePreview").style.display = "block";
+      } else {
+        $("#projImagePreview").style.display = "none";
+      }
+    });
+
+    // Cancel
+    $("#cancelEdit").addEventListener("click", () => {
+      resetForm();
+      showTab("list");
+    });
+
+    // Submit
+    $("#projectForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.textContent = "Guardando...";
+      btn.disabled = true;
+
+      try {
+        await api("./api/projects", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: $("#projId").value || undefined,
+            title: $("#projTitle").value,
+            slug: $("#projSlug").value || undefined,
+            tag: $("#projTag").value || undefined,
+            description: $("#projDesc").value || undefined,
+            content: $("#projContent").value || undefined,
+            image_url: $("#projImage").value || undefined,
+            date: $("#projDate").value || undefined,
+            is_published: $("#projPublished").checked,
+            technologies: getSelectedTechs()
+          })
+        });
+        resetForm();
+        showTab("list");
+        loadProjects();
+      } catch (err) {
+        alert("Error al guardar: " + err.message);
+      } finally {
+        btn.textContent = "Guardar";
+        btn.disabled = false;
+      }
+    });
+
+    // ── Init ──
+    buildTechCheckboxes();
+    loadProjects();
+  })();
+  </script>
+</body>
+</html>

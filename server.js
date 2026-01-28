@@ -6,6 +6,7 @@ const session = require("express-session");
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+app.set("trust proxy", 1);
 app.disable("x-powered-by");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -29,6 +30,9 @@ app.use("/api/contact", require("./routes/contact"));
 
 // Public API – Blog
 app.use("/api/blog", require("./routes/blog"));
+
+// Public API – Projects
+app.use("/api/projects", require("./routes/projects"));
 
 // Admin panel (only if ADMIN_PATH is configured)
 const ADMIN_PATH = process.env.ADMIN_PATH;
@@ -55,6 +59,11 @@ app.get("*", (req, res) => {
   // Blog post detail: /blog/some-slug -> blog-post.html
   if (/^\/blog\/.+/.test(req.path)) {
     return res.sendFile(path.join(__dirname, "public", "blog-post.html"));
+  }
+
+  // Project detail: /proyectos/some-slug -> proyecto-detalle.html
+  if (/^\/proyectos\/.+/.test(req.path)) {
+    return res.sendFile(path.join(__dirname, "public", "proyecto-detalle.html"));
   }
 
   // Try to serve the specific HTML file first (e.g. /blog -> blog.html)

@@ -61,6 +61,32 @@ CREATE TABLE IF NOT EXISTS blog_comments (
 );
 
 -- ============================================
+-- Projects System
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS projects (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL UNIQUE,
+  tag VARCHAR(100) NULL,
+  description TEXT NULL,
+  content LONGTEXT NULL,
+  image_url VARCHAR(500) NULL,
+  date DATE NULL,
+  is_published BOOLEAN DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS project_technologies (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  project_id INT NOT NULL,
+  tech_name VARCHAR(100) NOT NULL,
+  tech_icon VARCHAR(255) NOT NULL,
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+
+-- ============================================
 -- Notifications
 -- ============================================
 
