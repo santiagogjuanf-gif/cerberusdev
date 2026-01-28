@@ -1,10 +1,21 @@
 const router = require("express").Router();
 const db = require("../config/db");
 
+// Helper function to apply translations based on language
+function applyTranslation(post, lang) {
+  if (lang === "en") {
+    if (post.title_en) post.title = post.title_en;
+    if (post.excerpt_en) post.excerpt = post.excerpt_en;
+    if (post.content_en) post.content = post.content_en;
+  }
+  return post;
+}
+
 // Get all published posts (with optional category filter)
 router.get("/posts", async (req, res) => {
   try {
-    const { category, limit } = req.query;
+    const { category, limit, lang } = req.query;
+    const currentLang = lang || "es";
     let sql = `
       SELECT p.*, c.name AS category_name, c.slug AS category_slug
       FROM blog_posts p
@@ -26,6 +37,7 @@ router.get("/posts", async (req, res) => {
     }
 
     const [rows] = await db.execute(sql, params);
+    rows.forEach(post => applyTranslation(post, currentLang));
     res.json({ ok: true, posts: rows });
   } catch (err) {
     console.error("[BLOG ERROR]", err);
@@ -37,6 +49,7 @@ router.get("/posts", async (req, res) => {
 router.get("/posts/:slug", async (req, res) => {
   try {
     const { slug } = req.params;
+    const lang = req.query.lang || "es";
     const [[post]] = await db.execute(`
       SELECT p.*, c.name AS category_name, c.slug AS category_slug
       FROM blog_posts p
@@ -45,6 +58,7 @@ router.get("/posts/:slug", async (req, res) => {
     `, [slug]);
 
     if (!post) return res.status(404).json({ ok: false, error: "not_found" });
+    applyTranslation(post, lang);
     res.json({ ok: true, post });
   } catch (err) {
     console.error("[BLOG ERROR]", err);

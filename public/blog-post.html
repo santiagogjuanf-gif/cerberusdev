@@ -65,6 +65,7 @@
     const parts = location.pathname.split("/").filter(Boolean);
     const slug = parts[1]; // /blog/SLUG
     if (!slug || slug === "blog") return;
+    const lang = localStorage.getItem("cerberus_lang") || "es";
 
     const postTitle = document.getElementById("postTitle");
     const postMeta = document.getElementById("postMeta");
@@ -83,7 +84,7 @@
     }
 
     // Load post
-    fetch(`/api/blog/posts/${slug}`)
+    fetch(`/api/blog/posts/${slug}?lang=${lang}`)
       .then(r => r.json())
       .then(data => {
         if (!data.ok || !data.post) {

@@ -449,6 +449,11 @@ img { max-width: 100%; display: block; }
 .blog-grid {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
 }
+.blog-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
 .blog-card {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius); overflow: hidden;

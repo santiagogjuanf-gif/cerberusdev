@@ -113,19 +113,19 @@ router.get("/api/blog/categories", requireAuth, async (req, res) => {
 // Create or update post
 router.post("/api/blog/posts", requireAuth, async (req, res) => {
   try {
-    const { id, title, slug, excerpt, content, category_id, image_url, is_published } = req.body;
+    const { id, title, title_en, slug, excerpt, excerpt_en, content, content_en, category_id, image_url, is_published } = req.body;
     const postSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
     if (id) {
       await db.execute(`
-        UPDATE blog_posts SET title=?, slug=?, excerpt=?, content=?, category_id=?, image_url=?, is_published=?
+        UPDATE blog_posts SET title=?, title_en=?, slug=?, excerpt=?, excerpt_en=?, content=?, content_en=?, category_id=?, image_url=?, is_published=?
         WHERE id=?
-      `, [title, postSlug, excerpt || null, content || "", category_id || null, image_url || null, is_published ? 1 : 0, id]);
+      `, [title, title_en || null, postSlug, excerpt || null, excerpt_en || null, content || "", content_en || "", category_id || null, image_url || null, is_published ? 1 : 0, id]);
     } else {
       await db.execute(`
-        INSERT INTO blog_posts (title, slug, excerpt, content, category_id, image_url, is_published)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `, [title, postSlug, excerpt || null, content || "", category_id || null, image_url || null, is_published ? 1 : 0]);
+        INSERT INTO blog_posts (title, title_en, slug, excerpt, excerpt_en, content, content_en, category_id, image_url, is_published)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [title, title_en || null, postSlug, excerpt || null, excerpt_en || null, content || "", content_en || "", category_id || null, image_url || null, is_published ? 1 : 0]);
     }
     res.json({ ok: true });
   } catch (err) {
@@ -275,16 +275,16 @@ router.get("/api/projects", requireAuth, async (req, res) => {
 // Create or update project
 router.post("/api/projects", requireAuth, async (req, res) => {
   try {
-    const { id, title, slug, tag, description, content, image_url, date, is_published, technologies, images } = req.body;
+    const { id, title, title_en, slug, tag, tag_en, description, description_en, content, content_en, image_url, date, is_published, technologies, images } = req.body;
     const projSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
     let projectId = id;
 
     if (id) {
       await db.execute(`
-        UPDATE projects SET title=?, slug=?, tag=?, description=?, content=?, image_url=?, date=?, is_published=?
+        UPDATE projects SET title=?, title_en=?, slug=?, tag=?, tag_en=?, description=?, description_en=?, content=?, content_en=?, image_url=?, date=?, is_published=?
         WHERE id=?
-      `, [title, projSlug, tag || null, description || null, content || "", image_url || null, date || null, is_published ? 1 : 0, id]);
+      `, [title, title_en || null, projSlug, tag || null, tag_en || null, description || null, description_en || null, content || "", content_en || "", image_url || null, date || null, is_published ? 1 : 0, id]);
 
       // Update technologies: delete old, insert new
       await db.execute("DELETE FROM project_technologies WHERE project_id = ?", [id]);
@@ -301,9 +301,9 @@ router.post("/api/projects", requireAuth, async (req, res) => {
       await db.execute("DELETE FROM project_images WHERE project_id = ?", [id]);
     } else {
       const [result] = await db.execute(`
-        INSERT INTO projects (title, slug, tag, description, content, image_url, date, is_published)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `, [title, projSlug, tag || null, description || null, content || "", image_url || null, date || null, is_published ? 1 : 0]);
+        INSERT INTO projects (title, title_en, slug, tag, tag_en, description, description_en, content, content_en, image_url, date, is_published)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [title, title_en || null, projSlug, tag || null, tag_en || null, description || null, description_en || null, content || "", content_en || "", image_url || null, date || null, is_published ? 1 : 0]);
 
       projectId = result.insertId;
       if (technologies && technologies.length > 0) {

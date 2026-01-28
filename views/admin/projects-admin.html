@@ -60,31 +60,53 @@
           <input type="hidden" id="projId">
           <div class="admin-form-row">
             <div class="field">
-              <label>Titulo</label>
+              <label>Titulo (Español)</label>
               <input id="projTitle" required placeholder="Nombre del proyecto" maxlength="255">
             </div>
             <div class="field">
-              <label>Slug (URL)</label>
-              <input id="projSlug" placeholder="auto-generado-del-titulo" maxlength="255">
+              <label>Title (English)</label>
+              <input id="projTitleEn" placeholder="Project name in English" maxlength="255">
             </div>
           </div>
           <div class="admin-form-row">
             <div class="field">
-              <label>Etiqueta (tag)</label>
-              <input id="projTag" placeholder="Ej: Sistema Web, Dashboard, API..." maxlength="100">
+              <label>Slug (URL)</label>
+              <input id="projSlug" placeholder="auto-generado-del-titulo" maxlength="255">
             </div>
             <div class="field">
               <label>Fecha</label>
               <input id="projDate" type="date">
             </div>
           </div>
-          <div class="field">
-            <label>Descripcion corta</label>
-            <textarea id="projDesc" rows="3" placeholder="Descripcion breve del proyecto..." maxlength="1000" style="min-height:80px;"></textarea>
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Etiqueta (Español)</label>
+              <input id="projTag" placeholder="Ej: Sistema Web, Dashboard, API..." maxlength="100">
+            </div>
+            <div class="field">
+              <label>Tag (English)</label>
+              <input id="projTagEn" placeholder="E.g: Web System, Dashboard, API..." maxlength="100">
+            </div>
           </div>
-          <div class="field">
-            <label>Contenido (HTML)</label>
-            <textarea id="projContent" rows="10" placeholder="Contenido completo del proyecto en HTML..."></textarea>
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Descripcion corta (Español)</label>
+              <textarea id="projDesc" rows="3" placeholder="Descripcion breve del proyecto..." maxlength="1000" style="min-height:80px;"></textarea>
+            </div>
+            <div class="field">
+              <label>Short Description (English)</label>
+              <textarea id="projDescEn" rows="3" placeholder="Brief project description..." maxlength="1000" style="min-height:80px;"></textarea>
+            </div>
+          </div>
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Contenido (Español - HTML)</label>
+              <textarea id="projContent" rows="8" placeholder="Contenido completo del proyecto en HTML..."></textarea>
+            </div>
+            <div class="field">
+              <label>Content (English - HTML)</label>
+              <textarea id="projContentEn" rows="8" placeholder="Full project content in HTML..."></textarea>
+            </div>
           </div>
 
           <!-- Main Image Upload -->
@@ -299,6 +321,23 @@
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    .gallery-uploading {
+      aspect-ratio: 16/10;
+      border-radius: 10px;
+      background: rgba(255,122,24,0.1);
+      border: 2px dashed rgba(255,122,24,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--orange);
+      font-weight: 600;
+      font-size: 13px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
     }
     @media (max-width: 768px) {
       .gallery-grid { grid-template-columns: repeat(2, 1fr); }
@@ -554,16 +593,32 @@
     }
 
     async function handleGalleryFiles(files) {
-      for (const file of files) {
-        if (!file.type.startsWith("image/")) continue;
+      const validFiles = Array.from(files).filter(f => f.type.startsWith("image/"));
+      if (validFiles.length === 0) return;
+
+      // Show uploading indicator
+      const uploadingDiv = document.createElement("div");
+      uploadingDiv.className = "gallery-uploading";
+      uploadingDiv.id = "galleryUploading";
+      uploadingDiv.innerHTML = `<span>Subiendo 0/${validFiles.length}...</span>`;
+      galleryGrid.insertBefore(uploadingDiv, galleryGrid.firstChild);
+
+      let uploaded = 0;
+      for (const file of validFiles) {
         try {
           const url = await uploadFile(file);
           galleryImages.push({ url });
-          renderGallery();
+          uploaded++;
+          uploadingDiv.innerHTML = `<span>Subiendo ${uploaded}/${validFiles.length}...</span>`;
         } catch (err) {
           console.error("Gallery upload error:", err);
         }
       }
+
+      // Remove uploading indicator and re-render
+      const indicator = document.getElementById("galleryUploading");
+      if (indicator) indicator.remove();
+      renderGallery();
     }
 
     galleryInput.addEventListener("change", () => {
@@ -687,12 +742,16 @@
     function resetForm() {
       $("#projId").value = "";
       $("#projTitle").value = "";
+      $("#projTitleEn").value = "";
       $("#projSlug").value = "";
       $("#projSlug").dataset.manual = ""; // Reset manual flag for auto-slug
       $("#projTag").value = "";
+      $("#projTagEn").value = "";
       $("#projDate").value = "";
       $("#projDesc").value = "";
+      $("#projDescEn").value = "";
       $("#projContent").value = "";
+      $("#projContentEn").value = "";
       $("#projImage").value = "";
       $("#projPublished").checked = false;
       $("#editorTitle").textContent = "Nuevo proyecto";
@@ -714,12 +773,16 @@
     function editProject(p) {
       $("#projId").value = p.id;
       $("#projTitle").value = p.title;
+      $("#projTitleEn").value = p.title_en || "";
       $("#projSlug").value = p.slug;
       $("#projSlug").dataset.manual = "1"; // Don't auto-overwrite existing slug
       $("#projTag").value = p.tag || "";
+      $("#projTagEn").value = p.tag_en || "";
       $("#projDate").value = p.date ? p.date.substring(0, 10) : "";
       $("#projDesc").value = p.description || "";
+      $("#projDescEn").value = p.description_en || "";
       $("#projContent").value = p.content || "";
+      $("#projContentEn").value = p.content_en || "";
       $("#projImage").value = p.image_url || "";
       $("#projPublished").checked = Number(p.is_published) === 1;
       $("#editorTitle").textContent = "Editar: " + p.title;
@@ -763,10 +826,14 @@
           body: JSON.stringify({
             id: $("#projId").value || undefined,
             title: $("#projTitle").value,
+            title_en: $("#projTitleEn").value || undefined,
             slug: $("#projSlug").value || undefined,
             tag: $("#projTag").value || undefined,
+            tag_en: $("#projTagEn").value || undefined,
             description: $("#projDesc").value || undefined,
+            description_en: $("#projDescEn").value || undefined,
             content: $("#projContent").value || undefined,
+            content_en: $("#projContentEn").value || undefined,
             image_url: $("#projImage").value || undefined,
             date: $("#projDate").value || undefined,
             is_published: $("#projPublished").checked,

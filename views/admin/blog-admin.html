@@ -71,19 +71,25 @@
           <input type="hidden" name="id" id="postId"/>
           <div class="admin-form-row">
             <div class="field">
-              <label>Titulo</label>
+              <label>Titulo (Español)</label>
               <input name="title" id="postTitleInput" required placeholder="Titulo del articulo"/>
             </div>
+            <div class="field">
+              <label>Title (English)</label>
+              <input name="title_en" id="postTitleEn" placeholder="Article title in English"/>
+            </div>
+          </div>
+          <div class="admin-form-row">
             <div class="field">
               <label>Slug (URL)</label>
               <input name="slug" id="postSlug" placeholder="se-genera-automaticamente"/>
             </div>
-          </div>
-          <div class="field">
-            <label>Categoria</label>
-            <select name="category_id" id="postCategory">
-              <option value="">Sin categoria</option>
-            </select>
+            <div class="field">
+              <label>Categoria</label>
+              <select name="category_id" id="postCategory">
+                <option value="">Sin categoria</option>
+              </select>
+            </div>
           </div>
           <div class="field">
             <label>Imagen destacada</label>
@@ -102,13 +108,25 @@
               <button type="button" class="upload-preview-remove" id="blogRemoveImg">&times;</button>
             </div>
           </div>
-          <div class="field">
-            <label>Extracto</label>
-            <input name="excerpt" id="postExcerpt" placeholder="Breve descripcion del articulo (opcional)"/>
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Extracto (Español)</label>
+              <input name="excerpt" id="postExcerpt" placeholder="Breve descripcion del articulo"/>
+            </div>
+            <div class="field">
+              <label>Excerpt (English)</label>
+              <input name="excerpt_en" id="postExcerptEn" placeholder="Brief article description"/>
+            </div>
           </div>
-          <div class="field">
-            <label>Contenido (HTML)</label>
-            <textarea name="content" id="postContent" rows="14" placeholder="Escribe el contenido del articulo en HTML..."></textarea>
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Contenido (Español - HTML)</label>
+              <textarea name="content" id="postContent" rows="10" placeholder="Escribe el contenido del articulo en HTML..."></textarea>
+            </div>
+            <div class="field">
+              <label>Content (English - HTML)</label>
+              <textarea name="content_en" id="postContentEn" rows="10" placeholder="Write article content in HTML..."></textarea>
+            </div>
           </div>
           <div style="display:flex;gap:12px;align-items:center;margin-top:12px;">
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:rgba(255,255,255,0.7);">
@@ -287,9 +305,12 @@
     if (!p) return;
     $("#postId").value = p.id;
     $("#postTitleInput").value = p.title;
+    $("#postTitleEn").value = p.title_en || "";
     $("#postSlug").value = p.slug || "";
     $("#postExcerpt").value = p.excerpt || "";
+    $("#postExcerptEn").value = p.excerpt_en || "";
     $("#postContent").value = p.content || "";
+    $("#postContentEn").value = p.content_en || "";
     $("#postCategory").value = p.category_id || "";
     $("#postImage").value = p.image_url || "";
     $("#postPublished").checked = Number(p.is_published) === 1;
@@ -312,9 +333,12 @@
     const payload = {
       id: fd.get("id") || null,
       title: fd.get("title"),
+      title_en: fd.get("title_en") || null,
       slug: fd.get("slug"),
       excerpt: fd.get("excerpt"),
+      excerpt_en: fd.get("excerpt_en") || null,
       content: fd.get("content"),
+      content_en: fd.get("content_en") || null,
       category_id: fd.get("category_id") || null,
       image_url: fd.get("image_url"),
       is_published: fd.get("is_published") === "1"
@@ -345,6 +369,9 @@
     $("#postForm").reset();
     $("#postId").value = "";
     $("#postImage").value = "";
+    $("#postTitleEn").value = "";
+    $("#postExcerptEn").value = "";
+    $("#postContentEn").value = "";
     $("#editorTitle").textContent = "Nuevo articulo";
     showImagePreview(null);
   }

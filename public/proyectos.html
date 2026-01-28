@@ -49,12 +49,13 @@
   <script>
   (function() {
     const grid = document.getElementById("projectsGrid");
+    const lang = localStorage.getItem("cerberus_lang") || "es";
 
     function esc(s) {
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     }
 
-    fetch("/api/projects")
+    fetch(`/api/projects?lang=${lang}`)
       .then(r => r.json())
       .then(data => {
         const projects = data.projects || [];

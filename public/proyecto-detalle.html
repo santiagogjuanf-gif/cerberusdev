@@ -48,7 +48,7 @@
       margin-top: 24px;
     }
 
-    /* Right Column - Gallery */
+    /* Right Column - Gallery Carousel */
     .proj-gallery-side {
       position: sticky;
       top: 100px;
@@ -62,36 +62,85 @@
       text-transform: uppercase;
       letter-spacing: 1px;
     }
-    .proj-gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+    /* Carousel main display */
+    .proj-carousel {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
     }
-    .proj-gallery-item {
+    .proj-carousel-img {
+      width: 100%;
       aspect-ratio: 16/10;
-      border-radius: 10px;
+      object-fit: cover;
+      cursor: zoom-in;
+      display: block;
+    }
+    .proj-carousel-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 10;
+    }
+    .proj-carousel-nav:hover {
+      background: var(--orange);
+    }
+    .proj-carousel-nav.prev { left: 10px; }
+    .proj-carousel-nav.next { right: 10px; }
+    .proj-carousel-counter {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 4px 12px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 20px;
+      font-size: 12px;
+      color: white;
+    }
+    /* Thumbnails strip */
+    .proj-thumbs {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    .proj-thumb {
+      flex-shrink: 0;
+      width: 60px;
+      height: 40px;
+      border-radius: 6px;
       overflow: hidden;
       cursor: pointer;
       border: 2px solid transparent;
       transition: all 0.2s;
+      opacity: 0.6;
     }
-    .proj-gallery-item:hover {
+    .proj-thumb:hover {
+      opacity: 1;
+    }
+    .proj-thumb.is-active {
       border-color: var(--orange);
-      transform: scale(1.02);
+      opacity: 1;
     }
-    .proj-gallery-item.is-active {
-      border-color: var(--orange);
-    }
-    .proj-gallery-item img {
+    .proj-thumb img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-    }
-    .proj-gallery-count {
-      text-align: center;
-      margin-top: 12px;
-      font-size: 13px;
-      color: rgba(255,255,255,0.4);
     }
 
     /* Technologies - Centered */
@@ -247,11 +296,16 @@
             <div class="proj-content" id="projContent"></div>
           </div>
 
-          <!-- Right: Gallery -->
+          <!-- Right: Gallery Carousel -->
           <div class="proj-gallery-side" id="gallerySide" style="display:none;">
             <div class="proj-gallery-title">Galeria</div>
-            <div class="proj-gallery-grid" id="galleryGrid"></div>
-            <div class="proj-gallery-count" id="galleryCount"></div>
+            <div class="proj-carousel" id="carousel">
+              <img class="proj-carousel-img" id="carouselImg" src="" alt="Gallery">
+              <button class="proj-carousel-nav prev" id="carouselPrev">&#8249;</button>
+              <button class="proj-carousel-nav next" id="carouselNext">&#8250;</button>
+              <div class="proj-carousel-counter" id="carouselCounter">1 / 1</div>
+            </div>
+            <div class="proj-thumbs" id="thumbsStrip"></div>
           </div>
         </div>
 
@@ -288,6 +342,7 @@
     const parts = location.pathname.split("/").filter(Boolean);
     const slug = parts[1];
     if (!slug || slug === "proyectos") return;
+    const lang = localStorage.getItem("cerberus_lang") || "es";
 
     const projTitle = document.getElementById("projTitle");
     const projMeta = document.getElementById("projMeta");
@@ -298,8 +353,12 @@
     const projDesc = document.getElementById("projDesc");
     const projContent = document.getElementById("projContent");
     const gallerySide = document.getElementById("gallerySide");
-    const galleryGrid = document.getElementById("galleryGrid");
-    const galleryCount = document.getElementById("galleryCount");
+    const carousel = document.getElementById("carousel");
+    const carouselImg = document.getElementById("carouselImg");
+    const carouselPrev = document.getElementById("carouselPrev");
+    const carouselNext = document.getElementById("carouselNext");
+    const carouselCounter = document.getElementById("carouselCounter");
+    const thumbsStrip = document.getElementById("thumbsStrip");
     const projTechsSection = document.getElementById("projTechsSection");
     const projTechsGrid = document.getElementById("projTechsGrid");
 
@@ -313,6 +372,30 @@
 
     let allImages = [];
     let currentIndex = 0;
+    let carouselIndex = 0;
+
+    // Carousel functions
+    function updateCarousel() {
+      if (allImages.length === 0) return;
+      carouselImg.src = allImages[carouselIndex];
+      carouselCounter.textContent = `${carouselIndex + 1} / ${allImages.length}`;
+      // Update active thumbnail
+      thumbsStrip.querySelectorAll(".proj-thumb").forEach((t, i) => {
+        t.classList.toggle("is-active", i === carouselIndex);
+      });
+    }
+
+    function carouselNav(dir) {
+      carouselIndex += dir;
+      if (carouselIndex < 0) carouselIndex = allImages.length - 1;
+      if (carouselIndex >= allImages.length) carouselIndex = 0;
+      updateCarousel();
+    }
+
+    // Carousel click handlers (after DOM loads)
+    carouselPrev.addEventListener("click", () => carouselNav(-1));
+    carouselNext.addEventListener("click", () => carouselNav(1));
+    carouselImg.addEventListener("click", () => openLightbox(carouselIndex));
 
     function esc(s) {
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -360,7 +443,7 @@
       if (e.key === "ArrowRight") lightboxNav(1);
     });
 
-    fetch(`/api/projects/${slug}`)
+    fetch(`/api/projects/${slug}?lang=${lang}`)
       .then(r => r.json())
       .then(data => {
         loadingState.style.display = "none";
@@ -410,19 +493,24 @@
           });
         }
 
-        // Gallery sidebar (show if there are gallery images beyond the main one)
+        // Gallery carousel (show if there are gallery images beyond the main one)
         if (allImages.length > 1) {
           gallerySide.style.display = "";
-          galleryGrid.innerHTML = allImages.map((img, i) => `
-            <div class="proj-gallery-item" data-index="${i}">
-              <img src="${esc(img)}" alt="Imagen ${i + 1}">
+          carouselIndex = 0;
+          updateCarousel();
+
+          // Build thumbnails
+          thumbsStrip.innerHTML = allImages.map((img, i) => `
+            <div class="proj-thumb${i === 0 ? ' is-active' : ''}" data-index="${i}">
+              <img src="${esc(img)}" alt="Miniatura ${i + 1}">
             </div>
           `).join("");
-          galleryCount.textContent = `${allImages.length} imagenes`;
 
-          galleryGrid.querySelectorAll(".proj-gallery-item").forEach(item => {
-            item.addEventListener("click", () => {
-              openLightbox(Number(item.dataset.index));
+          // Thumbnail clicks
+          thumbsStrip.querySelectorAll(".proj-thumb").forEach(thumb => {
+            thumb.addEventListener("click", () => {
+              carouselIndex = Number(thumb.dataset.index);
+              updateCarousel();
             });
           });
         }

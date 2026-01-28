@@ -8,11 +8,12 @@
 
   let allPosts = [];
   let activeCat = "";
+  const lang = localStorage.getItem("cerberus_lang") || "es";
 
   async function loadBlog() {
     try {
       const [postsRes, catsRes] = await Promise.all([
-        fetch("/api/blog/posts").then(r => r.json()),
+        fetch(`/api/blog/posts?lang=${lang}`).then(r => r.json()),
         fetch("/api/blog/categories").then(r => r.json())
       ]);
 
@@ -50,17 +51,19 @@
     empty.style.display = "none";
     grid.style.display = "";
     grid.innerHTML = filtered.map(p => `
-      <article class="blog-card">
-        ${p.image_url ? `<img class="blog-card-img" src="${esc(p.image_url)}" alt="${esc(p.title)}" onerror="this.style.display='none'">` : ""}
-        <div class="blog-card-body">
-          ${p.category_name ? `<span class="blog-card-cat">${esc(p.category_name)}</span>` : ""}
-          <h3 class="blog-card-title"><a href="/blog/${esc(p.slug)}">${esc(p.title)}</a></h3>
-          <p class="blog-card-excerpt">${esc(p.excerpt || "")}</p>
-          <div class="blog-card-meta">
-            <span>${fmtDate(p.created_at)}</span>
+      <a href="/blog/${esc(p.slug)}" class="blog-card-link">
+        <article class="blog-card">
+          ${p.image_url ? `<img class="blog-card-img" src="${esc(p.image_url)}" alt="${esc(p.title)}" onerror="this.style.display='none'">` : ""}
+          <div class="blog-card-body">
+            ${p.category_name ? `<span class="blog-card-cat">${esc(p.category_name)}</span>` : ""}
+            <h3 class="blog-card-title">${esc(p.title)}</h3>
+            <p class="blog-card-excerpt">${esc(p.excerpt || "")}</p>
+            <div class="blog-card-meta">
+              <span>${fmtDate(p.created_at)}</span>
+            </div>
           </div>
-        </div>
-      </article>
+        </article>
+      </a>
     `).join("");
   }
 
