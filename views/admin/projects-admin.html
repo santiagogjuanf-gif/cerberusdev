@@ -385,7 +385,8 @@
         const tab = btn.dataset.tab;
         $("#tabList").style.display = tab === "list" ? "" : "none";
         $("#tabEditor").style.display = tab === "editor" ? "" : "none";
-        if (tab === "editor" && !$("#projId").value) resetForm();
+        // Always reset form when clicking "Nuevo proyecto" tab
+        if (tab === "editor") resetForm();
       });
     });
 
@@ -404,6 +405,29 @@
     function esc(s) {
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     }
+
+    function toSlug(s) {
+      return String(s || "").toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove accents
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+    }
+
+    // Auto-fill slug when typing title
+    $("#projTitle").addEventListener("input", () => {
+      // Only auto-fill if slug is empty or matches previous auto-generated value
+      const titleEl = $("#projTitle");
+      const slugEl = $("#projSlug");
+      const newSlug = toSlug(titleEl.value);
+      // If slug is empty or user hasn't manually edited it, auto-fill
+      if (!slugEl.dataset.manual) {
+        slugEl.value = newSlug;
+      }
+    });
+    // Mark slug as manually edited if user types in it
+    $("#projSlug").addEventListener("input", () => {
+      $("#projSlug").dataset.manual = "1";
+    });
 
     function fmtDate(d) {
       try {
@@ -664,6 +688,7 @@
       $("#projId").value = "";
       $("#projTitle").value = "";
       $("#projSlug").value = "";
+      $("#projSlug").dataset.manual = ""; // Reset manual flag for auto-slug
       $("#projTag").value = "";
       $("#projDate").value = "";
       $("#projDesc").value = "";
@@ -690,6 +715,7 @@
       $("#projId").value = p.id;
       $("#projTitle").value = p.title;
       $("#projSlug").value = p.slug;
+      $("#projSlug").dataset.manual = "1"; // Don't auto-overwrite existing slug
       $("#projTag").value = p.tag || "";
       $("#projDate").value = p.date ? p.date.substring(0, 10) : "";
       $("#projDesc").value = p.description || "";

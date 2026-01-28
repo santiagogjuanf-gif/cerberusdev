@@ -7,68 +7,133 @@
   <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
   <link rel="stylesheet" href="/assets/css/styles.css"/>
   <style>
-    /* Modern Image Gallery */
-    .proj-gallery {
-      margin-bottom: 32px;
+    /* Project Detail Layout */
+    .proj-detail {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 32px;
+      margin-bottom: 48px;
     }
-    .proj-gallery-main {
-      position: relative;
+    @media (max-width: 900px) {
+      .proj-detail {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Column */
+    .proj-main {
+      display: flex;
+      flex-direction: column;
+    }
+    .proj-main-image {
       width: 100%;
-      aspect-ratio: 16/9;
+      aspect-ratio: 16/10;
       border-radius: 16px;
       overflow: hidden;
       background: rgba(255,255,255,0.03);
       border: 1px solid var(--border);
-      cursor: zoom-in;
+      margin-bottom: 24px;
     }
-    .proj-gallery-main img {
+    .proj-main-image img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: opacity 0.4s ease;
     }
-    .proj-gallery-main img.fade-out {
-      opacity: 0;
+    .proj-description {
+      font-size: 16px;
+      color: var(--text-body);
+      line-height: 1.8;
     }
-    .proj-gallery-thumbs {
-      display: flex;
+    .proj-content {
+      margin-top: 24px;
+    }
+
+    /* Right Column - Gallery */
+    .proj-gallery-side {
+      position: sticky;
+      top: 100px;
+      align-self: start;
+    }
+    .proj-gallery-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--orange);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .proj-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 10px;
-      margin-top: 12px;
-      overflow-x: auto;
-      padding-bottom: 8px;
     }
-    .proj-gallery-thumb {
-      flex-shrink: 0;
-      width: 80px;
-      height: 56px;
-      border-radius: 8px;
+    .proj-gallery-item {
+      aspect-ratio: 16/10;
+      border-radius: 10px;
       overflow: hidden;
       cursor: pointer;
       border: 2px solid transparent;
       transition: all 0.2s;
-      opacity: 0.6;
     }
-    .proj-gallery-thumb:hover {
-      opacity: 0.9;
-    }
-    .proj-gallery-thumb.is-active {
+    .proj-gallery-item:hover {
       border-color: var(--orange);
-      opacity: 1;
+      transform: scale(1.02);
     }
-    .proj-gallery-thumb img {
+    .proj-gallery-item.is-active {
+      border-color: var(--orange);
+    }
+    .proj-gallery-item img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    .proj-gallery-counter {
-      position: absolute;
-      bottom: 12px;
-      right: 12px;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 6px 12px;
-      border-radius: 20px;
+    .proj-gallery-count {
+      text-align: center;
+      margin-top: 12px;
       font-size: 13px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* Technologies - Centered */
+    .proj-techs-section {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+      padding-top: 48px;
+      border-top: 1px solid var(--border);
+    }
+    .proj-techs-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--orange);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .proj-techs-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+    }
+    .proj-techs-grid .tech {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 20px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .proj-techs-grid .tech img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+    }
+    .proj-techs-grid .tech span {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
       font-weight: 600;
     }
 
@@ -115,7 +180,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s;
     }
     .lightbox-close:hover {
       background: rgba(255,255,255,0.2);
@@ -135,7 +199,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s;
     }
     .lightbox-nav:hover {
       background: rgba(255,122,24,0.4);
@@ -165,30 +228,41 @@
       <div class="container">
         <div class="hero-content">
           <a href="/proyectos" class="section-label" data-reveal style="text-decoration:none;" data-i18n="projects.back_link">&larr; Volver a proyectos</a>
-          <h1 class="h-title" data-reveal id="projTitle">Cargando...</h1>
-          <p class="h-sub" data-reveal id="projMeta"></p>
+          <h1 class="h-title" data-reveal id="projTitle" style="font-size:32px;">Cargando...</h1>
+          <p class="h-sub" data-reveal id="projMeta" style="font-size:15px;"></p>
         </div>
       </div>
     </section>
 
     <section class="section" style="padding-top:32px;">
       <div class="container">
-        <!-- Image Gallery -->
-        <div class="proj-gallery" id="projGallery" style="display:none;">
-          <div class="proj-gallery-main" id="galleryMain">
-            <img id="galleryMainImg" src="" alt="">
-            <div class="proj-gallery-counter" id="galleryCounter">1 / 1</div>
+        <!-- Two Column Layout -->
+        <div class="proj-detail" id="projDetail" style="display:none;">
+          <!-- Left: Main Image + Description -->
+          <div class="proj-main">
+            <div class="proj-main-image" id="mainImageContainer" style="display:none;">
+              <img id="mainImage" src="" alt="">
+            </div>
+            <div class="proj-description" id="projDesc"></div>
+            <div class="proj-content" id="projContent"></div>
           </div>
-          <div class="proj-gallery-thumbs" id="galleryThumbs"></div>
+
+          <!-- Right: Gallery -->
+          <div class="proj-gallery-side" id="gallerySide" style="display:none;">
+            <div class="proj-gallery-title">Galeria</div>
+            <div class="proj-gallery-grid" id="galleryGrid"></div>
+            <div class="proj-gallery-count" id="galleryCount"></div>
+          </div>
         </div>
 
-        <article class="blog-post" id="projContent">
-          <div style="text-align:center;color:rgba(255,255,255,0.4);padding:40px;">Cargando proyecto...</div>
-        </article>
+        <!-- Loading state -->
+        <div id="loadingState" style="text-align:center;color:rgba(255,255,255,0.4);padding:60px 20px;">
+          Cargando proyecto...
+        </div>
 
-        <!-- Technologies used -->
+        <!-- Technologies - Centered -->
         <div class="proj-techs-section" id="projTechsSection" style="display:none;">
-          <h3 class="proj-techs-title" id="projTechsTitle">Tecnologias utilizadas</h3>
+          <div class="proj-techs-title">Tecnologias utilizadas</div>
           <div class="proj-techs-grid" id="projTechsGrid"></div>
         </div>
       </div>
@@ -217,16 +291,19 @@
 
     const projTitle = document.getElementById("projTitle");
     const projMeta = document.getElementById("projMeta");
+    const projDetail = document.getElementById("projDetail");
+    const loadingState = document.getElementById("loadingState");
+    const mainImageContainer = document.getElementById("mainImageContainer");
+    const mainImage = document.getElementById("mainImage");
+    const projDesc = document.getElementById("projDesc");
     const projContent = document.getElementById("projContent");
+    const gallerySide = document.getElementById("gallerySide");
+    const galleryGrid = document.getElementById("galleryGrid");
+    const galleryCount = document.getElementById("galleryCount");
     const projTechsSection = document.getElementById("projTechsSection");
     const projTechsGrid = document.getElementById("projTechsGrid");
-    const projGallery = document.getElementById("projGallery");
-    const galleryMain = document.getElementById("galleryMain");
-    const galleryMainImg = document.getElementById("galleryMainImg");
-    const galleryThumbs = document.getElementById("galleryThumbs");
-    const galleryCounter = document.getElementById("galleryCounter");
 
-    // Lightbox elements
+    // Lightbox
     const lightbox = document.getElementById("lightbox");
     const lightboxImg = document.getElementById("lightboxImg");
     const lightboxClose = document.getElementById("lightboxClose");
@@ -245,25 +322,6 @@
       try {
         return new Date(d).toLocaleDateString("es-MX", { year:"numeric", month:"long", day:"numeric" });
       } catch { return ""; }
-    }
-
-    function updateGallery(index) {
-      if (allImages.length === 0) return;
-      currentIndex = index;
-
-      // Fade transition
-      galleryMainImg.classList.add("fade-out");
-      setTimeout(() => {
-        galleryMainImg.src = allImages[index];
-        galleryMainImg.classList.remove("fade-out");
-      }, 200);
-
-      galleryCounter.textContent = `${index + 1} / ${allImages.length}`;
-
-      // Update thumbs
-      document.querySelectorAll(".proj-gallery-thumb").forEach((thumb, i) => {
-        thumb.classList.toggle("is-active", i === index);
-      });
     }
 
     function openLightbox(index) {
@@ -286,7 +344,6 @@
       currentIndex = newIndex;
       lightboxImg.src = allImages[newIndex];
       lightboxCounter.textContent = `${newIndex + 1} / ${allImages.length}`;
-      updateGallery(newIndex);
     }
 
     // Lightbox events
@@ -303,29 +360,48 @@
       if (e.key === "ArrowRight") lightboxNav(1);
     });
 
-    // Main image click opens lightbox
-    galleryMain.addEventListener("click", () => {
-      if (allImages.length > 0) openLightbox(currentIndex);
-    });
-
     fetch(`/api/projects/${slug}`)
       .then(r => r.json())
       .then(data => {
+        loadingState.style.display = "none";
+
         if (!data.ok || !data.project) {
           projTitle.textContent = "Proyecto no encontrado";
-          projContent.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">Este proyecto no existe o no esta disponible.</div>';
+          loadingState.style.display = "";
+          loadingState.innerHTML = '<div style="color:rgba(255,255,255,0.4);">Este proyecto no existe o no esta disponible.</div>';
           return;
         }
+
         const p = data.project;
         document.title = `Cerberus Dev | ${p.title}`;
         projTitle.textContent = p.title;
+        projDetail.style.display = "";
 
+        // Meta info
         const metaParts = [];
         if (p.tag) metaParts.push('<span style="color:var(--orange);">' + esc(p.tag) + '</span>');
         if (p.date) metaParts.push(fmtDate(p.date));
         projMeta.innerHTML = metaParts.join(' &bull; ');
 
-        // Build images array (main + gallery)
+        // Main image (first/cover)
+        if (p.image_url) {
+          mainImageContainer.style.display = "";
+          mainImage.src = p.image_url;
+          mainImage.style.cursor = "zoom-in";
+          mainImage.addEventListener("click", () => openLightbox(0));
+        }
+
+        // Description
+        if (p.description) {
+          projDesc.innerHTML = esc(p.description);
+        }
+
+        // Content (HTML)
+        if (p.content) {
+          projContent.innerHTML = p.content;
+        }
+
+        // Build all images array for lightbox
         allImages = [];
         if (p.image_url) allImages.push(p.image_url);
         if (p.images && p.images.length > 0) {
@@ -334,37 +410,24 @@
           });
         }
 
-        // Show gallery if there are images
-        if (allImages.length > 0) {
-          projGallery.style.display = "";
-          galleryMainImg.src = allImages[0];
-          galleryCounter.textContent = `1 / ${allImages.length}`;
+        // Gallery sidebar (show if there are gallery images beyond the main one)
+        if (allImages.length > 1) {
+          gallerySide.style.display = "";
+          galleryGrid.innerHTML = allImages.map((img, i) => `
+            <div class="proj-gallery-item" data-index="${i}">
+              <img src="${esc(img)}" alt="Imagen ${i + 1}">
+            </div>
+          `).join("");
+          galleryCount.textContent = `${allImages.length} imagenes`;
 
-          // Build thumbnails
-          if (allImages.length > 1) {
-            galleryThumbs.innerHTML = allImages.map((img, i) => `
-              <div class="proj-gallery-thumb ${i === 0 ? 'is-active' : ''}" data-index="${i}">
-                <img src="${esc(img)}" alt="Imagen ${i + 1}">
-              </div>
-            `).join("");
-
-            galleryThumbs.querySelectorAll(".proj-gallery-thumb").forEach(thumb => {
-              thumb.addEventListener("click", () => {
-                updateGallery(Number(thumb.dataset.index));
-              });
+          galleryGrid.querySelectorAll(".proj-gallery-item").forEach(item => {
+            item.addEventListener("click", () => {
+              openLightbox(Number(item.dataset.index));
             });
-          } else {
-            galleryCounter.style.display = "none";
-          }
+          });
         }
 
-        // Content (without main image since we have the gallery now)
-        projContent.innerHTML = `
-          ${p.description ? '<p style="font-size:17px;color:var(--text-body);line-height:1.8;margin-bottom:24px;">' + esc(p.description) + '</p>' : ''}
-          <div class="blog-post-content">${p.content || ''}</div>
-        `;
-
-        // Show technologies
+        // Technologies - centered
         if (p.technologies && p.technologies.length > 0) {
           projTechsSection.style.display = "";
           projTechsGrid.innerHTML = p.technologies.map(t => `
@@ -377,6 +440,7 @@
       })
       .catch(() => {
         projTitle.textContent = "Error al cargar";
+        loadingState.innerHTML = '<div style="color:rgba(255,255,255,0.4);">Error al cargar el proyecto.</div>';
       });
   })();
   </script>

@@ -79,16 +79,27 @@
               <input name="slug" id="postSlug" placeholder="se-genera-automaticamente"/>
             </div>
           </div>
-          <div class="admin-form-row">
-            <div class="field">
-              <label>Categoria</label>
-              <select name="category_id" id="postCategory">
-                <option value="">Sin categoria</option>
-              </select>
+          <div class="field">
+            <label>Categoria</label>
+            <select name="category_id" id="postCategory">
+              <option value="">Sin categoria</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Imagen destacada</label>
+            <input type="hidden" name="image_url" id="postImage"/>
+            <div class="upload-zone" id="blogUploadZone">
+              <div class="upload-icon">
+                <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                  <path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
+                </svg>
+              </div>
+              <div class="upload-text">Arrastra una imagen aqui o <span class="upload-link">selecciona un archivo</span></div>
+              <input type="file" id="blogFileInput" accept="image/*" style="display:none;"/>
             </div>
-            <div class="field">
-              <label>Imagen (URL)</label>
-              <input name="image_url" id="postImage" placeholder="https://ejemplo.com/imagen.jpg"/>
+            <div class="upload-preview" id="blogPreview" style="display:none;">
+              <img id="blogPreviewImg" src="" alt="Preview">
+              <button type="button" class="upload-preview-remove" id="blogRemoveImg">&times;</button>
             </div>
           </div>
           <div class="field">
@@ -175,7 +186,7 @@
       document.getElementById("tabCategories").style.display = tab === "categories" ? "" : "none";
       document.getElementById("tabComments").style.display = tab === "comments" ? "" : "none";
 
-      if (tab === "editor" && !$("#postId").value) resetForm();
+      if (tab === "editor") resetForm();
       if (tab === "comments") loadComments();
     });
   });
@@ -283,6 +294,7 @@
     $("#postImage").value = p.image_url || "";
     $("#postPublished").checked = Number(p.is_published) === 1;
     $("#editorTitle").textContent = "Editar articulo";
+    showImagePreview(p.image_url);
     showTab("editor");
   }
 
@@ -332,7 +344,9 @@
   function resetForm() {
     $("#postForm").reset();
     $("#postId").value = "";
+    $("#postImage").value = "";
     $("#editorTitle").textContent = "Nuevo articulo";
+    showImagePreview(null);
   }
 
   $("#cancelEdit").addEventListener("click", () => {
@@ -449,6 +463,81 @@
         loadComments();
       });
     });
+  }
+
+  // ── Image Upload ──
+  const uploadZone = $("#blogUploadZone");
+  const fileInput = $("#blogFileInput");
+  const preview = $("#blogPreview");
+  const previewImg = $("#blogPreviewImg");
+  const removeBtn = $("#blogRemoveImg");
+  const imageInput = $("#postImage");
+
+  uploadZone.addEventListener("click", () => fileInput.click());
+  uploadZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    uploadZone.classList.add("drag-over");
+  });
+  uploadZone.addEventListener("dragleave", () => {
+    uploadZone.classList.remove("drag-over");
+  });
+  uploadZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove("drag-over");
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) {
+      uploadImage(file);
+    }
+  });
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files[0]) {
+      uploadImage(fileInput.files[0]);
+    }
+  });
+  removeBtn.addEventListener("click", () => {
+    imageInput.value = "";
+    preview.style.display = "none";
+    uploadZone.style.display = "";
+  });
+
+  async function uploadImage(file) {
+    const fd = new FormData();
+    fd.append("image", file);
+    uploadZone.innerHTML = '<div style="color:var(--orange);">Subiendo...</div>';
+    try {
+      const res = await fetch("./api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.ok && data.url) {
+        imageInput.value = data.url;
+        previewImg.src = data.url;
+        preview.style.display = "";
+        uploadZone.style.display = "none";
+      } else {
+        alert("Error al subir imagen");
+      }
+    } catch (err) {
+      alert("Error al subir: " + err.message);
+    } finally {
+      uploadZone.innerHTML = `
+        <div class="upload-icon">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
+          </svg>
+        </div>
+        <div class="upload-text">Arrastra una imagen aqui o <span class="upload-link">selecciona un archivo</span></div>
+      `;
+    }
+  }
+
+  function showImagePreview(url) {
+    if (url) {
+      previewImg.src = url;
+      preview.style.display = "";
+      uploadZone.style.display = "none";
+    } else {
+      preview.style.display = "none";
+      uploadZone.style.display = "";
+    }
   }
 
   // ── Init ──
