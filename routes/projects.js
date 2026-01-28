@@ -10,13 +10,18 @@ router.get("/", async (req, res) => {
       ORDER BY date DESC, created_at DESC
     `);
 
-    // Attach technologies to each project
+    // Attach technologies and images to each project
     for (const p of rows) {
       const [techs] = await db.execute(
         "SELECT tech_name, tech_icon FROM project_technologies WHERE project_id = ?",
         [p.id]
       );
+      const [images] = await db.execute(
+        "SELECT image_url FROM project_images WHERE project_id = ? ORDER BY sort_order ASC",
+        [p.id]
+      );
       p.technologies = techs;
+      p.images = images.map(i => i.image_url);
     }
 
     res.json({ ok: true, projects: rows });
@@ -41,7 +46,12 @@ router.get("/:slug", async (req, res) => {
       "SELECT tech_name, tech_icon FROM project_technologies WHERE project_id = ?",
       [project.id]
     );
+    const [images] = await db.execute(
+      "SELECT image_url FROM project_images WHERE project_id = ? ORDER BY sort_order ASC",
+      [project.id]
+    );
     project.technologies = techs;
+    project.images = images.map(i => i.image_url);
 
     res.json({ ok: true, project });
   } catch (err) {
