@@ -62,9 +62,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
       box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1);
       animation: logoPulse 3s ease-in-out infinite;
+      padding: 10px;
+    }
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 8px rgba(255,122,24,0.4));
     }
     @keyframes logoPulse {
       0%, 100% { box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1); }
@@ -246,9 +252,15 @@
       width: 0;
       background: linear-gradient(90deg, rgba(255,122,24,0.1), transparent);
       transition: width 0.3s ease;
+      pointer-events: none;
+      z-index: 0;
     }
     .table tbody tr:hover::before {
       width: 100%;
+    }
+    .table tbody tr td {
+      position: relative;
+      z-index: 1;
     }
 
     /* Quick stats bar */
@@ -292,6 +304,127 @@
       font-family: monospace;
       color: rgba(255,255,255,0.4);
     }
+
+    /* Welcome Modal */
+    .welcome-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(20px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.5s ease;
+    }
+    .welcome-modal.is-visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    .welcome-modal.is-hiding {
+      opacity: 0;
+    }
+    .welcome-content {
+      text-align: center;
+      transform: scale(0.8) translateY(30px);
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .welcome-modal.is-visible .welcome-content {
+      transform: scale(1) translateY(0);
+    }
+    .welcome-logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 30px;
+      border-radius: 30px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.3), rgba(255,122,24,0.1));
+      border: 2px solid rgba(255,122,24,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-shadow: 0 0 60px rgba(255,122,24,0.4), inset 0 0 40px rgba(255,122,24,0.2);
+      animation: welcomeLogoPulse 2s ease-in-out infinite;
+    }
+    @keyframes welcomeLogoPulse {
+      0%, 100% { box-shadow: 0 0 60px rgba(255,122,24,0.4), inset 0 0 40px rgba(255,122,24,0.2); }
+      50% { box-shadow: 0 0 80px rgba(255,122,24,0.6), inset 0 0 50px rgba(255,122,24,0.3); }
+    }
+    .welcome-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 15px rgba(255,122,24,0.6));
+    }
+    .welcome-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      margin-bottom: 10px;
+      opacity: 0;
+      animation: welcomeFadeIn 0.5s ease forwards 0.3s;
+    }
+    .welcome-title {
+      font-size: 48px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #FF7A18 0%, #FF9A45 50%, #FFD080 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+      opacity: 0;
+      animation: welcomeSlideUp 0.6s ease forwards 0.5s;
+    }
+    .welcome-subtitle {
+      font-size: 16px;
+      color: rgba(255,255,255,0.6);
+      opacity: 0;
+      animation: welcomeFadeIn 0.5s ease forwards 0.8s;
+    }
+    .welcome-line {
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #FF7A18, transparent);
+      margin: 30px auto;
+      animation: welcomeLineExpand 0.8s ease forwards 1s;
+    }
+    .welcome-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      opacity: 0;
+      animation: welcomeFadeIn 0.5s ease forwards 1.2s;
+    }
+    .welcome-status-dot {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #22c55e;
+      animation: welcomeStatusPulse 1s ease-in-out infinite;
+    }
+    @keyframes welcomeStatusPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+    @keyframes welcomeFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes welcomeSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes welcomeLineExpand {
+      from { width: 0; }
+      to { width: 200px; }
+    }
   </style>
 </head>
 <body>
@@ -300,7 +433,7 @@
 
     <header class="admin-top">
       <div class="dashboard-header">
-        <div class="header-logo">&#x1F43A;</div>
+        <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
         <div class="admin-brand">
           <div class="admin-title">Cerberus Control Room</div>
           <div class="admin-sub">Sistema activo &bull; Centro de control</div>
@@ -406,6 +539,23 @@
     </section>
   </main>
 
+  <!-- Welcome Modal -->
+  <div class="welcome-modal" id="welcomeModal">
+    <div class="welcome-content">
+      <div class="welcome-logo">
+        <img src="/assets/img/cerberus-mark.png" alt="Cerberus">
+      </div>
+      <div class="welcome-text">Acceso autorizado</div>
+      <div class="welcome-title">Bienvenido</div>
+      <div class="welcome-subtitle">Cerberus Control Room</div>
+      <div class="welcome-line"></div>
+      <div class="welcome-status">
+        <span class="welcome-status-dot"></span>
+        <span>Iniciando sistemas...</span>
+      </div>
+    </div>
+  </div>
+
   <script src="/assets/js/admin.js"></script>
   <script>
     // Update clock
@@ -416,6 +566,31 @@
     }
     updateClock();
     setInterval(updateClock, 1000);
+
+    // Welcome modal - show only on first visit of session
+    (function() {
+      const modal = document.getElementById('welcomeModal');
+      const shown = sessionStorage.getItem('cerberus_welcome_shown');
+
+      if (!shown && modal) {
+        // Show modal
+        setTimeout(() => {
+          modal.classList.add('is-visible');
+        }, 100);
+
+        // Hide after 2.5 seconds
+        setTimeout(() => {
+          modal.classList.add('is-hiding');
+          setTimeout(() => {
+            modal.style.display = 'none';
+          }, 500);
+        }, 2500);
+
+        sessionStorage.setItem('cerberus_welcome_shown', '1');
+      } else if (modal) {
+        modal.style.display = 'none';
+      }
+    })();
   </script>
 </body>
 </html>
