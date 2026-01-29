@@ -6,6 +6,267 @@
   <title>Cerberus Dev | Proyecto</title>
   <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
   <link rel="stylesheet" href="/assets/css/styles.css"/>
+  <style>
+    /* Project Detail Layout */
+    .proj-detail {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 32px;
+      margin-bottom: 48px;
+    }
+    @media (max-width: 900px) {
+      .proj-detail {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Column */
+    .proj-main {
+      display: flex;
+      flex-direction: column;
+    }
+    .proj-main-image {
+      width: 100%;
+      aspect-ratio: 16/10;
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .proj-main-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .proj-description {
+      font-size: 16px;
+      color: var(--text-body);
+      line-height: 1.8;
+    }
+    .proj-content {
+      margin-top: 24px;
+    }
+
+    /* Right Column - Gallery Carousel */
+    .proj-gallery-side {
+      position: sticky;
+      top: 100px;
+      align-self: start;
+    }
+    .proj-gallery-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--orange);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    /* Carousel main display */
+    .proj-carousel {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+    }
+    .proj-carousel-img {
+      width: 100%;
+      aspect-ratio: 16/10;
+      object-fit: cover;
+      cursor: zoom-in;
+      display: block;
+    }
+    .proj-carousel-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 10;
+    }
+    .proj-carousel-nav:hover {
+      background: var(--orange);
+    }
+    .proj-carousel-nav.prev { left: 10px; }
+    .proj-carousel-nav.next { right: 10px; }
+    .proj-carousel-counter {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 4px 12px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 20px;
+      font-size: 12px;
+      color: white;
+    }
+    /* Thumbnails strip */
+    .proj-thumbs {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    .proj-thumb {
+      flex-shrink: 0;
+      width: 60px;
+      height: 40px;
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+      opacity: 0.6;
+    }
+    .proj-thumb:hover {
+      opacity: 1;
+    }
+    .proj-thumb.is-active {
+      border-color: var(--orange);
+      opacity: 1;
+    }
+    .proj-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Technologies - Centered */
+    .proj-techs-section {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+      padding-top: 48px;
+      border-top: 1px solid var(--border);
+    }
+    .proj-techs-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--orange);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .proj-techs-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+    }
+    .proj-techs-grid .tech {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 20px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .proj-techs-grid .tech img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+    }
+    .proj-techs-grid .tech span {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      font-weight: 600;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    .lightbox.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .lightbox-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+    }
+    .lightbox-content img {
+      max-width: 90vw;
+      max-height: 85vh;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox-close:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox-nav:hover {
+      background: rgba(255,122,24,0.4);
+    }
+    .lightbox-nav.prev { left: -60px; }
+    .lightbox-nav.next { right: -60px; }
+    .lightbox-counter {
+      position: absolute;
+      bottom: -36px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+    }
+    @media (max-width: 768px) {
+      .lightbox-nav.prev { left: 10px; }
+      .lightbox-nav.next { right: 10px; }
+    }
+  </style>
 </head>
 <body>
   <div data-include="/partials/header.html"></div>
@@ -16,26 +277,62 @@
       <div class="container">
         <div class="hero-content">
           <a href="/proyectos" class="section-label" data-reveal style="text-decoration:none;" data-i18n="projects.back_link">&larr; Volver a proyectos</a>
-          <h1 class="h-title" data-reveal id="projTitle">Cargando...</h1>
-          <p class="h-sub" data-reveal id="projMeta"></p>
+          <h1 class="h-title" data-reveal id="projTitle" style="font-size:32px;">Cargando...</h1>
+          <p class="h-sub" data-reveal id="projMeta" style="font-size:15px;"></p>
         </div>
       </div>
     </section>
 
     <section class="section" style="padding-top:32px;">
       <div class="container">
-        <article class="blog-post" id="projContent">
-          <div style="text-align:center;color:rgba(255,255,255,0.4);padding:40px;">Cargando proyecto...</div>
-        </article>
+        <!-- Two Column Layout -->
+        <div class="proj-detail" id="projDetail" style="display:none;">
+          <!-- Left: Main Image + Description -->
+          <div class="proj-main">
+            <div class="proj-main-image" id="mainImageContainer" style="display:none;">
+              <img id="mainImage" src="" alt="">
+            </div>
+            <div class="proj-description" id="projDesc"></div>
+            <div class="proj-content" id="projContent"></div>
+          </div>
 
-        <!-- Technologies used -->
+          <!-- Right: Gallery Carousel -->
+          <div class="proj-gallery-side" id="gallerySide" style="display:none;">
+            <div class="proj-gallery-title">Galeria</div>
+            <div class="proj-carousel" id="carousel">
+              <img class="proj-carousel-img" id="carouselImg" src="" alt="Gallery">
+              <button class="proj-carousel-nav prev" id="carouselPrev">&#8249;</button>
+              <button class="proj-carousel-nav next" id="carouselNext">&#8250;</button>
+              <div class="proj-carousel-counter" id="carouselCounter">1 / 1</div>
+            </div>
+            <div class="proj-thumbs" id="thumbsStrip"></div>
+          </div>
+        </div>
+
+        <!-- Loading state -->
+        <div id="loadingState" style="text-align:center;color:rgba(255,255,255,0.4);padding:60px 20px;">
+          Cargando proyecto...
+        </div>
+
+        <!-- Technologies - Centered -->
         <div class="proj-techs-section" id="projTechsSection" style="display:none;">
-          <h3 class="proj-techs-title" id="projTechsTitle">Tecnologias utilizadas</h3>
+          <div class="proj-techs-title">Tecnologias utilizadas</div>
           <div class="proj-techs-grid" id="projTechsGrid"></div>
         </div>
       </div>
     </section>
   </main>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-content">
+      <button class="lightbox-close" id="lightboxClose">&times;</button>
+      <button class="lightbox-nav prev" id="lightboxPrev">&#8249;</button>
+      <img id="lightboxImg" src="" alt="">
+      <button class="lightbox-nav next" id="lightboxNext">&#8250;</button>
+      <div class="lightbox-counter" id="lightboxCounter">1 / 1</div>
+    </div>
+  </div>
 
   <div data-include="/partials/footer.html"></div>
   <script src="/assets/js/i18n-data.js"></script>
@@ -45,12 +342,60 @@
     const parts = location.pathname.split("/").filter(Boolean);
     const slug = parts[1];
     if (!slug || slug === "proyectos") return;
+    const lang = localStorage.getItem("cerberus_lang") || "es";
 
     const projTitle = document.getElementById("projTitle");
     const projMeta = document.getElementById("projMeta");
+    const projDetail = document.getElementById("projDetail");
+    const loadingState = document.getElementById("loadingState");
+    const mainImageContainer = document.getElementById("mainImageContainer");
+    const mainImage = document.getElementById("mainImage");
+    const projDesc = document.getElementById("projDesc");
     const projContent = document.getElementById("projContent");
+    const gallerySide = document.getElementById("gallerySide");
+    const carousel = document.getElementById("carousel");
+    const carouselImg = document.getElementById("carouselImg");
+    const carouselPrev = document.getElementById("carouselPrev");
+    const carouselNext = document.getElementById("carouselNext");
+    const carouselCounter = document.getElementById("carouselCounter");
+    const thumbsStrip = document.getElementById("thumbsStrip");
     const projTechsSection = document.getElementById("projTechsSection");
     const projTechsGrid = document.getElementById("projTechsGrid");
+
+    // Lightbox
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightboxImg");
+    const lightboxClose = document.getElementById("lightboxClose");
+    const lightboxPrev = document.getElementById("lightboxPrev");
+    const lightboxNext = document.getElementById("lightboxNext");
+    const lightboxCounter = document.getElementById("lightboxCounter");
+
+    let allImages = [];
+    let currentIndex = 0;
+    let carouselIndex = 0;
+
+    // Carousel functions
+    function updateCarousel() {
+      if (allImages.length === 0) return;
+      carouselImg.src = allImages[carouselIndex];
+      carouselCounter.textContent = `${carouselIndex + 1} / ${allImages.length}`;
+      // Update active thumbnail
+      thumbsStrip.querySelectorAll(".proj-thumb").forEach((t, i) => {
+        t.classList.toggle("is-active", i === carouselIndex);
+      });
+    }
+
+    function carouselNav(dir) {
+      carouselIndex += dir;
+      if (carouselIndex < 0) carouselIndex = allImages.length - 1;
+      if (carouselIndex >= allImages.length) carouselIndex = 0;
+      updateCarousel();
+    }
+
+    // Carousel click handlers (after DOM loads)
+    carouselPrev.addEventListener("click", () => carouselNav(-1));
+    carouselNext.addEventListener("click", () => carouselNav(1));
+    carouselImg.addEventListener("click", () => openLightbox(carouselIndex));
 
     function esc(s) {
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -62,30 +407,115 @@
       } catch { return ""; }
     }
 
-    fetch(`/api/projects/${slug}`)
+    function openLightbox(index) {
+      currentIndex = index;
+      lightboxImg.src = allImages[index];
+      lightboxCounter.textContent = `${index + 1} / ${allImages.length}`;
+      lightbox.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove("is-open");
+      document.body.style.overflow = "";
+    }
+
+    function lightboxNav(dir) {
+      let newIndex = currentIndex + dir;
+      if (newIndex < 0) newIndex = allImages.length - 1;
+      if (newIndex >= allImages.length) newIndex = 0;
+      currentIndex = newIndex;
+      lightboxImg.src = allImages[newIndex];
+      lightboxCounter.textContent = `${newIndex + 1} / ${allImages.length}`;
+    }
+
+    // Lightbox events
+    lightboxClose.addEventListener("click", closeLightbox);
+    lightbox.addEventListener("click", (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+    lightboxPrev.addEventListener("click", (e) => { e.stopPropagation(); lightboxNav(-1); });
+    lightboxNext.addEventListener("click", (e) => { e.stopPropagation(); lightboxNav(1); });
+    document.addEventListener("keydown", (e) => {
+      if (!lightbox.classList.contains("is-open")) return;
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") lightboxNav(-1);
+      if (e.key === "ArrowRight") lightboxNav(1);
+    });
+
+    fetch(`/api/projects/${slug}?lang=${lang}`)
       .then(r => r.json())
       .then(data => {
+        loadingState.style.display = "none";
+
         if (!data.ok || !data.project) {
           projTitle.textContent = "Proyecto no encontrado";
-          projContent.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">Este proyecto no existe o no esta disponible.</div>';
+          loadingState.style.display = "";
+          loadingState.innerHTML = '<div style="color:rgba(255,255,255,0.4);">Este proyecto no existe o no esta disponible.</div>';
           return;
         }
+
         const p = data.project;
         document.title = `Cerberus Dev | ${p.title}`;
         projTitle.textContent = p.title;
+        projDetail.style.display = "";
 
+        // Meta info
         const metaParts = [];
         if (p.tag) metaParts.push('<span style="color:var(--orange);">' + esc(p.tag) + '</span>');
         if (p.date) metaParts.push(fmtDate(p.date));
         projMeta.innerHTML = metaParts.join(' &bull; ');
 
-        projContent.innerHTML = `
-          ${p.image_url ? '<img style="width:100%;border-radius:16px;margin-bottom:24px;border:1px solid var(--border);" src="' + esc(p.image_url) + '" alt="' + esc(p.title) + '" onerror="this.style.display=\'none\'">' : ''}
-          ${p.description ? '<p style="font-size:17px;color:var(--text-body);line-height:1.8;margin-bottom:24px;">' + esc(p.description) + '</p>' : ''}
-          <div class="blog-post-content">${p.content || ''}</div>
-        `;
+        // Main image (first/cover)
+        if (p.image_url) {
+          mainImageContainer.style.display = "";
+          mainImage.src = p.image_url;
+          mainImage.style.cursor = "zoom-in";
+          mainImage.addEventListener("click", () => openLightbox(0));
+        }
 
-        // Show technologies
+        // Description
+        if (p.description) {
+          projDesc.innerHTML = esc(p.description);
+        }
+
+        // Content (HTML)
+        if (p.content) {
+          projContent.innerHTML = p.content;
+        }
+
+        // Build all images array for lightbox
+        allImages = [];
+        if (p.image_url) allImages.push(p.image_url);
+        if (p.images && p.images.length > 0) {
+          p.images.forEach(img => {
+            if (!allImages.includes(img)) allImages.push(img);
+          });
+        }
+
+        // Gallery carousel (show if there are gallery images beyond the main one)
+        if (allImages.length > 1) {
+          gallerySide.style.display = "";
+          carouselIndex = 0;
+          updateCarousel();
+
+          // Build thumbnails
+          thumbsStrip.innerHTML = allImages.map((img, i) => `
+            <div class="proj-thumb${i === 0 ? ' is-active' : ''}" data-index="${i}">
+              <img src="${esc(img)}" alt="Miniatura ${i + 1}">
+            </div>
+          `).join("");
+
+          // Thumbnail clicks
+          thumbsStrip.querySelectorAll(".proj-thumb").forEach(thumb => {
+            thumb.addEventListener("click", () => {
+              carouselIndex = Number(thumb.dataset.index);
+              updateCarousel();
+            });
+          });
+        }
+
+        // Technologies - centered
         if (p.technologies && p.technologies.length > 0) {
           projTechsSection.style.display = "";
           projTechsGrid.innerHTML = p.technologies.map(t => `
@@ -98,6 +528,7 @@
       })
       .catch(() => {
         projTitle.textContent = "Error al cargar";
+        loadingState.innerHTML = '<div style="color:rgba(255,255,255,0.4);">Error al cargar el proyecto.</div>';
       });
   })();
   </script>

@@ -8,6 +8,116 @@
   <link rel="stylesheet" href="/assets/css/styles.css"/>
   <link rel="stylesheet" href="/assets/css/admin.css"/>
   <style>
+    /* Futuristic Background */
+    .admin-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,122,24,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,122,24,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+    }
+    .admin-bg::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
+      animation: scanline 8s linear infinite;
+      opacity: 0.6;
+    }
+    @keyframes scanline {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { top: 100%; opacity: 0; }
+    }
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .header-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1);
+      animation: logoPulse 3s ease-in-out infinite;
+      padding: 10px;
+    }
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 8px rgba(255,122,24,0.4));
+    }
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1); }
+      50% { box-shadow: 0 0 40px rgba(255,122,24,0.35), inset 0 0 25px rgba(255,122,24,0.15); }
+    }
+    .admin-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #FF7A18, transparent);
+      border-radius: 2px;
+    }
+    .admin-title { position: relative; }
+    .admin-sub {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-sub::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: statusBlink 2s ease-in-out infinite;
+      box-shadow: 0 0 8px #22c55e;
+    }
+    @keyframes statusBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    /* Corner accents for cards */
+    .admin-card::before,
+    .admin-card::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,122,24,0.3);
+      pointer-events: none;
+    }
+    .admin-card::before {
+      top: -1px;
+      left: -1px;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 16px 0 0 0;
+    }
+    .admin-card::after {
+      bottom: -1px;
+      right: -1px;
+      border-left: none;
+      border-top: none;
+      border-radius: 0 0 16px 0;
+    }
     .lead-grid {
       display: grid;
       grid-template-columns: 1.1fr .9fr;
@@ -67,12 +177,15 @@
     <div class="admin-bg"></div>
 
     <header class="admin-top">
-      <div class="admin-brand">
-        <div class="admin-title" id="title">Lead</div>
-        <div class="admin-sub">Detalle del cliente</div>
+      <div class="dashboard-header">
+        <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
+        <div class="admin-brand">
+          <div class="admin-title" id="title">Lead</div>
+          <div class="admin-sub">Sistema activo &bull; Detalle del cliente</div>
+        </div>
       </div>
       <div class="admin-actions">
-        <a class="btn btn--ghost" href="./dashboard">Volver al panel</a>
+        <a class="btn btn--ghost" href="./dashboard">&larr; Volver al panel</a>
       </div>
     </header>
 
@@ -228,9 +341,41 @@
     }
 
     async function del() {
-      if (!confirm("Eliminar definitivamente este lead?")) return;
+      const ok = await showConfirm("Eliminar lead", "Este lead se eliminara permanentemente junto con todas sus notas.");
+      if (!ok) return;
       await fetch(`./api/leads/${id}/delete`, { method: "POST" });
       location.href = "./dashboard";
+    }
+
+    // ── Confirmation Modal ──
+    function showConfirm(title, text) {
+      return new Promise(resolve => {
+        const modal = document.getElementById("confirmModal");
+        const titleEl = document.getElementById("confirmTitle");
+        const textEl = document.getElementById("confirmText");
+        const okBtn = document.getElementById("confirmOk");
+        const cancelBtn = document.getElementById("confirmCancel");
+        const backdrop = modal.querySelector(".confirm-modal-backdrop");
+
+        titleEl.textContent = title || "Confirmar accion";
+        textEl.textContent = text || "Esta accion no se puede deshacer.";
+        modal.classList.add("is-open");
+
+        function close(result) {
+          modal.classList.remove("is-open");
+          okBtn.removeEventListener("click", onOk);
+          cancelBtn.removeEventListener("click", onCancel);
+          backdrop.removeEventListener("click", onCancel);
+          resolve(result);
+        }
+
+        function onOk() { close(true); }
+        function onCancel() { close(false); }
+
+        okBtn.addEventListener("click", onOk);
+        cancelBtn.addEventListener("click", onCancel);
+        backdrop.addEventListener("click", onCancel);
+      });
     }
 
     el("btnReplied").addEventListener("click", () => setStatus("replied"));
@@ -244,5 +389,19 @@
       showToast(toast, "Error cargando el lead");
     });
   </script>
+
+  <!-- Confirmation Modal -->
+  <div class="confirm-modal" id="confirmModal">
+    <div class="confirm-modal-backdrop"></div>
+    <div class="confirm-modal-box">
+      <div class="confirm-modal-icon">&#x26A0;</div>
+      <div class="confirm-modal-title" id="confirmTitle">Confirmar accion</div>
+      <div class="confirm-modal-text" id="confirmText">Esta accion no se puede deshacer.</div>
+      <div class="confirm-modal-actions">
+        <button class="confirm-modal-btn cancel" id="confirmCancel" title="Cancelar">&#x2715;</button>
+        <button class="confirm-modal-btn confirm" id="confirmOk" title="Confirmar">&#x2713;</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

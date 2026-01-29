@@ -7,15 +7,142 @@
   <title>Cerberus Control Room – Blog</title>
   <link rel="stylesheet" href="/assets/css/styles.css"/>
   <link rel="stylesheet" href="/assets/css/admin.css"/>
+  <style>
+    /* Futuristic Background */
+    .admin-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,122,24,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,122,24,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+    }
+    .admin-bg::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
+      animation: scanline 8s linear infinite;
+      opacity: 0.6;
+    }
+    @keyframes scanline {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { top: 100%; opacity: 0; }
+    }
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .header-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1);
+      animation: logoPulse 3s ease-in-out infinite;
+      padding: 10px;
+    }
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 8px rgba(255,122,24,0.4));
+    }
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1); }
+      50% { box-shadow: 0 0 40px rgba(255,122,24,0.35), inset 0 0 25px rgba(255,122,24,0.15); }
+    }
+    .admin-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #FF7A18, transparent);
+      border-radius: 2px;
+    }
+    .admin-title { position: relative; }
+    .admin-sub {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-sub::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: statusBlink 2s ease-in-out infinite;
+      box-shadow: 0 0 8px #22c55e;
+    }
+    @keyframes statusBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    /* Corner accents for cards */
+    .admin-card::before,
+    .admin-card::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,122,24,0.3);
+      pointer-events: none;
+    }
+    .admin-card::before {
+      top: -1px;
+      left: -1px;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 16px 0 0 0;
+    }
+    .admin-card::after {
+      bottom: -1px;
+      right: -1px;
+      border-left: none;
+      border-top: none;
+      border-radius: 0 0 16px 0;
+    }
+    .admin-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-card-title::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(180deg, #FF7A18, #FF9A45);
+      border-radius: 2px;
+    }
+  </style>
 </head>
 <body>
   <main class="admin-wrap">
     <div class="admin-bg"></div>
 
     <header class="admin-top">
-      <div class="admin-brand">
-        <div class="admin-title">Blog Manager</div>
-        <div class="admin-sub">Crear, editar y publicar articulos</div>
+      <div class="dashboard-header">
+        <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
+        <div class="admin-brand">
+          <div class="admin-title">Blog Manager</div>
+          <div class="admin-sub">Sistema activo &bull; Crear y publicar articulos</div>
+        </div>
       </div>
       <div class="admin-actions">
         <a class="btn btn--ghost" href="./dashboard">&larr; Volver al panel</a>
@@ -71,33 +198,62 @@
           <input type="hidden" name="id" id="postId"/>
           <div class="admin-form-row">
             <div class="field">
-              <label>Titulo</label>
+              <label>Titulo (Español)</label>
               <input name="title" id="postTitleInput" required placeholder="Titulo del articulo"/>
             </div>
+            <div class="field">
+              <label>Title (English)</label>
+              <input name="title_en" id="postTitleEn" placeholder="Article title in English"/>
+            </div>
+          </div>
+          <div class="admin-form-row">
             <div class="field">
               <label>Slug (URL)</label>
               <input name="slug" id="postSlug" placeholder="se-genera-automaticamente"/>
             </div>
-          </div>
-          <div class="admin-form-row">
             <div class="field">
               <label>Categoria</label>
               <select name="category_id" id="postCategory">
                 <option value="">Sin categoria</option>
               </select>
             </div>
-            <div class="field">
-              <label>Imagen (URL)</label>
-              <input name="image_url" id="postImage" placeholder="https://ejemplo.com/imagen.jpg"/>
+          </div>
+          <div class="field">
+            <label>Imagen destacada</label>
+            <input type="hidden" name="image_url" id="postImage"/>
+            <div class="upload-zone" id="blogUploadZone">
+              <div class="upload-icon">
+                <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                  <path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
+                </svg>
+              </div>
+              <div class="upload-text">Arrastra una imagen aqui o <span class="upload-link">selecciona un archivo</span></div>
+              <input type="file" id="blogFileInput" accept="image/*" style="display:none;"/>
+            </div>
+            <div class="upload-preview" id="blogPreview" style="display:none;">
+              <img id="blogPreviewImg" src="" alt="Preview">
+              <button type="button" class="upload-preview-remove" id="blogRemoveImg">&times;</button>
             </div>
           </div>
-          <div class="field">
-            <label>Extracto</label>
-            <input name="excerpt" id="postExcerpt" placeholder="Breve descripcion del articulo (opcional)"/>
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Extracto (Español)</label>
+              <input name="excerpt" id="postExcerpt" placeholder="Breve descripcion del articulo"/>
+            </div>
+            <div class="field">
+              <label>Excerpt (English)</label>
+              <input name="excerpt_en" id="postExcerptEn" placeholder="Brief article description"/>
+            </div>
           </div>
-          <div class="field">
-            <label>Contenido (HTML)</label>
-            <textarea name="content" id="postContent" rows="14" placeholder="Escribe el contenido del articulo en HTML..."></textarea>
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Contenido (Español - HTML)</label>
+              <textarea name="content" id="postContent" rows="10" placeholder="Escribe el contenido del articulo en HTML..."></textarea>
+            </div>
+            <div class="field">
+              <label>Content (English - HTML)</label>
+              <textarea name="content_en" id="postContentEn" rows="10" placeholder="Write article content in HTML..."></textarea>
+            </div>
           </div>
           <div style="display:flex;gap:12px;align-items:center;margin-top:12px;">
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:rgba(255,255,255,0.7);">
@@ -175,7 +331,7 @@
       document.getElementById("tabCategories").style.display = tab === "categories" ? "" : "none";
       document.getElementById("tabComments").style.display = tab === "comments" ? "" : "none";
 
-      if (tab === "editor" && !$("#postId").value) resetForm();
+      if (tab === "editor") resetForm();
       if (tab === "comments") loadComments();
     });
   });
@@ -276,19 +432,24 @@
     if (!p) return;
     $("#postId").value = p.id;
     $("#postTitleInput").value = p.title;
+    $("#postTitleEn").value = p.title_en || "";
     $("#postSlug").value = p.slug || "";
     $("#postExcerpt").value = p.excerpt || "";
+    $("#postExcerptEn").value = p.excerpt_en || "";
     $("#postContent").value = p.content || "";
+    $("#postContentEn").value = p.content_en || "";
     $("#postCategory").value = p.category_id || "";
     $("#postImage").value = p.image_url || "";
     $("#postPublished").checked = Number(p.is_published) === 1;
     $("#editorTitle").textContent = "Editar articulo";
+    showImagePreview(p.image_url);
     showTab("editor");
   }
 
   // ── Delete post ──
   async function deletePost(id) {
-    if (!confirm("Eliminar esta publicacion?")) return;
+    const ok = await showConfirm("Eliminar publicacion", "Esta publicacion se eliminara permanentemente.");
+    if (!ok) return;
     await api(`./api/blog/posts/${id}/delete`, { method: "POST" });
     await loadAll();
   }
@@ -300,9 +461,12 @@
     const payload = {
       id: fd.get("id") || null,
       title: fd.get("title"),
+      title_en: fd.get("title_en") || null,
       slug: fd.get("slug"),
       excerpt: fd.get("excerpt"),
+      excerpt_en: fd.get("excerpt_en") || null,
       content: fd.get("content"),
+      content_en: fd.get("content_en") || null,
       category_id: fd.get("category_id") || null,
       image_url: fd.get("image_url"),
       is_published: fd.get("is_published") === "1"
@@ -332,7 +496,12 @@
   function resetForm() {
     $("#postForm").reset();
     $("#postId").value = "";
+    $("#postImage").value = "";
+    $("#postTitleEn").value = "";
+    $("#postExcerptEn").value = "";
+    $("#postContentEn").value = "";
     $("#editorTitle").textContent = "Nuevo articulo";
+    showImagePreview(null);
   }
 
   $("#cancelEdit").addEventListener("click", () => {
@@ -444,15 +613,136 @@
     });
     tbody.querySelectorAll("[data-del-comment]").forEach(btn => {
       btn.addEventListener("click", async () => {
-        if (!confirm("Eliminar este comentario?")) return;
+        const ok = await showConfirm("Eliminar comentario", "Este comentario se eliminara permanentemente.");
+        if (!ok) return;
         await api(`./api/blog/comments/${btn.dataset.delComment}/delete`, { method: "POST" });
         loadComments();
       });
     });
   }
 
+  // ── Image Upload ──
+  const uploadZone = $("#blogUploadZone");
+  const fileInput = $("#blogFileInput");
+  const preview = $("#blogPreview");
+  const previewImg = $("#blogPreviewImg");
+  const removeBtn = $("#blogRemoveImg");
+  const imageInput = $("#postImage");
+
+  uploadZone.addEventListener("click", () => fileInput.click());
+  uploadZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    uploadZone.classList.add("drag-over");
+  });
+  uploadZone.addEventListener("dragleave", () => {
+    uploadZone.classList.remove("drag-over");
+  });
+  uploadZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove("drag-over");
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) {
+      uploadImage(file);
+    }
+  });
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files[0]) {
+      uploadImage(fileInput.files[0]);
+    }
+  });
+  removeBtn.addEventListener("click", () => {
+    imageInput.value = "";
+    preview.style.display = "none";
+    uploadZone.style.display = "";
+  });
+
+  async function uploadImage(file) {
+    const fd = new FormData();
+    fd.append("image", file);
+    uploadZone.innerHTML = '<div style="color:var(--orange);">Subiendo...</div>';
+    try {
+      const res = await fetch("./api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.ok && data.url) {
+        imageInput.value = data.url;
+        previewImg.src = data.url;
+        preview.style.display = "";
+        uploadZone.style.display = "none";
+      } else {
+        alert("Error al subir imagen");
+      }
+    } catch (err) {
+      alert("Error al subir: " + err.message);
+    } finally {
+      uploadZone.innerHTML = `
+        <div class="upload-icon">
+          <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
+          </svg>
+        </div>
+        <div class="upload-text">Arrastra una imagen aqui o <span class="upload-link">selecciona un archivo</span></div>
+      `;
+    }
+  }
+
+  function showImagePreview(url) {
+    if (url) {
+      previewImg.src = url;
+      preview.style.display = "";
+      uploadZone.style.display = "none";
+    } else {
+      preview.style.display = "none";
+      uploadZone.style.display = "";
+    }
+  }
+
   // ── Init ──
   loadAll().catch(err => console.error(err));
+
+  // ── Confirmation Modal ──
+  function showConfirm(title, text) {
+    return new Promise(resolve => {
+      const modal = $("#confirmModal");
+      const titleEl = $("#confirmTitle");
+      const textEl = $("#confirmText");
+      const okBtn = $("#confirmOk");
+      const cancelBtn = $("#confirmCancel");
+      const backdrop = modal.querySelector(".confirm-modal-backdrop");
+
+      titleEl.textContent = title || "Confirmar accion";
+      textEl.textContent = text || "Esta accion no se puede deshacer.";
+      modal.classList.add("is-open");
+
+      function close(result) {
+        modal.classList.remove("is-open");
+        okBtn.removeEventListener("click", onOk);
+        cancelBtn.removeEventListener("click", onCancel);
+        backdrop.removeEventListener("click", onCancel);
+        resolve(result);
+      }
+
+      function onOk() { close(true); }
+      function onCancel() { close(false); }
+
+      okBtn.addEventListener("click", onOk);
+      cancelBtn.addEventListener("click", onCancel);
+      backdrop.addEventListener("click", onCancel);
+    });
+  }
   </script>
+
+  <!-- Confirmation Modal -->
+  <div class="confirm-modal" id="confirmModal">
+    <div class="confirm-modal-backdrop"></div>
+    <div class="confirm-modal-box">
+      <div class="confirm-modal-icon">&#x26A0;</div>
+      <div class="confirm-modal-title" id="confirmTitle">Confirmar accion</div>
+      <div class="confirm-modal-text" id="confirmText">Esta accion no se puede deshacer.</div>
+      <div class="confirm-modal-actions">
+        <button class="confirm-modal-btn cancel" id="confirmCancel" title="Cancelar">&#x2715;</button>
+        <button class="confirm-modal-btn confirm" id="confirmOk" title="Confirmar">&#x2713;</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

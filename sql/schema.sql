@@ -38,9 +38,12 @@ CREATE TABLE IF NOT EXISTS blog_categories (
 CREATE TABLE IF NOT EXISTS blog_posts (
   id INT AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
+  title_en VARCHAR(255) NULL,
   slug VARCHAR(255) NOT NULL UNIQUE,
   excerpt TEXT NULL,
+  excerpt_en TEXT NULL,
   content LONGTEXT NULL,
+  content_en LONGTEXT NULL,
   category_id INT NULL,
   image_url VARCHAR(500) NULL,
   is_published BOOLEAN DEFAULT 0,
@@ -48,6 +51,11 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (category_id) REFERENCES blog_categories(id) ON DELETE SET NULL
 );
+
+-- Add i18n columns if they don't exist
+-- ALTER TABLE blog_posts ADD COLUMN title_en VARCHAR(255) NULL AFTER title;
+-- ALTER TABLE blog_posts ADD COLUMN excerpt_en TEXT NULL AFTER excerpt;
+-- ALTER TABLE blog_posts ADD COLUMN content_en LONGTEXT NULL AFTER content;
 
 CREATE TABLE IF NOT EXISTS blog_comments (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -67,10 +75,14 @@ CREATE TABLE IF NOT EXISTS blog_comments (
 CREATE TABLE IF NOT EXISTS projects (
   id INT AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
+  title_en VARCHAR(255) NULL,
   slug VARCHAR(255) NOT NULL UNIQUE,
   tag VARCHAR(100) NULL,
+  tag_en VARCHAR(100) NULL,
   description TEXT NULL,
+  description_en TEXT NULL,
   content LONGTEXT NULL,
+  content_en LONGTEXT NULL,
   image_url VARCHAR(500) NULL,
   date DATE NULL,
   is_published BOOLEAN DEFAULT 0,
@@ -78,11 +90,26 @@ CREATE TABLE IF NOT EXISTS projects (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Add i18n columns to projects if they don't exist
+-- ALTER TABLE projects ADD COLUMN title_en VARCHAR(255) NULL AFTER title;
+-- ALTER TABLE projects ADD COLUMN tag_en VARCHAR(100) NULL AFTER tag;
+-- ALTER TABLE projects ADD COLUMN description_en TEXT NULL AFTER description;
+-- ALTER TABLE projects ADD COLUMN content_en LONGTEXT NULL AFTER content;
+
 CREATE TABLE IF NOT EXISTS project_technologies (
   id INT AUTO_INCREMENT PRIMARY KEY,
   project_id INT NOT NULL,
   tech_name VARCHAR(100) NOT NULL,
   tech_icon VARCHAR(255) NOT NULL,
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS project_images (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  project_id INT NOT NULL,
+  image_url VARCHAR(500) NOT NULL,
+  sort_order INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
 

@@ -1,9 +1,34 @@
 const router = require("express").Router();
 const path = require("path");
+const fs = require("fs");
 const bcrypt = require("bcrypt");
+const multer = require("multer");
 const db = require("../config/db");
 const requireAuth = require("../middleware/requireAuth");
 const rateLimit = require("../middleware/rateLimit");
+
+// Multer config for project images
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, "..", "public", "uploads", "projects");
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const name = `proj-${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
+    cb(null, name);
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    const allowed = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, allowed.includes(ext));
+  }
+});
 
 // Login page
 router.get("/login", (req, res) => {
@@ -88,19 +113,19 @@ router.get("/api/blog/categories", requireAuth, async (req, res) => {
 // Create or update post
 router.post("/api/blog/posts", requireAuth, async (req, res) => {
   try {
-    const { id, title, slug, excerpt, content, category_id, image_url, is_published } = req.body;
+    const { id, title, title_en, slug, excerpt, excerpt_en, content, content_en, category_id, image_url, is_published } = req.body;
     const postSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
     if (id) {
       await db.execute(`
-        UPDATE blog_posts SET title=?, slug=?, excerpt=?, content=?, category_id=?, image_url=?, is_published=?
+        UPDATE blog_posts SET title=?, title_en=?, slug=?, excerpt=?, excerpt_en=?, content=?, content_en=?, category_id=?, image_url=?, is_published=?
         WHERE id=?
-      `, [title, postSlug, excerpt || null, content || "", category_id || null, image_url || null, is_published ? 1 : 0, id]);
+      `, [title, title_en || null, postSlug, excerpt || null, excerpt_en || null, content || "", content_en || "", category_id || null, image_url || null, is_published ? 1 : 0, id]);
     } else {
       await db.execute(`
-        INSERT INTO blog_posts (title, slug, excerpt, content, category_id, image_url, is_published)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `, [title, postSlug, excerpt || null, content || "", category_id || null, image_url || null, is_published ? 1 : 0]);
+        INSERT INTO blog_posts (title, title_en, slug, excerpt, excerpt_en, content, content_en, category_id, image_url, is_published)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [title, title_en || null, postSlug, excerpt || null, excerpt_en || null, content || "", content_en || "", category_id || null, image_url || null, is_published ? 1 : 0]);
     }
     res.json({ ok: true });
   } catch (err) {
@@ -156,6 +181,17 @@ router.post("/api/notifications/read-all", requireAuth, async (req, res) => {
   }
 });
 
+// Delete a notification
+router.post("/api/notifications/:id/delete", requireAuth, async (req, res) => {
+  try {
+    await db.execute("DELETE FROM admin_notifications WHERE id = ?", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[NOTIF DELETE]", err);
+    res.status(500).json({ ok: false });
+  }
+});
+
 // ── Comments API (admin) ──
 
 router.get("/api/blog/comments", requireAuth, async (req, res) => {
@@ -201,6 +237,29 @@ router.post("/api/blog/comments/:id/delete", requireAuth, async (req, res) => {
 
 // ── Projects Admin API ──
 
+// Upload image
+router.post("/api/upload", requireAuth, upload.single("image"), (req, res) => {
+  if (!req.file) return res.status(400).json({ ok: false, error: "No file" });
+  const url = `/uploads/projects/${req.file.filename}`;
+  res.json({ ok: true, url });
+});
+
+// Delete uploaded image
+router.post("/api/upload/delete", requireAuth, async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url || !url.startsWith("/uploads/projects/")) {
+      return res.status(400).json({ ok: false, error: "Invalid URL" });
+    }
+    const filePath = path.join(__dirname, "..", "public", url);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[UPLOAD DELETE]", err);
+    res.status(500).json({ ok: false });
+  }
+});
+
 // List all projects (including unpublished)
 router.get("/api/projects", requireAuth, async (req, res) => {
   try {
@@ -210,7 +269,12 @@ router.get("/api/projects", requireAuth, async (req, res) => {
         "SELECT id, tech_name, tech_icon FROM project_technologies WHERE project_id = ?",
         [p.id]
       );
+      const [images] = await db.execute(
+        "SELECT id, image_url, sort_order FROM project_images WHERE project_id = ? ORDER BY sort_order ASC",
+        [p.id]
+      );
       p.technologies = techs;
+      p.images = images;
     }
     res.json({ ok: true, projects: rows });
   } catch (err) {
@@ -222,14 +286,16 @@ router.get("/api/projects", requireAuth, async (req, res) => {
 // Create or update project
 router.post("/api/projects", requireAuth, async (req, res) => {
   try {
-    const { id, title, slug, tag, description, content, image_url, date, is_published, technologies } = req.body;
+    const { id, title, title_en, slug, tag, tag_en, description, description_en, content, content_en, image_url, date, is_published, technologies, images } = req.body;
     const projSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+    let projectId = id;
 
     if (id) {
       await db.execute(`
-        UPDATE projects SET title=?, slug=?, tag=?, description=?, content=?, image_url=?, date=?, is_published=?
+        UPDATE projects SET title=?, title_en=?, slug=?, tag=?, tag_en=?, description=?, description_en=?, content=?, content_en=?, image_url=?, date=?, is_published=?
         WHERE id=?
-      `, [title, projSlug, tag || null, description || null, content || "", image_url || null, date || null, is_published ? 1 : 0, id]);
+      `, [title, title_en || null, projSlug, tag || null, tag_en || null, description || null, description_en || null, content || "", content_en || "", image_url || null, date || null, is_published ? 1 : 0, id]);
 
       // Update technologies: delete old, insert new
       await db.execute("DELETE FROM project_technologies WHERE project_id = ?", [id]);
@@ -241,23 +307,37 @@ router.post("/api/projects", requireAuth, async (req, res) => {
           );
         }
       }
+
+      // Update images: delete old, insert new
+      await db.execute("DELETE FROM project_images WHERE project_id = ?", [id]);
     } else {
       const [result] = await db.execute(`
-        INSERT INTO projects (title, slug, tag, description, content, image_url, date, is_published)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `, [title, projSlug, tag || null, description || null, content || "", image_url || null, date || null, is_published ? 1 : 0]);
+        INSERT INTO projects (title, title_en, slug, tag, tag_en, description, description_en, content, content_en, image_url, date, is_published)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [title, title_en || null, projSlug, tag || null, tag_en || null, description || null, description_en || null, content || "", content_en || "", image_url || null, date || null, is_published ? 1 : 0]);
 
-      const newId = result.insertId;
+      projectId = result.insertId;
       if (technologies && technologies.length > 0) {
         for (const t of technologies) {
           await db.execute(
             "INSERT INTO project_technologies (project_id, tech_name, tech_icon) VALUES (?, ?, ?)",
-            [newId, t.tech_name, t.tech_icon]
+            [projectId, t.tech_name, t.tech_icon]
           );
         }
       }
     }
-    res.json({ ok: true });
+
+    // Insert images
+    if (images && images.length > 0) {
+      for (let i = 0; i < images.length; i++) {
+        await db.execute(
+          "INSERT INTO project_images (project_id, image_url, sort_order) VALUES (?, ?, ?)",
+          [projectId, images[i].url, i]
+        );
+      }
+    }
+
+    res.json({ ok: true, projectId });
   } catch (err) {
     console.error("[PROJECTS ADMIN]", err);
     res.status(500).json({ ok: false, error: err.message });
@@ -353,7 +433,7 @@ router.post("/api/leads/:id/delete", requireAuth, async (req, res) => {
 // Logout
 router.get("/logout", (req, res) => {
   req.session.destroy(() => {
-    res.redirect(process.env.ADMIN_PATH + "/login");
+    res.sendFile("logout.html", { root: "./views/admin" });
   });
 });
 

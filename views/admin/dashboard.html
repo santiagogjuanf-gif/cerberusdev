@@ -7,26 +7,526 @@
   <title>Cerberus Control Room</title>
   <link rel="stylesheet" href="/assets/css/styles.css"/>
   <link rel="stylesheet" href="/assets/css/admin.css"/>
+  <style>
+    /* Futuristic Dashboard Enhancements */
+    .admin-wrap {
+      position: relative;
+    }
+
+    /* Animated grid background */
+    .admin-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,122,24,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,122,24,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+    }
+
+    /* Animated scanline effect */
+    .admin-bg::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
+      animation: scanline 8s linear infinite;
+      opacity: 0.6;
+    }
+    @keyframes scanline {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    /* Enhanced header */
+    .dashboard-header {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .header-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1);
+      animation: logoPulse 3s ease-in-out infinite;
+      padding: 10px;
+    }
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 8px rgba(255,122,24,0.4));
+    }
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1); }
+      50% { box-shadow: 0 0 40px rgba(255,122,24,0.35), inset 0 0 25px rgba(255,122,24,0.15); }
+    }
+
+    .admin-title {
+      position: relative;
+    }
+    .admin-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #FF7A18, transparent);
+      border-radius: 2px;
+    }
+
+    .admin-sub {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-sub::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: statusBlink 2s ease-in-out infinite;
+      box-shadow: 0 0 8px #22c55e;
+    }
+    @keyframes statusBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Futuristic KPI cards */
+    .kpi {
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 80px;
+      height: 80px;
+      background: radial-gradient(circle, rgba(255,122,24,0.1) 0%, transparent 70%);
+      transform: translate(30%, -30%);
+    }
+    .kpi-icon {
+      position: relative;
+      z-index: 1;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,122,24,0.1);
+      border: 1px solid rgba(255,122,24,0.2);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-size: 22px;
+      transition: all 0.3s ease;
+    }
+    .kpi:hover .kpi-icon {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255,122,24,0.3);
+      border-color: rgba(255,122,24,0.4);
+    }
+    .kpi-value {
+      font-size: 36px;
+      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Corner accents for cards */
+    .admin-card {
+      position: relative;
+    }
+    .admin-card::before,
+    .admin-card::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,122,24,0.3);
+      pointer-events: none;
+    }
+    .admin-card::before {
+      top: -1px;
+      left: -1px;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 16px 0 0 0;
+    }
+    .admin-card::after {
+      bottom: -1px;
+      right: -1px;
+      border-left: none;
+      border-top: none;
+      border-radius: 0 0 16px 0;
+    }
+
+    /* Enhanced table header */
+    .admin-card-head {
+      position: relative;
+    }
+    .admin-card-head::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 24px;
+      right: 24px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.3), transparent);
+    }
+
+    .admin-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-card-title::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(180deg, #FF7A18, #FF9A45);
+      border-radius: 2px;
+    }
+
+    /* Enhanced nav buttons */
+    .btn--ghost {
+      position: relative;
+      overflow: hidden;
+    }
+    .btn--ghost::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.1), transparent);
+      transition: left 0.5s ease;
+    }
+    .btn--ghost:hover::before {
+      left: 100%;
+    }
+
+    /* Chip buttons enhancement */
+    .chip {
+      position: relative;
+      overflow: hidden;
+    }
+    .chip.is-on::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,122,24,0.15), transparent);
+    }
+
+    /* Table enhancements - no position relative to avoid layout issues */
+    .table tbody tr {
+      transition: background 0.3s ease;
+    }
+    .table tbody tr:hover {
+      background: rgba(255,122,24,0.08);
+    }
+
+    /* Quick stats bar */
+    .quick-stats {
+      width: min(1200px, calc(100% - 40px));
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+    }
+    .quick-stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .quick-stat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .quick-stat-dot.green { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.5); }
+    .quick-stat-dot.orange { background: #FF7A18; box-shadow: 0 0 8px rgba(255,122,24,0.5); }
+    .quick-stat-dot.blue { background: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.5); }
+    .quick-stat strong {
+      color: rgba(255,255,255,0.9);
+      font-weight: 600;
+    }
+    .quick-stat-sep {
+      width: 1px;
+      height: 20px;
+      background: rgba(255,255,255,0.1);
+    }
+    .quick-stats-time {
+      margin-left: auto;
+      font-family: monospace;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* Weather Widget Dashboard */
+    .weather-widget-dash {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      margin-left: auto;
+    }
+    .weather-icon-dash {
+      font-size: 28px;
+      line-height: 1;
+    }
+    .weather-temp-dash {
+      font-size: 20px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.95);
+    }
+    .weather-city-dash {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+    }
+    .weather-date-dash {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      text-transform: capitalize;
+    }
+    .weather-loading-dash {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.4);
+      font-size: 12px;
+    }
+    .weather-spinner-dash {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,122,24,0.2);
+      border-top-color: #FF7A18;
+      border-radius: 50%;
+      animation: spinDash 1s linear infinite;
+    }
+    @keyframes spinDash {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Welcome Modal */
+    .welcome-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(20px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.5s ease;
+    }
+    .welcome-modal.is-visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    .welcome-modal.is-hiding {
+      opacity: 0;
+    }
+    .welcome-content {
+      text-align: center;
+      transform: scale(0.8) translateY(30px);
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .welcome-modal.is-visible .welcome-content {
+      transform: scale(1) translateY(0);
+    }
+    .welcome-logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 30px;
+      border-radius: 30px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.3), rgba(255,122,24,0.1));
+      border: 2px solid rgba(255,122,24,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-shadow: 0 0 60px rgba(255,122,24,0.4), inset 0 0 40px rgba(255,122,24,0.2);
+      animation: welcomeLogoPulse 2s ease-in-out infinite;
+    }
+    @keyframes welcomeLogoPulse {
+      0%, 100% { box-shadow: 0 0 60px rgba(255,122,24,0.4), inset 0 0 40px rgba(255,122,24,0.2); }
+      50% { box-shadow: 0 0 80px rgba(255,122,24,0.6), inset 0 0 50px rgba(255,122,24,0.3); }
+    }
+    .welcome-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 15px rgba(255,122,24,0.6));
+    }
+    .welcome-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      margin-bottom: 10px;
+      opacity: 0;
+      animation: welcomeFadeIn 0.5s ease forwards 0.3s;
+    }
+    .welcome-title {
+      font-size: 48px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #FF7A18 0%, #FF9A45 50%, #FFD080 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+      opacity: 0;
+      animation: welcomeSlideUp 0.6s ease forwards 0.5s;
+    }
+    .welcome-subtitle {
+      font-size: 16px;
+      color: rgba(255,255,255,0.6);
+      opacity: 0;
+      animation: welcomeFadeIn 0.5s ease forwards 0.8s;
+    }
+    .welcome-line {
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #FF7A18, transparent);
+      margin: 30px auto;
+      animation: welcomeLineExpand 0.8s ease forwards 1s;
+    }
+    .welcome-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      opacity: 0;
+      animation: welcomeFadeIn 0.5s ease forwards 1.2s;
+    }
+    .welcome-status-dot {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #22c55e;
+      animation: welcomeStatusPulse 1s ease-in-out infinite;
+    }
+    @keyframes welcomeStatusPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+    @keyframes welcomeFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes welcomeSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes welcomeLineExpand {
+      from { width: 0; }
+      to { width: 200px; }
+    }
+  </style>
 </head>
 <body>
   <main class="admin-wrap">
     <div class="admin-bg"></div>
 
     <header class="admin-top">
-      <div class="admin-brand">
-        <div class="admin-title">Cerberus Control Room</div>
-        <div class="admin-sub">Panel privado &bull; Centro de control</div>
+      <div class="dashboard-header">
+        <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
+        <div class="admin-brand">
+          <div class="admin-title">Cerberus Control Room</div>
+          <div class="admin-sub">Sistema activo &bull; Centro de control</div>
+        </div>
       </div>
       <div class="admin-actions">
-        <button class="notif-btn" id="notifBtn" title="Notificaciones">
-          &#x1F514;
-          <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
-        </button>
+        <div class="notif-wrapper">
+          <button class="notif-btn" id="notifBtn" title="Notificaciones">
+            &#x1F514;
+            <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+          </button>
+          <!-- Facebook-style dropdown -->
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown-header">
+              <span class="notif-dropdown-title">Notificaciones</span>
+              <button class="notif-clear-btn" id="markAllRead" title="Marcar todo leido">&#x2713; Leido</button>
+            </div>
+            <div class="notif-dropdown-list" id="notifList">
+              <div class="notif-empty">Sin notificaciones</div>
+            </div>
+          </div>
+        </div>
         <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
         <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
         <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
       </div>
     </header>
+
+    <!-- Quick Stats Bar -->
+    <div class="quick-stats">
+      <div class="quick-stat">
+        <span class="quick-stat-dot green"></span>
+        <span>Server: <strong>Online</strong></span>
+      </div>
+      <div class="quick-stat-sep"></div>
+      <div class="quick-stat">
+        <span class="quick-stat-dot orange"></span>
+        <span>Base de datos: <strong>Conectada</strong></span>
+      </div>
+      <div class="quick-stat-sep"></div>
+      <div class="quick-stat">
+        <span class="quick-stat-dot blue"></span>
+        <span>Sesion: <strong>Activa</strong></span>
+      </div>
+      <!-- Weather Widget -->
+      <div class="weather-widget-dash" id="weatherWidgetDash">
+        <div class="weather-loading-dash" id="weatherLoadingDash">
+          <div class="weather-spinner-dash"></div>
+          <span>Cargando clima...</span>
+        </div>
+        <div id="weatherContentDash" style="display:none;">
+          <span class="weather-icon-dash" id="weatherIconDash">--</span>
+        </div>
+        <div id="weatherInfoDash" style="display:none;">
+          <div class="weather-temp-dash" id="weatherTempDash">--°</div>
+          <div class="weather-city-dash" id="weatherCityDash">--</div>
+          <div class="weather-date-dash" id="weatherDateDash">--</div>
+        </div>
+      </div>
+      <div class="quick-stats-time" id="currentTime">--:--:--</div>
+    </div>
 
     <!-- KPIs -->
     <section class="admin-kpis" id="kpis">
@@ -49,22 +549,6 @@
         <div class="kpi-icon">&#x1F4AC;</div>
         <div class="kpi-label">Comentarios nuevos</div>
         <div class="kpi-value" id="kpiComments">0</div>
-      </div>
-    </section>
-
-    <!-- Notifications panel (toggled) -->
-    <section class="admin-card notif-panel" id="notifPanel" style="display:none;">
-      <div class="admin-card-head">
-        <div>
-          <div class="admin-card-title">&#x1F514; Notificaciones</div>
-          <div class="admin-card-sub">Actividad reciente</div>
-        </div>
-        <div>
-          <button class="small-btn" id="markAllRead">Marcar todo leido</button>
-        </div>
-      </div>
-      <div class="notif-list" id="notifList">
-        <div style="text-align:center;padding:24px;color:rgba(255,255,255,0.4);">Sin notificaciones</div>
       </div>
     </section>
 
@@ -102,6 +586,117 @@
     </section>
   </main>
 
+  <!-- Welcome Modal -->
+  <div class="welcome-modal" id="welcomeModal">
+    <div class="welcome-content">
+      <div class="welcome-logo">
+        <img src="/assets/img/cerberus-mark.png" alt="Cerberus">
+      </div>
+      <div class="welcome-text">Acceso autorizado</div>
+      <div class="welcome-title">Bienvenido</div>
+      <div class="welcome-subtitle">Cerberus Control Room</div>
+      <div class="welcome-line"></div>
+      <div class="welcome-status">
+        <span class="welcome-status-dot"></span>
+        <span>Iniciando sistemas...</span>
+      </div>
+    </div>
+  </div>
+
   <script src="/assets/js/admin.js"></script>
+  <script>
+    // Update clock
+    function updateClock() {
+      const now = new Date();
+      const time = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('currentTime').textContent = time;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Welcome modal - show only on first visit of session
+    (function() {
+      const modal = document.getElementById('welcomeModal');
+      const shown = sessionStorage.getItem('cerberus_welcome_shown');
+
+      if (!shown && modal) {
+        // Show modal
+        setTimeout(() => {
+          modal.classList.add('is-visible');
+        }, 100);
+
+        // Hide after 2.5 seconds
+        setTimeout(() => {
+          modal.classList.add('is-hiding');
+          setTimeout(() => {
+            modal.style.display = 'none';
+          }, 500);
+        }, 2500);
+
+        sessionStorage.setItem('cerberus_welcome_shown', '1');
+      } else if (modal) {
+        modal.style.display = 'none';
+      }
+    })();
+
+    // Weather Widget for Dashboard
+    (function() {
+      const weatherIcons = {
+        0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
+        45: '🌫️', 48: '🌫️',
+        51: '🌧️', 53: '🌧️', 55: '🌧️',
+        61: '🌧️', 63: '🌧️', 65: '🌧️',
+        71: '❄️', 73: '❄️', 75: '❄️', 77: '❄️',
+        80: '🌦️', 81: '🌦️', 82: '🌦️',
+        85: '🌨️', 86: '🌨️',
+        95: '⛈️', 96: '⛈️', 99: '⛈️'
+      };
+
+      function formatDate() {
+        const now = new Date();
+        return now.toLocaleDateString('es-MX', {
+          weekday: 'short', day: 'numeric', month: 'short'
+        });
+      }
+
+      async function getWeatherDash(lat, lon) {
+        try {
+          const [weatherRes, geoRes] = await Promise.all([
+            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`),
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=es`)
+          ]);
+
+          const weatherData = await weatherRes.json();
+          const geoData = await geoRes.json();
+
+          const weather = weatherData.current_weather;
+          const city = geoData.address?.city || geoData.address?.town || geoData.address?.village || geoData.address?.state || 'Ubicacion';
+
+          document.getElementById('weatherIconDash').textContent = weatherIcons[weather.weathercode] || '🌡️';
+          document.getElementById('weatherTempDash').textContent = Math.round(weather.temperature) + '°C';
+          document.getElementById('weatherCityDash').textContent = city;
+          document.getElementById('weatherDateDash').textContent = formatDate();
+
+          document.getElementById('weatherLoadingDash').style.display = 'none';
+          document.getElementById('weatherContentDash').style.display = '';
+          document.getElementById('weatherInfoDash').style.display = '';
+
+        } catch (err) {
+          console.warn('Weather error:', err);
+          document.getElementById('weatherWidgetDash').style.display = 'none';
+        }
+      }
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => getWeatherDash(pos.coords.latitude, pos.coords.longitude),
+          () => document.getElementById('weatherWidgetDash').style.display = 'none',
+          { timeout: 10000, enableHighAccuracy: false }
+        );
+      } else {
+        document.getElementById('weatherWidgetDash').style.display = 'none';
+      }
+    })();
+  </script>
 </body>
 </html>

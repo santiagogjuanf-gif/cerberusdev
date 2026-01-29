@@ -7,15 +7,142 @@
   <title>Cerberus Control | Proyectos</title>
   <link rel="stylesheet" href="/assets/css/styles.css"/>
   <link rel="stylesheet" href="/assets/css/admin.css"/>
+  <style>
+    /* Futuristic Background */
+    .admin-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,122,24,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,122,24,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+    }
+    .admin-bg::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
+      animation: scanline 8s linear infinite;
+      opacity: 0.6;
+    }
+    @keyframes scanline {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { top: 100%; opacity: 0; }
+    }
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .header-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1);
+      animation: logoPulse 3s ease-in-out infinite;
+      padding: 10px;
+    }
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 8px rgba(255,122,24,0.4));
+    }
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1); }
+      50% { box-shadow: 0 0 40px rgba(255,122,24,0.35), inset 0 0 25px rgba(255,122,24,0.15); }
+    }
+    .admin-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #FF7A18, transparent);
+      border-radius: 2px;
+    }
+    .admin-title { position: relative; }
+    .admin-sub {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-sub::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: statusBlink 2s ease-in-out infinite;
+      box-shadow: 0 0 8px #22c55e;
+    }
+    @keyframes statusBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    /* Corner accents for cards */
+    .admin-card::before,
+    .admin-card::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,122,24,0.3);
+      pointer-events: none;
+    }
+    .admin-card::before {
+      top: -1px;
+      left: -1px;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 16px 0 0 0;
+    }
+    .admin-card::after {
+      bottom: -1px;
+      right: -1px;
+      border-left: none;
+      border-top: none;
+      border-radius: 0 0 16px 0;
+    }
+    .admin-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-card-title::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(180deg, #FF7A18, #FF9A45);
+      border-radius: 2px;
+    }
+  </style>
 </head>
 <body>
   <main class="admin-wrap">
     <div class="admin-bg"></div>
 
     <header class="admin-top">
-      <div class="admin-brand">
-        <div class="admin-title">Projects Manager</div>
-        <div class="admin-sub">Crear, editar y publicar proyectos del portafolio</div>
+      <div class="dashboard-header">
+        <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
+        <div class="admin-brand">
+          <div class="admin-title">Projects Manager</div>
+          <div class="admin-sub">Sistema activo &bull; Gestionar portafolio</div>
+        </div>
       </div>
       <div class="admin-actions">
         <a class="btn btn--ghost" href="./dashboard">&larr; Volver al panel</a>
@@ -60,36 +187,91 @@
           <input type="hidden" id="projId">
           <div class="admin-form-row">
             <div class="field">
-              <label>Titulo</label>
+              <label>Titulo (Español)</label>
               <input id="projTitle" required placeholder="Nombre del proyecto" maxlength="255">
             </div>
             <div class="field">
-              <label>Slug (URL)</label>
-              <input id="projSlug" placeholder="auto-generado-del-titulo" maxlength="255">
+              <label>Title (English)</label>
+              <input id="projTitleEn" placeholder="Project name in English" maxlength="255">
             </div>
           </div>
           <div class="admin-form-row">
             <div class="field">
-              <label>Etiqueta (tag)</label>
-              <input id="projTag" placeholder="Ej: Sistema Web, Dashboard, API..." maxlength="100">
+              <label>Slug (URL)</label>
+              <input id="projSlug" placeholder="auto-generado-del-titulo" maxlength="255">
             </div>
             <div class="field">
               <label>Fecha</label>
               <input id="projDate" type="date">
             </div>
           </div>
-          <div class="field">
-            <label>Descripcion corta</label>
-            <textarea id="projDesc" rows="3" placeholder="Descripcion breve del proyecto..." maxlength="1000" style="min-height:80px;"></textarea>
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Etiqueta (Español)</label>
+              <input id="projTag" placeholder="Ej: Sistema Web, Dashboard, API..." maxlength="100">
+            </div>
+            <div class="field">
+              <label>Tag (English)</label>
+              <input id="projTagEn" placeholder="E.g: Web System, Dashboard, API..." maxlength="100">
+            </div>
           </div>
-          <div class="field">
-            <label>Contenido (HTML)</label>
-            <textarea id="projContent" rows="10" placeholder="Contenido completo del proyecto en HTML..."></textarea>
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Descripcion corta (Español)</label>
+              <textarea id="projDesc" rows="3" placeholder="Descripcion breve del proyecto..." maxlength="1000" style="min-height:80px;"></textarea>
+            </div>
+            <div class="field">
+              <label>Short Description (English)</label>
+              <textarea id="projDescEn" rows="3" placeholder="Brief project description..." maxlength="1000" style="min-height:80px;"></textarea>
+            </div>
           </div>
+          <div class="admin-form-row">
+            <div class="field">
+              <label>Contenido (Español - HTML)</label>
+              <textarea id="projContent" rows="8" placeholder="Contenido completo del proyecto en HTML..."></textarea>
+            </div>
+            <div class="field">
+              <label>Content (English - HTML)</label>
+              <textarea id="projContentEn" rows="8" placeholder="Full project content in HTML..."></textarea>
+            </div>
+          </div>
+
+          <!-- Main Image Upload -->
           <div class="field">
-            <label>URL de imagen principal</label>
-            <input id="projImage" placeholder="/uploads/projects/mi-imagen.jpg" maxlength="500">
-            <img id="projImagePreview" class="image-preview" style="display:none;">
+            <label>Imagen principal (portada)</label>
+            <div class="upload-zone" id="mainImageZone">
+              <div class="upload-zone-content" id="mainImageContent">
+                <div class="upload-icon">&#x1F4F7;</div>
+                <div class="upload-text">Arrastra una imagen aqui o</div>
+                <label class="upload-btn">
+                  Seleccionar archivo
+                  <input type="file" accept="image/*" id="mainImageInput" style="display:none;">
+                </label>
+                <div class="upload-hint">JPG, PNG, GIF, WebP - Max 10MB</div>
+              </div>
+              <div class="upload-preview" id="mainImagePreview" style="display:none;">
+                <img id="mainImageImg" src="" alt="Preview">
+                <button type="button" class="upload-remove" id="mainImageRemove">&times;</button>
+              </div>
+            </div>
+            <input type="hidden" id="projImage">
+          </div>
+
+          <!-- Gallery Images Upload -->
+          <div class="field">
+            <label>Galeria de imagenes</label>
+            <div class="upload-zone" id="galleryZone">
+              <div class="upload-zone-content">
+                <div class="upload-icon">&#x1F5BC;</div>
+                <div class="upload-text">Arrastra imagenes aqui o</div>
+                <label class="upload-btn">
+                  Seleccionar archivos
+                  <input type="file" accept="image/*" multiple id="galleryInput" style="display:none;">
+                </label>
+                <div class="upload-hint">Puedes subir varias imagenes a la vez</div>
+              </div>
+            </div>
+            <div class="gallery-grid" id="galleryGrid"></div>
           </div>
 
           <!-- Technologies checkboxes -->
@@ -98,9 +280,10 @@
             <div class="tech-checkboxes" id="techCheckboxes"></div>
           </div>
 
-          <div class="field">
-            <label>
-              <input type="checkbox" id="projPublished"> Publicar proyecto
+          <div class="field" style="margin-top:24px;">
+            <label class="checkbox-label">
+              <input type="checkbox" id="projPublished">
+              <span>Publicar proyecto</span>
             </label>
           </div>
 
@@ -114,33 +297,251 @@
   </main>
 
   <style>
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      transition: all 0.2s;
+      background: rgba(255,255,255,0.02);
+      position: relative;
+    }
+    .upload-zone.drag-over {
+      border-color: var(--orange);
+      background: rgba(255,122,24,0.05);
+    }
+    .upload-zone-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .upload-icon {
+      font-size: 48px;
+      opacity: 0.4;
+    }
+    .upload-text {
+      color: rgba(255,255,255,0.5);
+      font-size: 14px;
+    }
+    .upload-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: rgba(255,122,24,0.15);
+      color: var(--orange);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .upload-btn:hover {
+      background: rgba(255,122,24,0.25);
+    }
+    .upload-hint {
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      margin-top: 4px;
+    }
+    .upload-preview {
+      position: relative;
+      display: inline-block;
+    }
+    .upload-preview img {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .upload-remove {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #ef4444;
+      color: white;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .upload-remove:hover {
+      background: #dc2626;
+    }
+    .upload-loading {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      color: var(--orange);
+      font-weight: 600;
+    }
+
+    /* Gallery grid */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .gallery-item {
+      position: relative;
+      aspect-ratio: 16/10;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: grab;
+      transition: all 0.2s;
+    }
+    .gallery-item:hover {
+      border-color: var(--orange);
+    }
+    .gallery-item.dragging {
+      opacity: 0.5;
+      border-color: var(--orange);
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .gallery-item-remove {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(239,68,68,0.9);
+      color: white;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .gallery-item:hover .gallery-item-remove {
+      opacity: 1;
+    }
+    .gallery-item-order {
+      position: absolute;
+      bottom: 6px;
+      left: 6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gallery-uploading {
+      aspect-ratio: 16/10;
+      border-radius: 10px;
+      background: rgba(255,122,24,0.1);
+      border: 2px dashed rgba(255,122,24,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--orange);
+      font-weight: 600;
+      font-size: 13px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    @media (max-width: 768px) {
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Tech checkboxes */
     .tech-checkboxes {
-      display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
       margin-top: 8px;
     }
     .tech-check-item {
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      padding: 16px 8px; background: rgba(255,255,255,0.03);
-      border: 2px solid rgba(255,255,255,0.08); border-radius: 12px;
-      cursor: pointer; transition: all 0.2s; user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 8px;
+      background: rgba(255,255,255,0.03);
+      border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
     }
     .tech-check-item:hover {
-      border-color: rgba(255,122,24,0.3); background: rgba(255,122,24,0.04);
+      border-color: rgba(255,122,24,0.3);
+      background: rgba(255,122,24,0.04);
     }
     .tech-check-item.is-selected {
-      border-color: rgba(255,122,24,0.6); background: rgba(255,122,24,0.1);
+      border-color: rgba(255,122,24,0.6);
+      background: rgba(255,122,24,0.1);
       box-shadow: 0 0 0 2px rgba(255,122,24,0.2);
     }
     .tech-check-item img {
-      width: 36px; height: 36px; object-fit: contain;
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
     }
     .tech-check-item span {
-      font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.6);
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
       text-align: center;
     }
-    .tech-check-item.is-selected span { color: #FF9A45; }
+    .tech-check-item.is-selected span {
+      color: #FF9A45;
+    }
     @media (max-width: 640px) {
       .tech-checkboxes { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* Checkbox label */
+    .checkbox-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      color: rgba(255,255,255,0.8);
+      font-weight: 500;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+    .checkbox-label:hover {
+      border-color: rgba(255,122,24,0.3);
+      background: rgba(255,122,24,0.05);
+    }
+    .checkbox-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--orange, #FF7A18);
+      cursor: pointer;
     }
   </style>
 
@@ -149,7 +550,7 @@
     const $ = s => document.querySelector(s);
     const $$ = s => document.querySelectorAll(s);
 
-    // Available technologies (match files in /assets/img/tech/)
+    // Available technologies
     const TECHNOLOGIES = [
       { name: "HTML5", icon: "/assets/img/tech/html.svg" },
       { name: "CSS3", icon: "/assets/img/tech/css.svg" },
@@ -167,6 +568,7 @@
 
     let allProjects = [];
     let selectedTechs = new Set();
+    let galleryImages = []; // Array of { url: string }
 
     // ── Tabs ──
     $$("[data-tab]").forEach(btn => {
@@ -176,7 +578,8 @@
         const tab = btn.dataset.tab;
         $("#tabList").style.display = tab === "list" ? "" : "none";
         $("#tabEditor").style.display = tab === "editor" ? "" : "none";
-        if (tab === "editor" && !$("#projId").value) resetForm();
+        // Always reset form when clicking "Nuevo proyecto" tab
+        if (tab === "editor") resetForm();
       });
     });
 
@@ -186,7 +589,7 @@
       $("#tabEditor").style.display = name === "editor" ? "" : "none";
     }
 
-    // ── API helper ──
+    // ── Helpers ──
     async function api(url, opts) {
       const res = await fetch(url, opts);
       return res.json();
@@ -196,11 +599,194 @@
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     }
 
+    function toSlug(s) {
+      return String(s || "").toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove accents
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+    }
+
+    // Auto-fill slug when typing title
+    $("#projTitle").addEventListener("input", () => {
+      // Only auto-fill if slug is empty or matches previous auto-generated value
+      const titleEl = $("#projTitle");
+      const slugEl = $("#projSlug");
+      const newSlug = toSlug(titleEl.value);
+      // If slug is empty or user hasn't manually edited it, auto-fill
+      if (!slugEl.dataset.manual) {
+        slugEl.value = newSlug;
+      }
+    });
+    // Mark slug as manually edited if user types in it
+    $("#projSlug").addEventListener("input", () => {
+      $("#projSlug").dataset.manual = "1";
+    });
+
     function fmtDate(d) {
       try {
         return new Date(d).toLocaleDateString("es-MX", { year: "numeric", month: "2-digit", day: "2-digit" });
       } catch { return d || ""; }
     }
+
+    // ── Upload function ──
+    async function uploadFile(file) {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await fetch("./api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Upload failed");
+      return data.url;
+    }
+
+    // ── Main Image Upload ──
+    const mainZone = $("#mainImageZone");
+    const mainInput = $("#mainImageInput");
+    const mainContent = $("#mainImageContent");
+    const mainPreview = $("#mainImagePreview");
+    const mainImg = $("#mainImageImg");
+    const mainRemove = $("#mainImageRemove");
+    const projImageHidden = $("#projImage");
+
+    function showMainLoading(show) {
+      let loader = mainZone.querySelector(".upload-loading");
+      if (show && !loader) {
+        loader = document.createElement("div");
+        loader.className = "upload-loading";
+        loader.textContent = "Subiendo...";
+        mainZone.appendChild(loader);
+      } else if (!show && loader) {
+        loader.remove();
+      }
+    }
+
+    async function handleMainImage(file) {
+      showMainLoading(true);
+      try {
+        const url = await uploadFile(file);
+        projImageHidden.value = url;
+        mainImg.src = url;
+        mainContent.style.display = "none";
+        mainPreview.style.display = "";
+      } catch (err) {
+        alert("Error al subir imagen: " + err.message);
+      } finally {
+        showMainLoading(false);
+      }
+    }
+
+    mainInput.addEventListener("change", () => {
+      if (mainInput.files[0]) handleMainImage(mainInput.files[0]);
+      mainInput.value = "";
+    });
+
+    mainRemove.addEventListener("click", () => {
+      projImageHidden.value = "";
+      mainImg.src = "";
+      mainContent.style.display = "";
+      mainPreview.style.display = "none";
+    });
+
+    // Drag & drop for main image
+    mainZone.addEventListener("dragover", e => { e.preventDefault(); mainZone.classList.add("drag-over"); });
+    mainZone.addEventListener("dragleave", () => mainZone.classList.remove("drag-over"));
+    mainZone.addEventListener("drop", e => {
+      e.preventDefault();
+      mainZone.classList.remove("drag-over");
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith("image/")) handleMainImage(file);
+    });
+
+    // ── Gallery Images Upload ──
+    const galleryZone = $("#galleryZone");
+    const galleryInput = $("#galleryInput");
+    const galleryGrid = $("#galleryGrid");
+
+    function renderGallery() {
+      galleryGrid.innerHTML = galleryImages.map((img, i) => `
+        <div class="gallery-item" draggable="true" data-index="${i}">
+          <img src="${esc(img.url)}" alt="Gallery ${i+1}">
+          <button type="button" class="gallery-item-remove" data-remove="${i}">&times;</button>
+          <div class="gallery-item-order">${i + 1}</div>
+        </div>
+      `).join("");
+
+      // Remove buttons
+      galleryGrid.querySelectorAll("[data-remove]").forEach(btn => {
+        btn.addEventListener("click", e => {
+          e.stopPropagation();
+          const idx = Number(btn.dataset.remove);
+          galleryImages.splice(idx, 1);
+          renderGallery();
+        });
+      });
+
+      // Drag & drop reorder
+      let dragIdx = null;
+      galleryGrid.querySelectorAll(".gallery-item").forEach(item => {
+        item.addEventListener("dragstart", e => {
+          dragIdx = Number(item.dataset.index);
+          item.classList.add("dragging");
+        });
+        item.addEventListener("dragend", () => {
+          item.classList.remove("dragging");
+        });
+        item.addEventListener("dragover", e => {
+          e.preventDefault();
+        });
+        item.addEventListener("drop", e => {
+          e.preventDefault();
+          const dropIdx = Number(item.dataset.index);
+          if (dragIdx !== null && dragIdx !== dropIdx) {
+            const [moved] = galleryImages.splice(dragIdx, 1);
+            galleryImages.splice(dropIdx, 0, moved);
+            renderGallery();
+          }
+          dragIdx = null;
+        });
+      });
+    }
+
+    async function handleGalleryFiles(files) {
+      const validFiles = Array.from(files).filter(f => f.type.startsWith("image/"));
+      if (validFiles.length === 0) return;
+
+      // Show uploading indicator
+      const uploadingDiv = document.createElement("div");
+      uploadingDiv.className = "gallery-uploading";
+      uploadingDiv.id = "galleryUploading";
+      uploadingDiv.innerHTML = `<span>Subiendo 0/${validFiles.length}...</span>`;
+      galleryGrid.insertBefore(uploadingDiv, galleryGrid.firstChild);
+
+      let uploaded = 0;
+      for (const file of validFiles) {
+        try {
+          const url = await uploadFile(file);
+          galleryImages.push({ url });
+          uploaded++;
+          uploadingDiv.innerHTML = `<span>Subiendo ${uploaded}/${validFiles.length}...</span>`;
+        } catch (err) {
+          console.error("Gallery upload error:", err);
+        }
+      }
+
+      // Remove uploading indicator and re-render
+      const indicator = document.getElementById("galleryUploading");
+      if (indicator) indicator.remove();
+      renderGallery();
+    }
+
+    galleryInput.addEventListener("change", () => {
+      handleGalleryFiles(galleryInput.files);
+      galleryInput.value = "";
+    });
+
+    galleryZone.addEventListener("dragover", e => { e.preventDefault(); galleryZone.classList.add("drag-over"); });
+    galleryZone.addEventListener("dragleave", () => galleryZone.classList.remove("drag-over"));
+    galleryZone.addEventListener("drop", e => {
+      e.preventDefault();
+      galleryZone.classList.remove("drag-over");
+      handleGalleryFiles(e.dataTransfer.files);
+    });
 
     // ── Build tech checkboxes ──
     function buildTechCheckboxes() {
@@ -229,7 +815,6 @@
     function setSelectedTechs(techs) {
       selectedTechs.clear();
       $$(".tech-check-item").forEach(el => el.classList.remove("is-selected"));
-
       (techs || []).forEach(t => {
         selectedTechs.add(t.tech_name);
         const el = document.querySelector(`.tech-check-item[data-tech-name="${t.tech_name}"]`);
@@ -280,6 +865,7 @@
               ${p.tag ? esc(p.tag) + ' &bull; ' : ''}
               ${Number(p.is_published) ? '<span style="color:#22c55e;">Publicado</span>' : '<span style="color:#FF9A45;">Borrador</span>'}
               ${p.date ? ' &bull; ' + fmtDate(p.date) : ''}
+              ${(p.images && p.images.length > 0) ? ' &bull; ' + p.images.length + ' imgs' : ''}
             </div>
             <p>${esc(p.description || '').substring(0, 120)}${(p.description || '').length > 120 ? '...' : ''}</p>
             <div class="blog-admin-card-actions">
@@ -299,7 +885,8 @@
 
       grid.querySelectorAll("[data-del]").forEach(btn => {
         btn.addEventListener("click", async () => {
-          if (!confirm("Eliminar este proyecto?")) return;
+          const ok = await showConfirm("Eliminar proyecto", "Este proyecto se eliminara permanentemente junto con todas sus imagenes.");
+          if (!ok) return;
           await api(`./api/projects/${btn.dataset.del}/delete`, { method: "POST" });
           loadProjects();
         });
@@ -310,15 +897,30 @@
     function resetForm() {
       $("#projId").value = "";
       $("#projTitle").value = "";
+      $("#projTitleEn").value = "";
       $("#projSlug").value = "";
+      $("#projSlug").dataset.manual = ""; // Reset manual flag for auto-slug
       $("#projTag").value = "";
+      $("#projTagEn").value = "";
       $("#projDate").value = "";
       $("#projDesc").value = "";
+      $("#projDescEn").value = "";
       $("#projContent").value = "";
+      $("#projContentEn").value = "";
       $("#projImage").value = "";
       $("#projPublished").checked = false;
-      $("#projImagePreview").style.display = "none";
       $("#editorTitle").textContent = "Nuevo proyecto";
+
+      // Reset main image
+      mainImg.src = "";
+      mainContent.style.display = "";
+      mainPreview.style.display = "none";
+
+      // Reset gallery
+      galleryImages = [];
+      renderGallery();
+
+      // Reset techs
       selectedTechs.clear();
       $$(".tech-check-item").forEach(el => el.classList.remove("is-selected"));
     }
@@ -326,36 +928,38 @@
     function editProject(p) {
       $("#projId").value = p.id;
       $("#projTitle").value = p.title;
+      $("#projTitleEn").value = p.title_en || "";
       $("#projSlug").value = p.slug;
+      $("#projSlug").dataset.manual = "1"; // Don't auto-overwrite existing slug
       $("#projTag").value = p.tag || "";
+      $("#projTagEn").value = p.tag_en || "";
       $("#projDate").value = p.date ? p.date.substring(0, 10) : "";
       $("#projDesc").value = p.description || "";
+      $("#projDescEn").value = p.description_en || "";
       $("#projContent").value = p.content || "";
+      $("#projContentEn").value = p.content_en || "";
       $("#projImage").value = p.image_url || "";
       $("#projPublished").checked = Number(p.is_published) === 1;
       $("#editorTitle").textContent = "Editar: " + p.title;
 
+      // Main image
       if (p.image_url) {
-        $("#projImagePreview").src = p.image_url;
-        $("#projImagePreview").style.display = "block";
+        mainImg.src = p.image_url;
+        mainContent.style.display = "none";
+        mainPreview.style.display = "";
       } else {
-        $("#projImagePreview").style.display = "none";
+        mainImg.src = "";
+        mainContent.style.display = "";
+        mainPreview.style.display = "none";
       }
+
+      // Gallery images
+      galleryImages = (p.images || []).map(img => ({ url: img.image_url || img }));
+      renderGallery();
 
       setSelectedTechs(p.technologies || []);
       showTab("editor");
     }
-
-    // Image preview
-    $("#projImage").addEventListener("input", () => {
-      const url = $("#projImage").value.trim();
-      if (url) {
-        $("#projImagePreview").src = url;
-        $("#projImagePreview").style.display = "block";
-      } else {
-        $("#projImagePreview").style.display = "none";
-      }
-    });
 
     // Cancel
     $("#cancelEdit").addEventListener("click", () => {
@@ -377,14 +981,19 @@
           body: JSON.stringify({
             id: $("#projId").value || undefined,
             title: $("#projTitle").value,
+            title_en: $("#projTitleEn").value || undefined,
             slug: $("#projSlug").value || undefined,
             tag: $("#projTag").value || undefined,
+            tag_en: $("#projTagEn").value || undefined,
             description: $("#projDesc").value || undefined,
+            description_en: $("#projDescEn").value || undefined,
             content: $("#projContent").value || undefined,
+            content_en: $("#projContentEn").value || undefined,
             image_url: $("#projImage").value || undefined,
             date: $("#projDate").value || undefined,
             is_published: $("#projPublished").checked,
-            technologies: getSelectedTechs()
+            technologies: getSelectedTechs(),
+            images: galleryImages
           })
         });
         resetForm();
@@ -398,10 +1007,55 @@
       }
     });
 
+    // ── Confirmation Modal ──
+    function showConfirm(title, text) {
+      return new Promise(resolve => {
+        const modal = document.getElementById("confirmModal");
+        const titleEl = document.getElementById("confirmTitle");
+        const textEl = document.getElementById("confirmText");
+        const okBtn = document.getElementById("confirmOk");
+        const cancelBtn = document.getElementById("confirmCancel");
+        const backdrop = modal.querySelector(".confirm-modal-backdrop");
+
+        titleEl.textContent = title || "Confirmar accion";
+        textEl.textContent = text || "Esta accion no se puede deshacer.";
+        modal.classList.add("is-open");
+
+        function close(result) {
+          modal.classList.remove("is-open");
+          okBtn.removeEventListener("click", onOk);
+          cancelBtn.removeEventListener("click", onCancel);
+          backdrop.removeEventListener("click", onCancel);
+          resolve(result);
+        }
+
+        function onOk() { close(true); }
+        function onCancel() { close(false); }
+
+        okBtn.addEventListener("click", onOk);
+        cancelBtn.addEventListener("click", onCancel);
+        backdrop.addEventListener("click", onCancel);
+      });
+    }
+
     // ── Init ──
     buildTechCheckboxes();
     loadProjects();
   })();
   </script>
+
+  <!-- Confirmation Modal -->
+  <div class="confirm-modal" id="confirmModal">
+    <div class="confirm-modal-backdrop"></div>
+    <div class="confirm-modal-box">
+      <div class="confirm-modal-icon">&#x26A0;</div>
+      <div class="confirm-modal-title" id="confirmTitle">Confirmar accion</div>
+      <div class="confirm-modal-text" id="confirmText">Esta accion no se puede deshacer.</div>
+      <div class="confirm-modal-actions">
+        <button class="confirm-modal-btn cancel" id="confirmCancel" title="Cancelar">&#x2715;</button>
+        <button class="confirm-modal-btn confirm" id="confirmOk" title="Confirmar">&#x2713;</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
