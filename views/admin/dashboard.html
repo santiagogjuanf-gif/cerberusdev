@@ -239,28 +239,12 @@
       background: linear-gradient(135deg, rgba(255,122,24,0.15), transparent);
     }
 
-    /* Table row hover glow */
+    /* Table enhancements - no position relative to avoid layout issues */
     .table tbody tr {
-      position: relative;
+      transition: background 0.3s ease;
     }
-    .table tbody tr::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 0;
-      background: linear-gradient(90deg, rgba(255,122,24,0.1), transparent);
-      transition: width 0.3s ease;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .table tbody tr:hover::before {
-      width: 100%;
-    }
-    .table tbody tr td {
-      position: relative;
-      z-index: 1;
+    .table tbody tr:hover {
+      background: rgba(255,122,24,0.08);
     }
 
     /* Quick stats bar */
@@ -303,6 +287,54 @@
       margin-left: auto;
       font-family: monospace;
       color: rgba(255,255,255,0.4);
+    }
+
+    /* Weather Widget Dashboard */
+    .weather-widget-dash {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      margin-left: auto;
+    }
+    .weather-icon-dash {
+      font-size: 28px;
+      line-height: 1;
+    }
+    .weather-temp-dash {
+      font-size: 20px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.95);
+    }
+    .weather-city-dash {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+    }
+    .weather-date-dash {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      text-transform: capitalize;
+    }
+    .weather-loading-dash {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.4);
+      font-size: 12px;
+    }
+    .weather-spinner-dash {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,122,24,0.2);
+      border-top-color: #FF7A18;
+      border-radius: 50%;
+      animation: spinDash 1s linear infinite;
+    }
+    @keyframes spinDash {
+      to { transform: rotate(360deg); }
     }
 
     /* Welcome Modal */
@@ -478,6 +510,21 @@
         <span class="quick-stat-dot blue"></span>
         <span>Sesion: <strong>Activa</strong></span>
       </div>
+      <!-- Weather Widget -->
+      <div class="weather-widget-dash" id="weatherWidgetDash">
+        <div class="weather-loading-dash" id="weatherLoadingDash">
+          <div class="weather-spinner-dash"></div>
+          <span>Cargando clima...</span>
+        </div>
+        <div id="weatherContentDash" style="display:none;">
+          <span class="weather-icon-dash" id="weatherIconDash">--</span>
+        </div>
+        <div id="weatherInfoDash" style="display:none;">
+          <div class="weather-temp-dash" id="weatherTempDash">--°</div>
+          <div class="weather-city-dash" id="weatherCityDash">--</div>
+          <div class="weather-date-dash" id="weatherDateDash">--</div>
+        </div>
+      </div>
       <div class="quick-stats-time" id="currentTime">--:--:--</div>
     </div>
 
@@ -589,6 +636,65 @@
         sessionStorage.setItem('cerberus_welcome_shown', '1');
       } else if (modal) {
         modal.style.display = 'none';
+      }
+    })();
+
+    // Weather Widget for Dashboard
+    (function() {
+      const weatherIcons = {
+        0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
+        45: '🌫️', 48: '🌫️',
+        51: '🌧️', 53: '🌧️', 55: '🌧️',
+        61: '🌧️', 63: '🌧️', 65: '🌧️',
+        71: '❄️', 73: '❄️', 75: '❄️', 77: '❄️',
+        80: '🌦️', 81: '🌦️', 82: '🌦️',
+        85: '🌨️', 86: '🌨️',
+        95: '⛈️', 96: '⛈️', 99: '⛈️'
+      };
+
+      function formatDate() {
+        const now = new Date();
+        return now.toLocaleDateString('es-MX', {
+          weekday: 'short', day: 'numeric', month: 'short'
+        });
+      }
+
+      async function getWeatherDash(lat, lon) {
+        try {
+          const [weatherRes, geoRes] = await Promise.all([
+            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`),
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=es`)
+          ]);
+
+          const weatherData = await weatherRes.json();
+          const geoData = await geoRes.json();
+
+          const weather = weatherData.current_weather;
+          const city = geoData.address?.city || geoData.address?.town || geoData.address?.village || geoData.address?.state || 'Ubicacion';
+
+          document.getElementById('weatherIconDash').textContent = weatherIcons[weather.weathercode] || '🌡️';
+          document.getElementById('weatherTempDash').textContent = Math.round(weather.temperature) + '°C';
+          document.getElementById('weatherCityDash').textContent = city;
+          document.getElementById('weatherDateDash').textContent = formatDate();
+
+          document.getElementById('weatherLoadingDash').style.display = 'none';
+          document.getElementById('weatherContentDash').style.display = '';
+          document.getElementById('weatherInfoDash').style.display = '';
+
+        } catch (err) {
+          console.warn('Weather error:', err);
+          document.getElementById('weatherWidgetDash').style.display = 'none';
+        }
+      }
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => getWeatherDash(pos.coords.latitude, pos.coords.longitude),
+          () => document.getElementById('weatherWidgetDash').style.display = 'none',
+          { timeout: 10000, enableHighAccuracy: false }
+        );
+      } else {
+        document.getElementById('weatherWidgetDash').style.display = 'none';
       }
     })();
   </script>

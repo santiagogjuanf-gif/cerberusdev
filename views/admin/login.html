@@ -310,6 +310,97 @@
       letter-spacing: 2px;
     }
 
+    /* Weather Widget */
+    .weather-widget {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: linear-gradient(145deg, rgba(20,24,36,0.9), rgba(12,15,24,0.95));
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 16px 20px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      min-width: 200px;
+      animation: widgetAppear 0.5s ease 0.3s backwards;
+    }
+    @keyframes widgetAppear {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .weather-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .weather-icon {
+      font-size: 32px;
+      line-height: 1;
+    }
+    .weather-temp {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, rgba(255,255,255,0.7));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .weather-desc {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      text-transform: capitalize;
+    }
+    .weather-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .weather-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+    }
+    .weather-row-icon {
+      width: 16px;
+      text-align: center;
+      color: rgba(255,122,24,0.8);
+    }
+    .weather-city {
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+    }
+    .weather-time {
+      font-family: monospace;
+      color: #FF9A45;
+    }
+    .weather-loading {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.5);
+      font-size: 12px;
+    }
+    .weather-loading-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,122,24,0.2);
+      border-top-color: #FF7A18;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .weather-error {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+    }
+
     /* Responsive */
     @media (max-width: 480px) {
       .login-card {
@@ -364,5 +455,152 @@
 
     <div class="login-footer">Cerberus Security System v2.0</div>
   </div>
+
+  <!-- Weather Widget -->
+  <div class="weather-widget" id="weatherWidget">
+    <div class="weather-loading" id="weatherLoading">
+      <div class="weather-loading-spinner"></div>
+      <span>Obteniendo ubicacion...</span>
+    </div>
+    <div id="weatherContent" style="display:none;">
+      <div class="weather-header">
+        <span class="weather-icon" id="weatherIcon">--</span>
+        <div>
+          <div class="weather-temp" id="weatherTemp">--°</div>
+          <div class="weather-desc" id="weatherDesc">--</div>
+        </div>
+      </div>
+      <div class="weather-info">
+        <div class="weather-row">
+          <span class="weather-row-icon">&#x1F4CD;</span>
+          <span class="weather-city" id="weatherCity">--</span>
+        </div>
+        <div class="weather-row">
+          <span class="weather-row-icon">&#x1F4C5;</span>
+          <span id="weatherDate">--</span>
+        </div>
+        <div class="weather-row">
+          <span class="weather-row-icon">&#x23F0;</span>
+          <span class="weather-time" id="weatherTime">--:--:--</span>
+        </div>
+      </div>
+    </div>
+    <div class="weather-error" id="weatherError" style="display:none;">
+      <span id="weatherErrorText">No se pudo obtener el clima</span>
+    </div>
+  </div>
+
+  <script>
+    // Weather Widget
+    (function() {
+      const weatherIcons = {
+        0: '☀️', // Clear sky
+        1: '🌤️', 2: '⛅', 3: '☁️', // Partly cloudy
+        45: '🌫️', 48: '🌫️', // Fog
+        51: '🌧️', 53: '🌧️', 55: '🌧️', // Drizzle
+        61: '🌧️', 63: '🌧️', 65: '🌧️', // Rain
+        71: '❄️', 73: '❄️', 75: '❄️', // Snow
+        77: '❄️', // Snow grains
+        80: '🌦️', 81: '🌦️', 82: '🌦️', // Showers
+        85: '🌨️', 86: '🌨️', // Snow showers
+        95: '⛈️', 96: '⛈️', 99: '⛈️' // Thunderstorm
+      };
+
+      const weatherDescriptions = {
+        0: 'Despejado',
+        1: 'Poco nublado', 2: 'Parcialmente nublado', 3: 'Nublado',
+        45: 'Niebla', 48: 'Niebla helada',
+        51: 'Llovizna ligera', 53: 'Llovizna', 55: 'Llovizna intensa',
+        61: 'Lluvia ligera', 63: 'Lluvia', 65: 'Lluvia intensa',
+        71: 'Nieve ligera', 73: 'Nieve', 75: 'Nieve intensa',
+        77: 'Granizo',
+        80: 'Chubascos ligeros', 81: 'Chubascos', 82: 'Chubascos intensos',
+        85: 'Nieve ligera', 86: 'Nieve intensa',
+        95: 'Tormenta', 96: 'Tormenta con granizo', 99: 'Tormenta fuerte'
+      };
+
+      function updateTime() {
+        const now = new Date();
+        document.getElementById('weatherTime').textContent =
+          now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      }
+
+      function formatDate() {
+        const now = new Date();
+        return now.toLocaleDateString('es-MX', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+      }
+
+      async function getWeather(lat, lon) {
+        try {
+          // Get weather from Open-Meteo
+          const weatherRes = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`
+          );
+          const weatherData = await weatherRes.json();
+
+          // Get city name from reverse geocoding
+          const geoRes = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=es`
+          );
+          const geoData = await geoRes.json();
+
+          const weather = weatherData.current_weather;
+          const city = geoData.address?.city || geoData.address?.town || geoData.address?.village || geoData.address?.state || 'Ubicacion';
+          const country = geoData.address?.country || '';
+
+          document.getElementById('weatherIcon').textContent = weatherIcons[weather.weathercode] || '🌡️';
+          document.getElementById('weatherTemp').textContent = Math.round(weather.temperature) + '°C';
+          document.getElementById('weatherDesc').textContent = weatherDescriptions[weather.weathercode] || 'Clima';
+          document.getElementById('weatherCity').textContent = city + (country ? ', ' + country : '');
+          document.getElementById('weatherDate').textContent = formatDate();
+
+          document.getElementById('weatherLoading').style.display = 'none';
+          document.getElementById('weatherContent').style.display = '';
+
+          // Update time every second
+          updateTime();
+          setInterval(updateTime, 1000);
+
+        } catch (err) {
+          console.error('Weather error:', err);
+          showError('Error al obtener el clima');
+        }
+      }
+
+      function showError(message) {
+        document.getElementById('weatherLoading').style.display = 'none';
+        document.getElementById('weatherError').style.display = '';
+        document.getElementById('weatherErrorText').textContent = message;
+
+        // Still show date and time
+        document.getElementById('weatherDate').textContent = formatDate();
+        updateTime();
+        setInterval(updateTime, 1000);
+      }
+
+      // Request geolocation
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            getWeather(position.coords.latitude, position.coords.longitude);
+          },
+          (error) => {
+            console.warn('Geolocation error:', error);
+            let msg = 'Ubicacion no disponible';
+            if (error.code === 1) msg = 'Permiso de ubicacion denegado';
+            showError(msg);
+          },
+          { timeout: 10000, enableHighAccuracy: false }
+        );
+      } else {
+        showError('Geolocalizacion no soportada');
+      }
+    })();
+  </script>
 </body>
 </html>

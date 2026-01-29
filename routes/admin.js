@@ -433,7 +433,7 @@ router.post("/api/leads/:id/delete", requireAuth, async (req, res) => {
 // Logout
 router.get("/logout", (req, res) => {
   req.session.destroy(() => {
-    res.redirect(process.env.ADMIN_PATH + "/login");
+    res.sendFile("logout.html", { root: "./views/admin" });
   });
 });
 

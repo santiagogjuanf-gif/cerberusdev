@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Cerberus Control Room - Cerrando sesion</title>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: #060910;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    /* Background */
+    .logout-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(ellipse 800px 500px at 50% 30%, rgba(255,122,24,0.12), transparent 60%),
+        radial-gradient(ellipse 600px 400px at 30% 70%, rgba(239,68,68,0.08), transparent 60%);
+    }
+    .logout-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,122,24,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,122,24,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 80%);
+    }
+
+    /* Content */
+    .logout-content {
+      text-align: center;
+      animation: contentAppear 0.6s ease;
+    }
+    @keyframes contentAppear {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Logo */
+    .logout-logo {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 30px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(255,122,24,0.1));
+      border: 2px solid rgba(239,68,68,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      box-shadow: 0 0 50px rgba(239,68,68,0.3), inset 0 0 30px rgba(239,68,68,0.1);
+      animation: logoutPulse 2s ease-in-out infinite;
+    }
+    @keyframes logoutPulse {
+      0%, 100% {
+        box-shadow: 0 0 50px rgba(239,68,68,0.3), inset 0 0 30px rgba(239,68,68,0.1);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 0 70px rgba(239,68,68,0.5), inset 0 0 40px rgba(239,68,68,0.2);
+        transform: scale(0.95);
+      }
+    }
+    .logout-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 12px rgba(239,68,68,0.5)) grayscale(30%);
+      animation: logoFade 3s ease forwards;
+    }
+    @keyframes logoFade {
+      0% { filter: drop-shadow(0 0 12px rgba(255,122,24,0.5)) grayscale(0%); }
+      100% { filter: drop-shadow(0 0 12px rgba(239,68,68,0.5)) grayscale(50%); }
+    }
+
+    /* Text */
+    .logout-text {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      margin-bottom: 12px;
+      opacity: 0;
+      animation: fadeIn 0.5s ease forwards 0.3s;
+    }
+    .logout-title {
+      font-size: 42px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #ef4444 0%, #FF7A18 50%, #FF9A45 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      opacity: 0;
+      animation: slideUp 0.6s ease forwards 0.5s;
+    }
+    .logout-subtitle {
+      font-size: 15px;
+      color: rgba(255,255,255,0.5);
+      opacity: 0;
+      animation: fadeIn 0.5s ease forwards 0.8s;
+    }
+
+    /* Line */
+    .logout-line {
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #ef4444, transparent);
+      margin: 30px auto;
+      animation: lineExpand 0.8s ease forwards 1s;
+    }
+    @keyframes lineExpand {
+      from { width: 0; }
+      to { width: 180px; }
+    }
+
+    /* Status */
+    .logout-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      opacity: 0;
+      animation: fadeIn 0.5s ease forwards 1.2s;
+    }
+    .logout-status-dot {
+      width: 8px;
+      height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #ef4444;
+      animation: statusPulse 0.8s ease-in-out infinite;
+    }
+    @keyframes statusPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    /* Progress bar */
+    .logout-progress {
+      width: 200px;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      margin: 20px auto 0;
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeIn 0.3s ease forwards 1.4s;
+    }
+    .logout-progress-bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #ef4444, #FF7A18);
+      border-radius: 2px;
+      animation: progressFill 2s ease forwards 1.5s;
+    }
+    @keyframes progressFill {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+
+    /* Fadeout */
+    .logout-content.is-leaving {
+      animation: contentLeave 0.5s ease forwards;
+    }
+    @keyframes contentLeave {
+      to { opacity: 0; transform: scale(0.9); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="logout-bg"></div>
+
+  <div class="logout-content" id="logoutContent">
+    <div class="logout-logo">
+      <img src="/assets/img/cerberus-mark.png" alt="Cerberus">
+    </div>
+    <div class="logout-text">Sesion finalizada</div>
+    <div class="logout-title">Hasta pronto</div>
+    <div class="logout-subtitle">Gracias por usar Cerberus Control Room</div>
+    <div class="logout-line"></div>
+    <div class="logout-status">
+      <span class="logout-status-dot"></span>
+      <span>Cerrando sesion...</span>
+    </div>
+    <div class="logout-progress">
+      <div class="logout-progress-bar"></div>
+    </div>
+  </div>
+
+  <script>
+    // Clear session storage for welcome modal
+    sessionStorage.removeItem('cerberus_welcome_shown');
+
+    // Redirect after animation
+    setTimeout(() => {
+      document.getElementById('logoutContent').classList.add('is-leaving');
+      setTimeout(() => {
+        window.location.href = './login';
+      }, 500);
+    }, 3500);
+  </script>
+</body>
+</html>
