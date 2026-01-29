@@ -126,7 +126,7 @@ async function refresh() {
   render();
 }
 
-// ── Notifications ──
+// ── Notifications (Facebook-style dropdown) ──
 async function loadNotifications() {
   try {
     const res = await api("./api/notifications");
@@ -151,22 +151,37 @@ async function loadNotifications() {
       }
     }
 
-    // Render list
+    // Render list in dropdown
     const list = $("#notifList");
     if (list) {
       if (notifs.length === 0) {
-        list.innerHTML = '<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.4);">Sin notificaciones</div>';
+        list.innerHTML = '<div class="notif-empty">Sin notificaciones</div>';
       } else {
         list.innerHTML = notifs.slice(0, 20).map(n => `
-          <div class="notif-item ${Number(n.is_read) ? '' : 'is-unread'}">
+          <div class="notif-item ${Number(n.is_read) ? '' : 'is-unread'}" data-notif-id="${n.id}">
             <div class="notif-item-icon">${n.type === "lead" ? "&#x1F4E9;" : "&#x1F4AC;"}</div>
             <div class="notif-item-body">
               <div class="notif-item-title">${escapeHtml(n.title)}</div>
               <div class="notif-item-text">${escapeHtml(n.body || "")}</div>
               <div class="notif-item-time">${fmtDate(n.created_at)}</div>
             </div>
+            <button class="notif-item-delete" data-delete="${n.id}" title="Eliminar">&#x2715;</button>
           </div>
         `).join("");
+
+        // Attach delete handlers
+        list.querySelectorAll("[data-delete]").forEach(btn => {
+          btn.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            const id = btn.dataset.delete;
+            try {
+              await api(`./api/notifications/${id}/delete`, { method: "POST" });
+              loadNotifications();
+            } catch (err) {
+              console.warn("[Notifications] Delete error:", err);
+            }
+          });
+        });
       }
     }
   } catch (err) {
@@ -174,20 +189,28 @@ async function loadNotifications() {
   }
 }
 
-// Toggle notifications panel
+// Toggle notifications dropdown
 const notifBtn = $("#notifBtn");
-const notifPanel = $("#notifPanel");
-if (notifBtn && notifPanel) {
-  notifBtn.addEventListener("click", () => {
-    const isVisible = notifPanel.style.display !== "none";
-    notifPanel.style.display = isVisible ? "none" : "";
+const notifDropdown = $("#notifDropdown");
+if (notifBtn && notifDropdown) {
+  notifBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    notifDropdown.classList.toggle("is-open");
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+      notifDropdown.classList.remove("is-open");
+    }
   });
 }
 
 // Mark all read
 const markAllBtn = $("#markAllRead");
 if (markAllBtn) {
-  markAllBtn.addEventListener("click", async () => {
+  markAllBtn.addEventListener("click", async (e) => {
+    e.stopPropagation();
     try {
       await api("./api/notifications/read-all", { method: "POST" });
       loadNotifications();

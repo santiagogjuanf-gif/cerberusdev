@@ -181,6 +181,17 @@ router.post("/api/notifications/read-all", requireAuth, async (req, res) => {
   }
 });
 
+// Delete a notification
+router.post("/api/notifications/:id/delete", requireAuth, async (req, res) => {
+  try {
+    await db.execute("DELETE FROM admin_notifications WHERE id = ?", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[NOTIF DELETE]", err);
+    res.status(500).json({ ok: false });
+  }
+});
+
 // ── Comments API (admin) ──
 
 router.get("/api/blog/comments", requireAuth, async (req, res) => {
