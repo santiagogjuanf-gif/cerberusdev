@@ -45,12 +45,26 @@
       100% { top: 100%; opacity: 0; }
     }
 
-    /* Enhanced header */
+    /* Enhanced header - vertical layout */
+    .admin-top {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 16px !important;
+    }
+
     .dashboard-header {
       position: relative;
       display: flex;
       align-items: center;
       gap: 20px;
+    }
+
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
     }
 
     .header-logo {
@@ -596,7 +610,7 @@
         <img src="/assets/img/cerberus-mark.png" alt="Cerberus">
       </div>
       <div class="welcome-text">Acceso autorizado</div>
-      <div class="welcome-title">Bienvenido</div>
+      <div class="welcome-title" id="welcomeTitle">Bienvenido</div>
       <div class="welcome-subtitle">Cerberus Control Room</div>
       <div class="welcome-line"></div>
       <div class="welcome-status">
@@ -618,9 +632,18 @@
     setInterval(updateClock, 1000);
 
     // Welcome modal - show only on first visit of session
-    (function() {
+    (async function() {
       const modal = document.getElementById('welcomeModal');
       const shown = sessionStorage.getItem('cerberus_welcome_shown');
+
+      // Fetch user name for welcome message
+      try {
+        const res = await fetch('./api/session');
+        const data = await res.json();
+        if (data.ok && data.user.name) {
+          document.getElementById('welcomeTitle').textContent = 'Bienvenido, ' + data.user.name;
+        }
+      } catch (e) {}
 
       if (!shown && modal) {
         // Show modal

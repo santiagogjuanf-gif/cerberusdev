@@ -60,11 +60,12 @@ router.post("/login", rateLimit, async (req, res) => {
   req.session.user = {
     id: user.id,
     username: user.username,
+    name: user.name || user.username,
     email: user.email,
     role: user.role || 'client',
     must_change_password: user.must_change_password || 0
   };
-  console.log("[LOGIN OK]", username, "role:", user.role || 'client');
+  console.log("[LOGIN OK]", username, "name:", user.name || username, "role:", user.role || 'client');
 
   // Check if user needs to change password
   if (user.must_change_password) {
@@ -152,9 +153,33 @@ router.post("/api/blog/posts", requireAuth, async (req, res) => {
   }
 });
 
-// Delete post
+// Delete post (and its images)
 router.post("/api/blog/posts/:id/delete", requireAuth, async (req, res) => {
   try {
+    // Get post to find images
+    const [[post]] = await db.execute("SELECT cover_image, content FROM blog_posts WHERE id = ?", [req.params.id]);
+
+    if (post) {
+      // Delete cover image if exists
+      if (post.cover_image && post.cover_image.startsWith("/uploads/")) {
+        const coverPath = path.join(__dirname, "..", "public", post.cover_image);
+        if (fs.existsSync(coverPath)) fs.unlinkSync(coverPath);
+      }
+
+      // Find and delete images in content (markdown format: ![](url) or HTML <img src="url">)
+      const imgRegex = /(?:!\[.*?\]\(|<img[^>]+src=["'])([^)"']+uploads\/[^)"']+)/g;
+      let match;
+      while ((match = imgRegex.exec(post.content)) !== null) {
+        const imgUrl = match[1];
+        if (imgUrl.startsWith("/uploads/")) {
+          const imgPath = path.join(__dirname, "..", "public", imgUrl);
+          if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+        }
+      }
+    }
+
+    // Delete comments first (foreign key)
+    await db.execute("DELETE FROM blog_comments WHERE post_id = ?", [req.params.id]);
     await db.execute("DELETE FROM blog_posts WHERE id = ?", [req.params.id]);
     res.json({ ok: true });
   } catch (err) {
@@ -362,10 +387,47 @@ router.post("/api/projects", requireAuth, async (req, res) => {
   }
 });
 
-// Delete project
+// Delete project (and its images)
 router.post("/api/projects/:id/delete", requireAuth, async (req, res) => {
   try {
-    await db.execute("DELETE FROM projects WHERE id = ?", [req.params.id]);
+    const projectId = req.params.id;
+
+    // Get project to find main image
+    const [[project]] = await db.execute("SELECT image_url, content FROM projects WHERE id = ?", [projectId]);
+
+    if (project) {
+      // Delete main image if exists
+      if (project.image_url && project.image_url.startsWith("/uploads/")) {
+        const mainPath = path.join(__dirname, "..", "public", project.image_url);
+        if (fs.existsSync(mainPath)) fs.unlinkSync(mainPath);
+      }
+
+      // Find and delete images in content
+      const imgRegex = /(?:!\[.*?\]\(|<img[^>]+src=["'])([^)"']+uploads\/[^)"']+)/g;
+      let match;
+      while ((match = imgRegex.exec(project.content)) !== null) {
+        const imgUrl = match[1];
+        if (imgUrl.startsWith("/uploads/")) {
+          const imgPath = path.join(__dirname, "..", "public", imgUrl);
+          if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+        }
+      }
+    }
+
+    // Get and delete gallery images
+    const [galleryImages] = await db.execute("SELECT image_url FROM project_images WHERE project_id = ?", [projectId]);
+    for (const img of galleryImages) {
+      if (img.image_url && img.image_url.startsWith("/uploads/")) {
+        const imgPath = path.join(__dirname, "..", "public", img.image_url);
+        if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+      }
+    }
+
+    // Delete related records first (foreign keys)
+    await db.execute("DELETE FROM project_technologies WHERE project_id = ?", [projectId]);
+    await db.execute("DELETE FROM project_images WHERE project_id = ?", [projectId]);
+    await db.execute("DELETE FROM projects WHERE id = ?", [projectId]);
+
     res.json({ ok: true });
   } catch (err) {
     console.error("[PROJECTS ADMIN]", err);
@@ -459,7 +521,7 @@ router.get("/users", requireAuth, requireRole(['admin']), (req, res) => {
 router.get("/api/users", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
     const [rows] = await db.execute(`
-      SELECT id, username, email, role, must_change_password, created_at, updated_at
+      SELECT id, username, name, email, role, must_change_password, created_at, updated_at
       FROM admin_users
       ORDER BY created_at DESC
     `);
@@ -474,7 +536,7 @@ router.get("/api/users", requireAuth, requireRole(['admin']), async (req, res) =
 router.get("/api/users/:id", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
     const [[user]] = await db.execute(`
-      SELECT id, username, email, role, must_change_password, created_at, updated_at
+      SELECT id, username, name, email, role, must_change_password, created_at, updated_at
       FROM admin_users WHERE id = ?
     `, [req.params.id]);
     if (!user) return res.status(404).json({ ok: false, error: 'not_found' });
@@ -488,7 +550,7 @@ router.get("/api/users/:id", requireAuth, requireRole(['admin']), async (req, re
 // Create user
 router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
-    const { username, email, password, role, must_change_password } = req.body;
+    const { username, name, email, password, role, must_change_password } = req.body;
 
     if (!username || !password) {
       return res.status(400).json({ ok: false, error: 'username and password required' });
@@ -505,9 +567,9 @@ router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) 
 
     const password_hash = await bcrypt.hash(password, 10);
     const [result] = await db.execute(`
-      INSERT INTO admin_users (username, email, password_hash, role, must_change_password)
-      VALUES (?, ?, ?, ?, ?)
-    `, [username, email || null, password_hash, role || 'client', must_change_password ? 1 : 0]);
+      INSERT INTO admin_users (username, name, email, password_hash, role, must_change_password)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [username, name || null, email || null, password_hash, role || 'client', must_change_password ? 1 : 0]);
 
     res.json({ ok: true, userId: result.insertId });
   } catch (err) {
@@ -519,7 +581,7 @@ router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) 
 // Update user
 router.post("/api/users/:id", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
-    const { username, email, password, role, must_change_password } = req.body;
+    const { username, name, email, password, role, must_change_password } = req.body;
     const userId = req.params.id;
 
     // Check if username/email exists for another user
@@ -535,15 +597,15 @@ router.post("/api/users/:id", requireAuth, requireRole(['admin']), async (req, r
       // Update with new password
       const password_hash = await bcrypt.hash(password, 10);
       await db.execute(`
-        UPDATE admin_users SET username = ?, email = ?, password_hash = ?, role = ?, must_change_password = ?
+        UPDATE admin_users SET username = ?, name = ?, email = ?, password_hash = ?, role = ?, must_change_password = ?
         WHERE id = ?
-      `, [username, email || null, password_hash, role || 'client', must_change_password ? 1 : 0, userId]);
+      `, [username, name || null, email || null, password_hash, role || 'client', must_change_password ? 1 : 0, userId]);
     } else {
       // Update without changing password
       await db.execute(`
-        UPDATE admin_users SET username = ?, email = ?, role = ?, must_change_password = ?
+        UPDATE admin_users SET username = ?, name = ?, email = ?, role = ?, must_change_password = ?
         WHERE id = ?
-      `, [username, email || null, role || 'client', must_change_password ? 1 : 0, userId]);
+      `, [username, name || null, email || null, role || 'client', must_change_password ? 1 : 0, userId]);
     }
 
     res.json({ ok: true });
@@ -748,13 +810,45 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
     // Hostname
     const hostname = os.hostname();
 
-    // Get disk usage (async)
-    exec("df -h / | tail -1 | awk '{print $2,$3,$4,$5}'", (error, stdout) => {
+    // Get disk usage - try multiple methods for compatibility
+    exec("df -h --output=size,used,avail,pcent / 2>/dev/null || df -h / 2>/dev/null", (error, stdout) => {
       let disk = { total: 'N/A', used: 'N/A', free: 'N/A', percent: 'N/A' };
+
       if (!error && stdout) {
-        const parts = stdout.trim().split(/\s+/);
-        if (parts.length >= 4) {
+        const lines = stdout.trim().split('\n');
+        // Get the last line (data line, not header)
+        const dataLine = lines[lines.length - 1];
+        const parts = dataLine.trim().split(/\s+/);
+
+        // Try to parse based on number of columns
+        if (parts.length >= 5) {
+          // Standard df output: Filesystem Size Used Avail Use% Mounted
+          disk = { total: parts[1], used: parts[2], free: parts[3], percent: parts[4] };
+        } else if (parts.length >= 4) {
+          // df --output format: Size Used Avail Use%
           disk = { total: parts[0], used: parts[1], free: parts[2], percent: parts[3] };
+        }
+      }
+
+      // If still N/A, try using Node.js statvfs-like approach
+      if (disk.total === 'N/A') {
+        try {
+          const { statfsSync } = require('fs');
+          if (statfsSync) {
+            const stats = statfsSync('/');
+            const total = stats.blocks * stats.bsize;
+            const free = stats.bfree * stats.bsize;
+            const used = total - free;
+            const percent = ((used / total) * 100).toFixed(0) + '%';
+            disk = {
+              total: (total / 1024 / 1024 / 1024).toFixed(1) + 'G',
+              used: (used / 1024 / 1024 / 1024).toFixed(1) + 'G',
+              free: (free / 1024 / 1024 / 1024).toFixed(1) + 'G',
+              percent
+            };
+          }
+        } catch (e) {
+          // statfsSync not available, keep N/A
         }
       }
 
@@ -1007,8 +1101,10 @@ router.get("/api/session", requireAuth, (req, res) => {
     user: {
       id: req.session.user.id,
       username: req.session.user.username,
+      name: req.session.user.name || req.session.user.username,
       email: req.session.user.email,
-      role: req.session.user.role
+      role: req.session.user.role,
+      must_change_password: req.session.user.must_change_password || 0
     }
   });
 });

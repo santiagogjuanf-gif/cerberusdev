@@ -249,6 +249,7 @@
             <tr>
               <th>ID</th>
               <th>Usuario</th>
+              <th>Nombre</th>
               <th>Email</th>
               <th>Rol</th>
               <th>Creado</th>
@@ -270,6 +271,10 @@
         <div class="form-group">
           <label class="form-label">Nombre de usuario *</label>
           <input type="text" class="form-input" id="username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nombre completo</label>
+          <input type="text" class="form-input" id="name" placeholder="Juan Santiago">
         </div>
         <div class="form-group">
           <label class="form-label">Email</label>
@@ -338,6 +343,7 @@
         <tr>
           <td>${u.id}</td>
           <td><strong>${u.username}</strong></td>
+          <td>${u.name || '-'}</td>
           <td>${u.email || '-'}</td>
           <td><span class="role-badge ${u.role}">${u.role}</span></td>
           <td>${new Date(u.created_at).toLocaleDateString('es-MX')}</td>
@@ -357,6 +363,7 @@
         document.getElementById('modalTitle').textContent = 'Editar Usuario';
         document.getElementById('userId').value = user.id;
         document.getElementById('username').value = user.username;
+        document.getElementById('name').value = user.name || '';
         document.getElementById('email').value = user.email || '';
         document.getElementById('role').value = user.role;
         document.getElementById('mustChangePassword').checked = user.must_change_password;
@@ -419,6 +426,7 @@
       const id = document.getElementById('userId').value;
       const body = {
         username: document.getElementById('username').value,
+        name: document.getElementById('name').value || null,
         email: document.getElementById('email').value || null,
         password: document.getElementById('password').value || null,
         role: document.getElementById('role').value,

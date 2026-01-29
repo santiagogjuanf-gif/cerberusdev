@@ -401,6 +401,31 @@
       color: rgba(255,255,255,0.4);
     }
 
+    /* Error message */
+    .login-error {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      animation: shakeError 0.5s ease;
+    }
+    @keyframes shakeError {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+      20%, 40%, 60%, 80% { transform: translateX(4px); }
+    }
+    .login-error-icon {
+      font-size: 18px;
+    }
+    .login-error-text {
+      font-size: 13px;
+      color: #f87171;
+    }
+
     /* Responsive */
     @media (max-width: 480px) {
       .login-card {
@@ -440,6 +465,12 @@
 
     <div class="login-title">Control Room</div>
     <div class="login-sub">Acceso restringido &bull; Solo personal autorizado</div>
+
+    <!-- Error message -->
+    <div class="login-error" id="loginError" style="display:none;">
+      <span class="login-error-icon">&#x26A0;</span>
+      <span class="login-error-text" id="loginErrorText">Usuario o contrasena incorrectos</span>
+    </div>
 
     <form class="login-form" method="POST" action="login">
       <div class="login-field-wrap">
@@ -599,6 +630,30 @@
         );
       } else {
         showError('Geolocalizacion no soportada');
+      }
+    })();
+
+    // Check for login error parameter
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+
+      if (error) {
+        const errorEl = document.getElementById('loginError');
+        const errorText = document.getElementById('loginErrorText');
+
+        if (error === 'invalid') {
+          errorText.textContent = 'Usuario o contrasena incorrectos. Intentelo de nuevo.';
+        } else if (error === 'session') {
+          errorText.textContent = 'Sesion expirada. Por favor inicie sesion nuevamente.';
+        } else {
+          errorText.textContent = 'Error de autenticacion. Intentelo de nuevo.';
+        }
+
+        errorEl.style.display = '';
+
+        // Remove error from URL to avoid showing it again on refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
     })();
   </script>
