@@ -758,7 +758,8 @@
 
       grid.querySelectorAll("[data-del]").forEach(btn => {
         btn.addEventListener("click", async () => {
-          if (!confirm("Eliminar este proyecto?")) return;
+          const ok = await showConfirm("Eliminar proyecto", "Este proyecto se eliminara permanentemente junto con todas sus imagenes.");
+          if (!ok) return;
           await api(`./api/projects/${btn.dataset.del}/delete`, { method: "POST" });
           loadProjects();
         });
@@ -879,10 +880,55 @@
       }
     });
 
+    // ── Confirmation Modal ──
+    function showConfirm(title, text) {
+      return new Promise(resolve => {
+        const modal = document.getElementById("confirmModal");
+        const titleEl = document.getElementById("confirmTitle");
+        const textEl = document.getElementById("confirmText");
+        const okBtn = document.getElementById("confirmOk");
+        const cancelBtn = document.getElementById("confirmCancel");
+        const backdrop = modal.querySelector(".confirm-modal-backdrop");
+
+        titleEl.textContent = title || "Confirmar accion";
+        textEl.textContent = text || "Esta accion no se puede deshacer.";
+        modal.classList.add("is-open");
+
+        function close(result) {
+          modal.classList.remove("is-open");
+          okBtn.removeEventListener("click", onOk);
+          cancelBtn.removeEventListener("click", onCancel);
+          backdrop.removeEventListener("click", onCancel);
+          resolve(result);
+        }
+
+        function onOk() { close(true); }
+        function onCancel() { close(false); }
+
+        okBtn.addEventListener("click", onOk);
+        cancelBtn.addEventListener("click", onCancel);
+        backdrop.addEventListener("click", onCancel);
+      });
+    }
+
     // ── Init ──
     buildTechCheckboxes();
     loadProjects();
   })();
   </script>
+
+  <!-- Confirmation Modal -->
+  <div class="confirm-modal" id="confirmModal">
+    <div class="confirm-modal-backdrop"></div>
+    <div class="confirm-modal-box">
+      <div class="confirm-modal-icon">&#x26A0;</div>
+      <div class="confirm-modal-title" id="confirmTitle">Confirmar accion</div>
+      <div class="confirm-modal-text" id="confirmText">Esta accion no se puede deshacer.</div>
+      <div class="confirm-modal-actions">
+        <button class="confirm-modal-btn cancel" id="confirmCancel" title="Cancelar">&#x2715;</button>
+        <button class="confirm-modal-btn confirm" id="confirmOk" title="Confirmar">&#x2713;</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

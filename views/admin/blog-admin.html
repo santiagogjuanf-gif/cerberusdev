@@ -321,7 +321,8 @@
 
   // ── Delete post ──
   async function deletePost(id) {
-    if (!confirm("Eliminar esta publicacion?")) return;
+    const ok = await showConfirm("Eliminar publicacion", "Esta publicacion se eliminara permanentemente.");
+    if (!ok) return;
     await api(`./api/blog/posts/${id}/delete`, { method: "POST" });
     await loadAll();
   }
@@ -485,7 +486,8 @@
     });
     tbody.querySelectorAll("[data-del-comment]").forEach(btn => {
       btn.addEventListener("click", async () => {
-        if (!confirm("Eliminar este comentario?")) return;
+        const ok = await showConfirm("Eliminar comentario", "Este comentario se eliminara permanentemente.");
+        if (!ok) return;
         await api(`./api/blog/comments/${btn.dataset.delComment}/delete`, { method: "POST" });
         loadComments();
       });
@@ -569,6 +571,51 @@
 
   // ── Init ──
   loadAll().catch(err => console.error(err));
+
+  // ── Confirmation Modal ──
+  function showConfirm(title, text) {
+    return new Promise(resolve => {
+      const modal = $("#confirmModal");
+      const titleEl = $("#confirmTitle");
+      const textEl = $("#confirmText");
+      const okBtn = $("#confirmOk");
+      const cancelBtn = $("#confirmCancel");
+      const backdrop = modal.querySelector(".confirm-modal-backdrop");
+
+      titleEl.textContent = title || "Confirmar accion";
+      textEl.textContent = text || "Esta accion no se puede deshacer.";
+      modal.classList.add("is-open");
+
+      function close(result) {
+        modal.classList.remove("is-open");
+        okBtn.removeEventListener("click", onOk);
+        cancelBtn.removeEventListener("click", onCancel);
+        backdrop.removeEventListener("click", onCancel);
+        resolve(result);
+      }
+
+      function onOk() { close(true); }
+      function onCancel() { close(false); }
+
+      okBtn.addEventListener("click", onOk);
+      cancelBtn.addEventListener("click", onCancel);
+      backdrop.addEventListener("click", onCancel);
+    });
+  }
   </script>
+
+  <!-- Confirmation Modal -->
+  <div class="confirm-modal" id="confirmModal">
+    <div class="confirm-modal-backdrop"></div>
+    <div class="confirm-modal-box">
+      <div class="confirm-modal-icon">&#x26A0;</div>
+      <div class="confirm-modal-title" id="confirmTitle">Confirmar accion</div>
+      <div class="confirm-modal-text" id="confirmText">Esta accion no se puede deshacer.</div>
+      <div class="confirm-modal-actions">
+        <button class="confirm-modal-btn cancel" id="confirmCancel" title="Cancelar">&#x2715;</button>
+        <button class="confirm-modal-btn confirm" id="confirmOk" title="Confirmar">&#x2713;</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

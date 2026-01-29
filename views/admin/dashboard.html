@@ -7,15 +7,304 @@
   <title>Cerberus Control Room</title>
   <link rel="stylesheet" href="/assets/css/styles.css"/>
   <link rel="stylesheet" href="/assets/css/admin.css"/>
+  <style>
+    /* Futuristic Dashboard Enhancements */
+    .admin-wrap {
+      position: relative;
+    }
+
+    /* Animated grid background */
+    .admin-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,122,24,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,122,24,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+    }
+
+    /* Animated scanline effect */
+    .admin-bg::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
+      animation: scanline 8s linear infinite;
+      opacity: 0.6;
+    }
+    @keyframes scanline {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    /* Enhanced header */
+    .dashboard-header {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .header-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1);
+      animation: logoPulse 3s ease-in-out infinite;
+    }
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1); }
+      50% { box-shadow: 0 0 40px rgba(255,122,24,0.35), inset 0 0 25px rgba(255,122,24,0.15); }
+    }
+
+    .admin-title {
+      position: relative;
+    }
+    .admin-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #FF7A18, transparent);
+      border-radius: 2px;
+    }
+
+    .admin-sub {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-sub::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: statusBlink 2s ease-in-out infinite;
+      box-shadow: 0 0 8px #22c55e;
+    }
+    @keyframes statusBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Futuristic KPI cards */
+    .kpi {
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 80px;
+      height: 80px;
+      background: radial-gradient(circle, rgba(255,122,24,0.1) 0%, transparent 70%);
+      transform: translate(30%, -30%);
+    }
+    .kpi-icon {
+      position: relative;
+      z-index: 1;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,122,24,0.1);
+      border: 1px solid rgba(255,122,24,0.2);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-size: 22px;
+      transition: all 0.3s ease;
+    }
+    .kpi:hover .kpi-icon {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255,122,24,0.3);
+      border-color: rgba(255,122,24,0.4);
+    }
+    .kpi-value {
+      font-size: 36px;
+      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Corner accents for cards */
+    .admin-card {
+      position: relative;
+    }
+    .admin-card::before,
+    .admin-card::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,122,24,0.3);
+      pointer-events: none;
+    }
+    .admin-card::before {
+      top: -1px;
+      left: -1px;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 16px 0 0 0;
+    }
+    .admin-card::after {
+      bottom: -1px;
+      right: -1px;
+      border-left: none;
+      border-top: none;
+      border-radius: 0 0 16px 0;
+    }
+
+    /* Enhanced table header */
+    .admin-card-head {
+      position: relative;
+    }
+    .admin-card-head::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 24px;
+      right: 24px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.3), transparent);
+    }
+
+    .admin-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-card-title::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(180deg, #FF7A18, #FF9A45);
+      border-radius: 2px;
+    }
+
+    /* Enhanced nav buttons */
+    .btn--ghost {
+      position: relative;
+      overflow: hidden;
+    }
+    .btn--ghost::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.1), transparent);
+      transition: left 0.5s ease;
+    }
+    .btn--ghost:hover::before {
+      left: 100%;
+    }
+
+    /* Chip buttons enhancement */
+    .chip {
+      position: relative;
+      overflow: hidden;
+    }
+    .chip.is-on::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,122,24,0.15), transparent);
+    }
+
+    /* Table row hover glow */
+    .table tbody tr {
+      position: relative;
+    }
+    .table tbody tr::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      background: linear-gradient(90deg, rgba(255,122,24,0.1), transparent);
+      transition: width 0.3s ease;
+    }
+    .table tbody tr:hover::before {
+      width: 100%;
+    }
+
+    /* Quick stats bar */
+    .quick-stats {
+      width: min(1200px, calc(100% - 40px));
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+    }
+    .quick-stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .quick-stat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .quick-stat-dot.green { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.5); }
+    .quick-stat-dot.orange { background: #FF7A18; box-shadow: 0 0 8px rgba(255,122,24,0.5); }
+    .quick-stat-dot.blue { background: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.5); }
+    .quick-stat strong {
+      color: rgba(255,255,255,0.9);
+      font-weight: 600;
+    }
+    .quick-stat-sep {
+      width: 1px;
+      height: 20px;
+      background: rgba(255,255,255,0.1);
+    }
+    .quick-stats-time {
+      margin-left: auto;
+      font-family: monospace;
+      color: rgba(255,255,255,0.4);
+    }
+  </style>
 </head>
 <body>
   <main class="admin-wrap">
     <div class="admin-bg"></div>
 
     <header class="admin-top">
-      <div class="admin-brand">
-        <div class="admin-title">Cerberus Control Room</div>
-        <div class="admin-sub">Panel privado &bull; Centro de control</div>
+      <div class="dashboard-header">
+        <div class="header-logo">&#x1F43A;</div>
+        <div class="admin-brand">
+          <div class="admin-title">Cerberus Control Room</div>
+          <div class="admin-sub">Sistema activo &bull; Centro de control</div>
+        </div>
       </div>
       <div class="admin-actions">
         <div class="notif-wrapper">
@@ -39,6 +328,25 @@
         <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
       </div>
     </header>
+
+    <!-- Quick Stats Bar -->
+    <div class="quick-stats">
+      <div class="quick-stat">
+        <span class="quick-stat-dot green"></span>
+        <span>Server: <strong>Online</strong></span>
+      </div>
+      <div class="quick-stat-sep"></div>
+      <div class="quick-stat">
+        <span class="quick-stat-dot orange"></span>
+        <span>Base de datos: <strong>Conectada</strong></span>
+      </div>
+      <div class="quick-stat-sep"></div>
+      <div class="quick-stat">
+        <span class="quick-stat-dot blue"></span>
+        <span>Sesion: <strong>Activa</strong></span>
+      </div>
+      <div class="quick-stats-time" id="currentTime">--:--:--</div>
+    </div>
 
     <!-- KPIs -->
     <section class="admin-kpis" id="kpis">
@@ -99,5 +407,15 @@
   </main>
 
   <script src="/assets/js/admin.js"></script>
+  <script>
+    // Update clock
+    function updateClock() {
+      const now = new Date();
+      const time = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('currentTime').textContent = time;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
 </body>
 </html>
