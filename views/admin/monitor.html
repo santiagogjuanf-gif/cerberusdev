@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <title>Monitor - Cerberus Control</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+  <link rel="stylesheet" href="/assets/css/admin.css"/>
+  <style>
+    .admin-wrap { position: relative; }
+    .admin-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,122,24,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,122,24,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+    }
+    .admin-bg::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
+      animation: scanline 8s linear infinite;
+      opacity: 0.6;
+    }
+    @keyframes scanline {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    .dashboard-header { display: flex; align-items: center; gap: 20px; }
+    .header-logo {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1);
+      animation: logoPulse 3s ease-in-out infinite;
+      padding: 10px;
+    }
+    .header-logo img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255,122,24,0.4)); }
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1); }
+      50% { box-shadow: 0 0 40px rgba(255,122,24,0.35), inset 0 0 25px rgba(255,122,24,0.15); }
+    }
+    .admin-title { position: relative; }
+    .admin-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 60px; height: 3px;
+      background: linear-gradient(90deg, #FF7A18, transparent);
+      border-radius: 2px;
+    }
+    .admin-sub { display: flex; align-items: center; gap: 8px; }
+    .admin-sub::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: statusBlink 2s ease-in-out infinite;
+      box-shadow: 0 0 8px #22c55e;
+    }
+    @keyframes statusBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    /* Monitor layout */
+    .monitor-container {
+      width: min(1400px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* System stats cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before, .stat-card::after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,122,24,0.3);
+      pointer-events: none;
+    }
+    .stat-card::before { top: -1px; left: -1px; border-right: none; border-bottom: none; border-radius: 16px 0 0 0; }
+    .stat-card::after { bottom: -1px; right: -1px; border-left: none; border-top: none; border-radius: 0 0 16px 0; }
+
+    .stat-card-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+    .stat-card-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .stat-card-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .stat-card-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* Progress bar */
+    .stat-progress {
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+    .stat-progress-bar {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .stat-progress-bar.green { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .stat-progress-bar.orange { background: linear-gradient(90deg, #FF7A18, #FF9A45); }
+    .stat-progress-bar.red { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .stat-progress-bar.blue { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+
+    /* PM2 Processes */
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-title::before {
+      content: '';
+      width: 4px; height: 24px;
+      background: linear-gradient(180deg, #FF7A18, #FF9A45);
+      border-radius: 2px;
+    }
+
+    .processes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .process-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+    .process-card:hover {
+      border-color: rgba(255,122,24,0.3);
+    }
+
+    .process-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .process-name {
+      font-weight: 600;
+      color: #fff;
+      font-size: 15px;
+    }
+    .process-id {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      font-family: monospace;
+    }
+
+    .process-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .process-status.online { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .process-status.stopped { background: rgba(239,68,68,0.2); color: #f87171; }
+    .process-status.errored { background: rgba(234,179,8,0.2); color: #facc15; }
+    .process-status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .process-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .process-stat {
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .process-stat-label {
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .process-stat-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Auto-refresh indicator */
+    .refresh-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 20px;
+    }
+    .refresh-dot {
+      width: 8px; height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: refreshPulse 2s ease-in-out infinite;
+    }
+    @keyframes refreshPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* Loading state */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 40px;
+      color: rgba(255,255,255,0.5);
+    }
+    .loading-spinner {
+      width: 24px; height: 24px;
+      border: 3px solid rgba(255,122,24,0.2);
+      border-top-color: #FF7A18;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Hostname badge */
+    .hostname-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255,122,24,0.1);
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 20px;
+      font-size: 13px;
+      color: #FF7A18;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <main class="admin-wrap">
+    <div class="admin-bg"></div>
+
+    <header class="admin-top">
+      <div class="dashboard-header">
+        <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
+        <div class="admin-brand">
+          <div class="admin-title">Monitor del Sistema</div>
+          <div class="admin-sub">Metricas en tiempo real</div>
+        </div>
+      </div>
+      <div class="admin-actions">
+        <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
+        <a class="btn btn--ghost" href="./users">&#x1F465; Usuarios</a>
+        <a class="btn btn--ghost" href="./services">&#x2699; Servicios</a>
+        <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
+      </div>
+    </header>
+
+    <div class="monitor-container">
+      <div class="hostname-badge" id="hostname">
+        &#x1F5A5; Cargando...
+      </div>
+
+      <div class="refresh-indicator">
+        <span class="refresh-dot"></span>
+        <span>Actualizacion automatica cada 5 segundos</span>
+      </div>
+
+      <!-- System Stats -->
+      <div class="stats-grid" id="statsGrid">
+        <div class="loading"><div class="loading-spinner"></div> Cargando estadisticas...</div>
+      </div>
+
+      <!-- PM2 Processes -->
+      <div class="section-title">Procesos PM2</div>
+      <div class="processes-grid" id="processesGrid">
+        <div class="loading"><div class="loading-spinner"></div> Cargando procesos...</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function formatUptime(ms) {
+      const seconds = Math.floor(ms / 1000);
+      const days = Math.floor(seconds / 86400);
+      const hours = Math.floor((seconds % 86400) / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      if (days > 0) return `${days}d ${hours}h`;
+      if (hours > 0) return `${hours}h ${minutes}m`;
+      return `${minutes}m`;
+    }
+
+    function getProgressColor(percent) {
+      const num = parseFloat(percent);
+      if (num >= 80) return 'red';
+      if (num >= 60) return 'orange';
+      return 'green';
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('./api/monitor/stats');
+        const data = await res.json();
+
+        if (data.ok) {
+          const stats = data.stats;
+          document.getElementById('hostname').innerHTML = `&#x1F5A5; ${stats.hostname}`;
+
+          document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card">
+              <div class="stat-card-icon">&#x1F4BB;</div>
+              <div class="stat-card-label">CPU</div>
+              <div class="stat-card-value">${stats.cpu.cores} cores</div>
+              <div class="stat-card-sub">${stats.cpu.model.substring(0, 40)}...</div>
+              <div class="stat-card-sub" style="margin-top:8px;">Load: ${stats.cpu.loadAvg.map(l => l.toFixed(2)).join(' / ')}</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon">&#x1F4BE;</div>
+              <div class="stat-card-label">Memoria RAM</div>
+              <div class="stat-card-value">${stats.memory.percent}%</div>
+              <div class="stat-card-sub">${stats.memory.used} / ${stats.memory.total}</div>
+              <div class="stat-progress">
+                <div class="stat-progress-bar ${getProgressColor(stats.memory.percent)}" style="width:${stats.memory.percent}%"></div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon">&#x1F4C0;</div>
+              <div class="stat-card-label">Disco</div>
+              <div class="stat-card-value">${stats.disk.percent}</div>
+              <div class="stat-card-sub">${stats.disk.used} / ${stats.disk.total}</div>
+              <div class="stat-progress">
+                <div class="stat-progress-bar ${getProgressColor(stats.disk.percent)}" style="width:${parseInt(stats.disk.percent)}%"></div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon">&#x23F1;</div>
+              <div class="stat-card-label">Uptime</div>
+              <div class="stat-card-value">${stats.uptime}</div>
+              <div class="stat-card-sub">Tiempo de actividad del servidor</div>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error('Error loading stats:', err);
+      }
+    }
+
+    async function loadProcesses() {
+      try {
+        const res = await fetch('./api/monitor/pm2');
+        const data = await res.json();
+
+        const grid = document.getElementById('processesGrid');
+
+        if (data.ok && data.processes.length > 0) {
+          grid.innerHTML = data.processes.map(p => `
+            <div class="process-card">
+              <div class="process-header">
+                <div>
+                  <div class="process-name">${p.name}</div>
+                  <div class="process-id">ID: ${p.pm_id}</div>
+                </div>
+                <div class="process-status ${p.status}">
+                  <span class="process-status-dot"></span>
+                  ${p.status}
+                </div>
+              </div>
+              <div class="process-stats">
+                <div class="process-stat">
+                  <div class="process-stat-label">CPU</div>
+                  <div class="process-stat-value">${p.cpu.toFixed(1)}%</div>
+                </div>
+                <div class="process-stat">
+                  <div class="process-stat-label">Memoria</div>
+                  <div class="process-stat-value">${formatBytes(p.memory)}</div>
+                </div>
+                <div class="process-stat">
+                  <div class="process-stat-label">Uptime</div>
+                  <div class="process-stat-value">${p.uptime ? formatUptime(Date.now() - p.uptime) : '-'}</div>
+                </div>
+                <div class="process-stat">
+                  <div class="process-stat-label">Restarts</div>
+                  <div class="process-stat-value">${p.restarts}</div>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          grid.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.5);padding:40px;grid-column:1/-1;">No hay procesos PM2 en ejecucion</div>';
+        }
+      } catch (err) {
+        console.error('Error loading processes:', err);
+      }
+    }
+
+    async function refresh() {
+      await Promise.all([loadStats(), loadProcesses()]);
+    }
+
+    // Initial load
+    refresh();
+
+    // Auto-refresh every 5 seconds
+    setInterval(refresh, 5000);
+  </script>
+</body>
+</html>

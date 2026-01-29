@@ -45,12 +45,26 @@
       100% { top: 100%; opacity: 0; }
     }
 
-    /* Enhanced header */
+    /* Enhanced header - vertical layout */
+    .admin-top {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 16px !important;
+    }
+
     .dashboard-header {
       position: relative;
       display: flex;
       align-items: center;
       gap: 20px;
+    }
+
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
     }
 
     .header-logo {
@@ -488,6 +502,9 @@
             </div>
           </div>
         </div>
+        <a class="btn btn--ghost" href="./users" id="navUsers" style="display:none;">&#x1F465; Usuarios</a>
+        <a class="btn btn--ghost" href="./services" id="navServices" style="display:none;">&#x2699; Servicios</a>
+        <a class="btn btn--ghost" href="./monitor" id="navMonitor" style="display:none;">&#x1F4CA; Monitor</a>
         <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
         <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
         <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
@@ -593,7 +610,7 @@
         <img src="/assets/img/cerberus-mark.png" alt="Cerberus">
       </div>
       <div class="welcome-text">Acceso autorizado</div>
-      <div class="welcome-title">Bienvenido</div>
+      <div class="welcome-title" id="welcomeTitle">Bienvenido</div>
       <div class="welcome-subtitle">Cerberus Control Room</div>
       <div class="welcome-line"></div>
       <div class="welcome-status">
@@ -615,9 +632,18 @@
     setInterval(updateClock, 1000);
 
     // Welcome modal - show only on first visit of session
-    (function() {
+    (async function() {
       const modal = document.getElementById('welcomeModal');
       const shown = sessionStorage.getItem('cerberus_welcome_shown');
+
+      // Fetch user name for welcome message
+      try {
+        const res = await fetch('./api/session');
+        const data = await res.json();
+        if (data.ok && data.user.name) {
+          document.getElementById('welcomeTitle').textContent = 'Bienvenido, ' + data.user.name;
+        }
+      } catch (e) {}
 
       if (!shown && modal) {
         // Show modal
@@ -695,6 +721,27 @@
         );
       } else {
         document.getElementById('weatherWidgetDash').style.display = 'none';
+      }
+    })();
+
+    // Show admin navigation based on role
+    (async function() {
+      try {
+        const res = await fetch('./api/session');
+        const data = await res.json();
+        if (data.ok) {
+          const role = data.user.role;
+          if (role === 'admin') {
+            document.getElementById('navUsers').style.display = '';
+            document.getElementById('navServices').style.display = '';
+            document.getElementById('navMonitor').style.display = '';
+          } else if (role === 'support') {
+            document.getElementById('navServices').style.display = '';
+            document.getElementById('navMonitor').style.display = '';
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load session:', err);
       }
     })();
   </script>

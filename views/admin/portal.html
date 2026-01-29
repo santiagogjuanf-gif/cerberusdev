@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <title>Portal de Cliente - Cerberus</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+  <link rel="stylesheet" href="/assets/css/admin.css"/>
+  <style>
+    .admin-wrap { position: relative; }
+    .admin-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,122,24,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,122,24,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+    }
+    .admin-bg::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
+      animation: scanline 8s linear infinite;
+      opacity: 0.6;
+    }
+    @keyframes scanline {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    .dashboard-header { display: flex; align-items: center; gap: 20px; }
+    .header-logo {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1);
+      animation: logoPulse 3s ease-in-out infinite;
+      padding: 10px;
+    }
+    .header-logo img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255,122,24,0.4)); }
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1); }
+      50% { box-shadow: 0 0 40px rgba(255,122,24,0.35), inset 0 0 25px rgba(255,122,24,0.15); }
+    }
+    .admin-title { position: relative; }
+    .admin-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 60px; height: 3px;
+      background: linear-gradient(90deg, #FF7A18, transparent);
+      border-radius: 2px;
+    }
+    .admin-sub { display: flex; align-items: center; gap: 8px; }
+    .admin-sub::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: statusBlink 2s ease-in-out infinite;
+      box-shadow: 0 0 8px #22c55e;
+    }
+    @keyframes statusBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    /* Portal layout */
+    .portal-container {
+      width: min(1200px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Welcome banner */
+    .welcome-banner {
+      background: linear-gradient(135deg, rgba(255,122,24,0.15), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .welcome-icon {
+      font-size: 48px;
+    }
+    .welcome-text h2 {
+      font-size: 24px;
+      color: #fff;
+      margin: 0 0 8px;
+    }
+    .welcome-text p {
+      color: rgba(255,255,255,0.6);
+      margin: 0;
+      font-size: 14px;
+    }
+
+    /* Tickets section */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-title::before {
+      content: '';
+      width: 4px; height: 24px;
+      background: linear-gradient(180deg, #FF7A18, #FF9A45);
+      border-radius: 2px;
+    }
+
+    /* Ticket cards */
+    .tickets-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .ticket-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .ticket-card:hover {
+      border-color: rgba(255,122,24,0.3);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .ticket-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .ticket-subject {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .ticket-id {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      font-family: monospace;
+    }
+
+    .ticket-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .ticket-status.open { background: rgba(59,130,246,0.2); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+    .ticket-status.in_progress { background: rgba(234,179,8,0.2); color: #facc15; border: 1px solid rgba(234,179,8,0.3); }
+    .ticket-status.resolved { background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+    .ticket-status.closed { background: rgba(156,163,175,0.2); color: #9ca3af; border: 1px solid rgba(156,163,175,0.3); }
+
+    .ticket-preview {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .ticket-footer {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .priority-badge {
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .priority-badge.low { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .priority-badge.medium { background: rgba(59,130,246,0.2); color: #60a5fa; }
+    .priority-badge.high { background: rgba(234,179,8,0.2); color: #facc15; }
+    .priority-badge.urgent { background: rgba(239,68,68,0.2); color: #f87171; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(255,255,255,0.5);
+    }
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+    .empty-state-text {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .modal-overlay.is-visible { opacity: 1; visibility: visible; }
+    .modal-content {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 20px;
+      padding: 30px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+    .modal-overlay.is-visible .modal-content { transform: translateY(0); }
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-title::before {
+      content: '';
+      width: 4px; height: 24px;
+      background: linear-gradient(180deg, #FF7A18, #FF9A45);
+      border-radius: 2px;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    .form-textarea { resize: vertical; min-height: 120px; font-family: inherit; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: rgba(255,122,24,0.5);
+      box-shadow: 0 0 20px rgba(255,122,24,0.1);
+    }
+    .form-select { cursor: pointer; }
+    .form-select option { background: #1a1a1a; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+    .modal-actions .btn { flex: 1; padding: 12px 20px; }
+
+    /* Ticket detail modal */
+    .ticket-detail-header {
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .ticket-detail-subject {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .ticket-detail-meta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .ticket-message {
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .ticket-message.staff {
+      background: rgba(255,122,24,0.1);
+      border-left: 3px solid #FF7A18;
+    }
+    .ticket-message-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .ticket-message-author {
+      font-weight: 600;
+      color: #fff;
+      font-size: 14px;
+    }
+    .ticket-message-time {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+    }
+    .ticket-message-body {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .reply-form {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+<body>
+  <main class="admin-wrap">
+    <div class="admin-bg"></div>
+
+    <header class="admin-top">
+      <div class="dashboard-header">
+        <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
+        <div class="admin-brand">
+          <div class="admin-title">Portal de Cliente</div>
+          <div class="admin-sub">Centro de soporte</div>
+        </div>
+      </div>
+      <div class="admin-actions">
+        <a class="btn btn--ghost" href="./change-password">&#x1F512; Cambiar contrasena</a>
+        <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
+      </div>
+    </header>
+
+    <div class="portal-container">
+      <div class="welcome-banner">
+        <div class="welcome-icon">&#x1F44B;</div>
+        <div class="welcome-text">
+          <h2>Bienvenido, <span id="userName">Usuario</span></h2>
+          <p>Aqui puedes ver tus tickets de soporte y crear nuevos</p>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">Mis Tickets</div>
+        <button class="btn btn--primary" onclick="openNewTicket()">&#x2795; Nuevo Ticket</button>
+      </div>
+
+      <div class="tickets-list" id="ticketsList">
+        <div class="empty-state">
+          <div class="empty-state-icon">&#x1F4E8;</div>
+          <div class="empty-state-text">Cargando tickets...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- New Ticket Modal -->
+  <div class="modal-overlay" id="newTicketModal">
+    <div class="modal-content">
+      <div class="modal-title">Nuevo Ticket de Soporte</div>
+      <form id="newTicketForm">
+        <div class="form-group">
+          <label class="form-label">Asunto *</label>
+          <input type="text" class="form-input" id="ticketSubject" required placeholder="Describe brevemente tu problema">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prioridad</label>
+          <select class="form-select" id="ticketPriority">
+            <option value="low">Baja</option>
+            <option value="medium" selected>Media</option>
+            <option value="high">Alta</option>
+            <option value="urgent">Urgente</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mensaje *</label>
+          <textarea class="form-textarea" id="ticketMessage" required placeholder="Describe tu problema en detalle..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn--ghost" onclick="closeNewTicket()">Cancelar</button>
+          <button type="submit" class="btn btn--primary">Enviar Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Ticket Detail Modal -->
+  <div class="modal-overlay" id="ticketDetailModal">
+    <div class="modal-content" style="max-width:700px;">
+      <div class="ticket-detail-header">
+        <div class="ticket-detail-subject" id="detailSubject">Cargando...</div>
+        <div class="ticket-detail-meta">
+          <span id="detailStatus"></span>
+          <span id="detailPriority"></span>
+          <span id="detailDate"></span>
+        </div>
+      </div>
+      <div id="ticketMessages">
+        <!-- Messages will be loaded here -->
+      </div>
+      <div class="reply-form" id="replyForm">
+        <div class="form-group">
+          <label class="form-label">Responder</label>
+          <textarea class="form-textarea" id="replyMessage" placeholder="Escribe tu respuesta..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn--ghost" onclick="closeTicketDetail()">Cerrar</button>
+          <button type="button" class="btn btn--primary" onclick="sendReply()">Enviar Respuesta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let tickets = [];
+    let currentTicketId = null;
+    let currentUser = null;
+
+    const statusLabels = {
+      open: 'Abierto',
+      in_progress: 'En Progreso',
+      resolved: 'Resuelto',
+      closed: 'Cerrado'
+    };
+
+    const priorityLabels = {
+      low: 'Baja',
+      medium: 'Media',
+      high: 'Alta',
+      urgent: 'Urgente'
+    };
+
+    async function loadSession() {
+      try {
+        const res = await fetch('./api/session');
+        const data = await res.json();
+        if (data.ok) {
+          currentUser = data.user;
+          document.getElementById('userName').textContent = data.user.username;
+        }
+      } catch (err) {
+        console.error('Error loading session:', err);
+      }
+    }
+
+    async function loadTickets() {
+      try {
+        const res = await fetch('./api/tickets');
+        const data = await res.json();
+
+        const list = document.getElementById('ticketsList');
+
+        if (data.ok && data.tickets.length > 0) {
+          tickets = data.tickets;
+          list.innerHTML = tickets.map(t => `
+            <div class="ticket-card" onclick="openTicketDetail(${t.id})">
+              <div class="ticket-header">
+                <div>
+                  <div class="ticket-subject">${t.subject}</div>
+                  <div class="ticket-id">#${t.id}</div>
+                </div>
+                <span class="ticket-status ${t.status}">${statusLabels[t.status]}</span>
+              </div>
+              <div class="ticket-preview">${t.message}</div>
+              <div class="ticket-footer">
+                <span class="priority-badge ${t.priority}">${priorityLabels[t.priority]}</span>
+                <span>&#x1F4AC; ${t.response_count || 0} respuestas</span>
+                <span>${new Date(t.created_at).toLocaleDateString('es-MX')}</span>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          list.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">&#x1F4E8;</div>
+              <div class="empty-state-text">No tienes tickets de soporte</div>
+              <button class="btn btn--primary" onclick="openNewTicket()">Crear mi primer ticket</button>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error('Error loading tickets:', err);
+      }
+    }
+
+    function openNewTicket() {
+      document.getElementById('newTicketModal').classList.add('is-visible');
+      document.getElementById('newTicketForm').reset();
+    }
+
+    function closeNewTicket() {
+      document.getElementById('newTicketModal').classList.remove('is-visible');
+    }
+
+    async function openTicketDetail(id) {
+      currentTicketId = id;
+      document.getElementById('ticketDetailModal').classList.add('is-visible');
+      document.getElementById('ticketMessages').innerHTML = '<div class="loading" style="padding:20px;"><div class="loading-spinner"></div></div>';
+
+      try {
+        const res = await fetch(`./api/tickets/${id}`);
+        const data = await res.json();
+
+        if (data.ok) {
+          const ticket = data.ticket;
+          document.getElementById('detailSubject').textContent = ticket.subject;
+          document.getElementById('detailStatus').innerHTML = `<span class="ticket-status ${ticket.status}">${statusLabels[ticket.status]}</span>`;
+          document.getElementById('detailPriority').innerHTML = `<span class="priority-badge ${ticket.priority}">${priorityLabels[ticket.priority]}</span>`;
+          document.getElementById('detailDate').textContent = new Date(ticket.created_at).toLocaleString('es-MX');
+
+          // Hide reply form if ticket is closed
+          document.getElementById('replyForm').style.display = ticket.status === 'closed' ? 'none' : '';
+
+          // Build messages
+          let html = `
+            <div class="ticket-message">
+              <div class="ticket-message-header">
+                <span class="ticket-message-author">${ticket.user_name || 'Tu'}</span>
+                <span class="ticket-message-time">${new Date(ticket.created_at).toLocaleString('es-MX')}</span>
+              </div>
+              <div class="ticket-message-body">${ticket.message}</div>
+            </div>
+          `;
+
+          if (data.responses && data.responses.length > 0) {
+            for (const r of data.responses) {
+              const isStaff = r.user_role === 'admin' || r.user_role === 'support';
+              html += `
+                <div class="ticket-message ${isStaff ? 'staff' : ''}">
+                  <div class="ticket-message-header">
+                    <span class="ticket-message-author">${r.username}${isStaff ? ' (Soporte)' : ''}</span>
+                    <span class="ticket-message-time">${new Date(r.created_at).toLocaleString('es-MX')}</span>
+                  </div>
+                  <div class="ticket-message-body">${r.message}</div>
+                </div>
+              `;
+            }
+          }
+
+          document.getElementById('ticketMessages').innerHTML = html;
+        }
+      } catch (err) {
+        console.error('Error loading ticket:', err);
+      }
+    }
+
+    function closeTicketDetail() {
+      document.getElementById('ticketDetailModal').classList.remove('is-visible');
+      currentTicketId = null;
+    }
+
+    async function sendReply() {
+      const message = document.getElementById('replyMessage').value.trim();
+      if (!message) return alert('Escribe un mensaje');
+
+      try {
+        const res = await fetch(`./api/tickets/${currentTicketId}/respond`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          document.getElementById('replyMessage').value = '';
+          openTicketDetail(currentTicketId);
+          loadTickets();
+        } else {
+          alert(data.error || 'Error al enviar');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+      }
+    }
+
+    document.getElementById('newTicketForm').onsubmit = async (e) => {
+      e.preventDefault();
+
+      const body = {
+        subject: document.getElementById('ticketSubject').value,
+        priority: document.getElementById('ticketPriority').value,
+        message: document.getElementById('ticketMessage').value
+      };
+
+      try {
+        const res = await fetch('./api/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          closeNewTicket();
+          loadTickets();
+        } else {
+          alert(data.error || 'Error al crear ticket');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+      }
+    };
+
+    document.getElementById('newTicketModal').onclick = (e) => {
+      if (e.target === e.currentTarget) closeNewTicket();
+    };
+
+    document.getElementById('ticketDetailModal').onclick = (e) => {
+      if (e.target === e.currentTarget) closeTicketDetail();
+    };
+
+    loadSession();
+    loadTickets();
+  </script>
+</body>
+</html>
