@@ -488,6 +488,9 @@
             </div>
           </div>
         </div>
+        <a class="btn btn--ghost" href="./users" id="navUsers" style="display:none;">&#x1F465; Usuarios</a>
+        <a class="btn btn--ghost" href="./services" id="navServices" style="display:none;">&#x2699; Servicios</a>
+        <a class="btn btn--ghost" href="./monitor" id="navMonitor" style="display:none;">&#x1F4CA; Monitor</a>
         <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
         <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
         <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
@@ -695,6 +698,27 @@
         );
       } else {
         document.getElementById('weatherWidgetDash').style.display = 'none';
+      }
+    })();
+
+    // Show admin navigation based on role
+    (async function() {
+      try {
+        const res = await fetch('./api/session');
+        const data = await res.json();
+        if (data.ok) {
+          const role = data.user.role;
+          if (role === 'admin') {
+            document.getElementById('navUsers').style.display = '';
+            document.getElementById('navServices').style.display = '';
+            document.getElementById('navMonitor').style.display = '';
+          } else if (role === 'support') {
+            document.getElementById('navServices').style.display = '';
+            document.getElementById('navMonitor').style.display = '';
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load session:', err);
       }
     })();
   </script>

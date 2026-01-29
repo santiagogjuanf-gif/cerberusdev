@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const multer = require("multer");
 const db = require("../config/db");
 const requireAuth = require("../middleware/requireAuth");
+const requireRole = require("../middleware/requireRole");
 const rateLimit = require("../middleware/rateLimit");
 
 // Multer config for project images
@@ -40,23 +41,40 @@ router.post("/login", rateLimit, async (req, res) => {
   const { username, password } = req.body;
 
   const [[user]] = await db.execute(
-    "SELECT * FROM admin_users WHERE username = ?",
-    [username]
+    "SELECT * FROM admin_users WHERE username = ? OR email = ?",
+    [username, username]
   );
 
   if (!user) {
     console.log("[LOGIN FAIL] user not found");
-    return res.redirect(process.env.ADMIN_PATH + "/login");
+    return res.redirect(process.env.ADMIN_PATH + "/login?error=invalid");
   }
 
   const ok = await bcrypt.compare(password, user.password_hash);
   if (!ok) {
     console.log("[LOGIN FAIL] wrong password");
-    return res.redirect(process.env.ADMIN_PATH + "/login");
+    return res.redirect(process.env.ADMIN_PATH + "/login?error=invalid");
   }
 
-  req.session.user = { id: user.id, username: user.username };
-  console.log("[LOGIN OK]", username);
+  // Store user info including role in session
+  req.session.user = {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    role: user.role || 'client',
+    must_change_password: user.must_change_password || 0
+  };
+  console.log("[LOGIN OK]", username, "role:", user.role || 'client');
+
+  // Check if user needs to change password
+  if (user.must_change_password) {
+    return res.redirect(process.env.ADMIN_PATH + "/change-password");
+  }
+
+  // Redirect based on role
+  if (user.role === 'client') {
+    return res.redirect(process.env.ADMIN_PATH + "/portal");
+  }
 
   res.redirect(process.env.ADMIN_PATH + "/dashboard");
 });
@@ -428,6 +446,571 @@ router.post("/api/leads/:id/delete", requireAuth, async (req, res) => {
   const { id } = req.params;
   await db.execute("DELETE FROM leads WHERE id = ?", [id]);
   res.json({ ok: true });
+});
+
+// ── Users Management API (Admin only) ──
+
+// Users admin page
+router.get("/users", requireAuth, requireRole(['admin']), (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "users.html"));
+});
+
+// List all users
+router.get("/api/users", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT id, username, email, role, must_change_password, created_at, updated_at
+      FROM admin_users
+      ORDER BY created_at DESC
+    `);
+    res.json({ ok: true, users: rows });
+  } catch (err) {
+    console.error("[USERS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Get single user
+router.get("/api/users/:id", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const [[user]] = await db.execute(`
+      SELECT id, username, email, role, must_change_password, created_at, updated_at
+      FROM admin_users WHERE id = ?
+    `, [req.params.id]);
+    if (!user) return res.status(404).json({ ok: false, error: 'not_found' });
+    res.json({ ok: true, user });
+  } catch (err) {
+    console.error("[USERS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Create user
+router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const { username, email, password, role, must_change_password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ ok: false, error: 'username and password required' });
+    }
+
+    // Check if username or email already exists
+    const [[existing]] = await db.execute(
+      "SELECT id FROM admin_users WHERE username = ? OR (email = ? AND email IS NOT NULL)",
+      [username, email || null]
+    );
+    if (existing) {
+      return res.status(400).json({ ok: false, error: 'username or email already exists' });
+    }
+
+    const password_hash = await bcrypt.hash(password, 10);
+    const [result] = await db.execute(`
+      INSERT INTO admin_users (username, email, password_hash, role, must_change_password)
+      VALUES (?, ?, ?, ?, ?)
+    `, [username, email || null, password_hash, role || 'client', must_change_password ? 1 : 0]);
+
+    res.json({ ok: true, userId: result.insertId });
+  } catch (err) {
+    console.error("[USERS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Update user
+router.post("/api/users/:id", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const { username, email, password, role, must_change_password } = req.body;
+    const userId = req.params.id;
+
+    // Check if username/email exists for another user
+    const [[existing]] = await db.execute(
+      "SELECT id FROM admin_users WHERE (username = ? OR (email = ? AND email IS NOT NULL)) AND id != ?",
+      [username, email || null, userId]
+    );
+    if (existing) {
+      return res.status(400).json({ ok: false, error: 'username or email already exists' });
+    }
+
+    if (password) {
+      // Update with new password
+      const password_hash = await bcrypt.hash(password, 10);
+      await db.execute(`
+        UPDATE admin_users SET username = ?, email = ?, password_hash = ?, role = ?, must_change_password = ?
+        WHERE id = ?
+      `, [username, email || null, password_hash, role || 'client', must_change_password ? 1 : 0, userId]);
+    } else {
+      // Update without changing password
+      await db.execute(`
+        UPDATE admin_users SET username = ?, email = ?, role = ?, must_change_password = ?
+        WHERE id = ?
+      `, [username, email || null, role || 'client', must_change_password ? 1 : 0, userId]);
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[USERS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Delete user
+router.post("/api/users/:id/delete", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Prevent deleting self
+    if (req.session.user.id == userId) {
+      return res.status(400).json({ ok: false, error: 'cannot delete yourself' });
+    }
+
+    await db.execute("DELETE FROM admin_users WHERE id = ?", [userId]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[USERS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Services Management API (Admin/Support) ──
+
+// Services admin page
+router.get("/services", requireAuth, requireRole(['admin', 'support']), (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "services.html"));
+});
+
+// List all services
+router.get("/api/services", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT s.*, u.username as owner_name
+      FROM services s
+      LEFT JOIN admin_users u ON s.user_id = u.id
+      ORDER BY s.name ASC
+    `);
+    res.json({ ok: true, services: rows });
+  } catch (err) {
+    console.error("[SERVICES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Create service
+router.post("/api/services", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const { name, pm2_name, description, user_id, port } = req.body;
+
+    if (!name || !pm2_name) {
+      return res.status(400).json({ ok: false, error: 'name and pm2_name required' });
+    }
+
+    const [result] = await db.execute(`
+      INSERT INTO services (name, pm2_name, description, user_id, port)
+      VALUES (?, ?, ?, ?, ?)
+    `, [name, pm2_name, description || null, user_id || null, port || null]);
+
+    res.json({ ok: true, serviceId: result.insertId });
+  } catch (err) {
+    console.error("[SERVICES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Update service
+router.post("/api/services/:id", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const { name, pm2_name, description, user_id, port } = req.body;
+
+    await db.execute(`
+      UPDATE services SET name = ?, pm2_name = ?, description = ?, user_id = ?, port = ?
+      WHERE id = ?
+    `, [name, pm2_name, description || null, user_id || null, port || null, req.params.id]);
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[SERVICES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Delete service
+router.post("/api/services/:id/delete", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    await db.execute("DELETE FROM services WHERE id = ?", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[SERVICES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// PM2 control endpoints
+router.post("/api/services/:id/restart", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  try {
+    const [[service]] = await db.execute("SELECT pm2_name FROM services WHERE id = ?", [req.params.id]);
+    if (!service) return res.status(404).json({ ok: false, error: 'not_found' });
+
+    const { exec } = require("child_process");
+    exec(`pm2 restart ${service.pm2_name}`, (error, stdout, stderr) => {
+      if (error) {
+        console.error("[PM2 RESTART]", stderr);
+        return res.status(500).json({ ok: false, error: stderr });
+      }
+      res.json({ ok: true, output: stdout });
+    });
+  } catch (err) {
+    console.error("[SERVICES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post("/api/services/:id/stop", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const [[service]] = await db.execute("SELECT pm2_name FROM services WHERE id = ?", [req.params.id]);
+    if (!service) return res.status(404).json({ ok: false, error: 'not_found' });
+
+    const { exec } = require("child_process");
+    exec(`pm2 stop ${service.pm2_name}`, (error, stdout, stderr) => {
+      if (error) {
+        console.error("[PM2 STOP]", stderr);
+        return res.status(500).json({ ok: false, error: stderr });
+      }
+      res.json({ ok: true, output: stdout });
+    });
+  } catch (err) {
+    console.error("[SERVICES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post("/api/services/:id/start", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  try {
+    const [[service]] = await db.execute("SELECT pm2_name FROM services WHERE id = ?", [req.params.id]);
+    if (!service) return res.status(404).json({ ok: false, error: 'not_found' });
+
+    const { exec } = require("child_process");
+    exec(`pm2 start ${service.pm2_name}`, (error, stdout, stderr) => {
+      if (error) {
+        console.error("[PM2 START]", stderr);
+        return res.status(500).json({ ok: false, error: stderr });
+      }
+      res.json({ ok: true, output: stdout });
+    });
+  } catch (err) {
+    console.error("[SERVICES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Get PM2 logs for a service
+router.get("/api/services/:id/logs", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  try {
+    const [[service]] = await db.execute("SELECT pm2_name FROM services WHERE id = ?", [req.params.id]);
+    if (!service) return res.status(404).json({ ok: false, error: 'not_found' });
+
+    const lines = req.query.lines || 50;
+    const { exec } = require("child_process");
+    exec(`pm2 logs ${service.pm2_name} --lines ${lines} --nostream`, { timeout: 5000 }, (error, stdout, stderr) => {
+      res.json({ ok: true, logs: stdout + stderr });
+    });
+  } catch (err) {
+    console.error("[SERVICES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Monitor API (Admin/Support) ──
+
+// Monitor page
+router.get("/monitor", requireAuth, requireRole(['admin', 'support']), (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "monitor.html"));
+});
+
+// System stats endpoint
+router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  try {
+    const os = require("os");
+    const { exec } = require("child_process");
+
+    // CPU info
+    const cpus = os.cpus();
+    const cpuModel = cpus[0].model;
+    const cpuCores = cpus.length;
+
+    // Memory info
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const usedMem = totalMem - freeMem;
+    const memPercent = ((usedMem / totalMem) * 100).toFixed(1);
+
+    // Uptime
+    const uptime = os.uptime();
+
+    // Hostname
+    const hostname = os.hostname();
+
+    // Get disk usage (async)
+    exec("df -h / | tail -1 | awk '{print $2,$3,$4,$5}'", (error, stdout) => {
+      let disk = { total: 'N/A', used: 'N/A', free: 'N/A', percent: 'N/A' };
+      if (!error && stdout) {
+        const parts = stdout.trim().split(/\s+/);
+        if (parts.length >= 4) {
+          disk = { total: parts[0], used: parts[1], free: parts[2], percent: parts[3] };
+        }
+      }
+
+      // Get load average
+      const loadAvg = os.loadavg();
+
+      res.json({
+        ok: true,
+        stats: {
+          hostname,
+          cpu: { model: cpuModel, cores: cpuCores, loadAvg },
+          memory: {
+            total: (totalMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+            used: (usedMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+            free: (freeMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+            percent: memPercent
+          },
+          disk,
+          uptime: Math.floor(uptime / 86400) + 'd ' + Math.floor((uptime % 86400) / 3600) + 'h ' + Math.floor((uptime % 3600) / 60) + 'm'
+        }
+      });
+    });
+  } catch (err) {
+    console.error("[MONITOR]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// PM2 processes list
+router.get("/api/monitor/pm2", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  try {
+    const { exec } = require("child_process");
+    exec("pm2 jlist", (error, stdout, stderr) => {
+      if (error) {
+        return res.json({ ok: true, processes: [] });
+      }
+      try {
+        const processes = JSON.parse(stdout);
+        const simplified = processes.map(p => ({
+          name: p.name,
+          pm_id: p.pm_id,
+          status: p.pm2_env?.status || 'unknown',
+          cpu: p.monit?.cpu || 0,
+          memory: p.monit?.memory || 0,
+          uptime: p.pm2_env?.pm_uptime || 0,
+          restarts: p.pm2_env?.restart_time || 0
+        }));
+        res.json({ ok: true, processes: simplified });
+      } catch (parseErr) {
+        res.json({ ok: true, processes: [] });
+      }
+    });
+  } catch (err) {
+    console.error("[MONITOR PM2]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Client Portal (Client role) ──
+
+// Portal page
+router.get("/portal", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "portal.html"));
+});
+
+// Change password page
+router.get("/change-password", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "change-password.html"));
+});
+
+// Change password action
+router.post("/change-password", requireAuth, async (req, res) => {
+  try {
+    const { current_password, new_password } = req.body;
+    const userId = req.session.user.id;
+
+    // Get current user
+    const [[user]] = await db.execute("SELECT password_hash FROM admin_users WHERE id = ?", [userId]);
+    if (!user) return res.status(404).json({ ok: false, error: 'user not found' });
+
+    // Verify current password
+    const ok = await bcrypt.compare(current_password, user.password_hash);
+    if (!ok) {
+      return res.status(400).json({ ok: false, error: 'Contraseña actual incorrecta' });
+    }
+
+    // Hash and update new password
+    const password_hash = await bcrypt.hash(new_password, 10);
+    await db.execute("UPDATE admin_users SET password_hash = ?, must_change_password = 0 WHERE id = ?", [password_hash, userId]);
+
+    // Update session
+    req.session.user.must_change_password = 0;
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[CHANGE PASSWORD]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Tickets API (All authenticated users) ──
+
+// List tickets (admin sees all, client sees own)
+router.get("/api/tickets", requireAuth, async (req, res) => {
+  try {
+    const userRole = req.session.user.role;
+    const userId = req.session.user.id;
+
+    let sql = `
+      SELECT t.*, u.username as user_name,
+        (SELECT COUNT(*) FROM ticket_responses WHERE ticket_id = t.id) as response_count
+      FROM tickets t
+      LEFT JOIN admin_users u ON t.user_id = u.id
+    `;
+
+    if (userRole === 'client') {
+      sql += ` WHERE t.user_id = ? ORDER BY t.updated_at DESC`;
+      const [rows] = await db.execute(sql, [userId]);
+      return res.json({ ok: true, tickets: rows });
+    }
+
+    sql += ` ORDER BY t.updated_at DESC`;
+    const [rows] = await db.execute(sql);
+    res.json({ ok: true, tickets: rows });
+  } catch (err) {
+    console.error("[TICKETS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Get single ticket with responses
+router.get("/api/tickets/:id", requireAuth, async (req, res) => {
+  try {
+    const userRole = req.session.user.role;
+    const userId = req.session.user.id;
+    const ticketId = req.params.id;
+
+    const [[ticket]] = await db.execute(`
+      SELECT t.*, u.username as user_name
+      FROM tickets t
+      LEFT JOIN admin_users u ON t.user_id = u.id
+      WHERE t.id = ?
+    `, [ticketId]);
+
+    if (!ticket) return res.status(404).json({ ok: false, error: 'not_found' });
+
+    // Check access (client can only see own tickets)
+    if (userRole === 'client' && ticket.user_id !== userId) {
+      return res.status(403).json({ ok: false, error: 'forbidden' });
+    }
+
+    // Get responses
+    const [responses] = await db.execute(`
+      SELECT tr.*, u.username, u.role as user_role
+      FROM ticket_responses tr
+      LEFT JOIN admin_users u ON tr.user_id = u.id
+      WHERE tr.ticket_id = ?
+      ORDER BY tr.created_at ASC
+    `, [ticketId]);
+
+    res.json({ ok: true, ticket, responses });
+  } catch (err) {
+    console.error("[TICKETS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Create ticket (clients)
+router.post("/api/tickets", requireAuth, async (req, res) => {
+  try {
+    const { subject, message, priority } = req.body;
+    const userId = req.session.user.id;
+
+    if (!subject || !message) {
+      return res.status(400).json({ ok: false, error: 'subject and message required' });
+    }
+
+    const [result] = await db.execute(`
+      INSERT INTO tickets (user_id, subject, message, priority)
+      VALUES (?, ?, ?, ?)
+    `, [userId, subject, message, priority || 'medium']);
+
+    res.json({ ok: true, ticketId: result.insertId });
+  } catch (err) {
+    console.error("[TICKETS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Add response to ticket
+router.post("/api/tickets/:id/respond", requireAuth, async (req, res) => {
+  try {
+    const { message } = req.body;
+    const ticketId = req.params.id;
+    const userId = req.session.user.id;
+    const userRole = req.session.user.role;
+
+    if (!message) {
+      return res.status(400).json({ ok: false, error: 'message required' });
+    }
+
+    // Check ticket exists and user has access
+    const [[ticket]] = await db.execute("SELECT * FROM tickets WHERE id = ?", [ticketId]);
+    if (!ticket) return res.status(404).json({ ok: false, error: 'not_found' });
+
+    if (userRole === 'client' && ticket.user_id !== userId) {
+      return res.status(403).json({ ok: false, error: 'forbidden' });
+    }
+
+    // Add response
+    await db.execute(`
+      INSERT INTO ticket_responses (ticket_id, user_id, message)
+      VALUES (?, ?, ?)
+    `, [ticketId, userId, message]);
+
+    // Update ticket status if staff responds
+    if (userRole !== 'client' && ticket.status === 'open') {
+      await db.execute("UPDATE tickets SET status = 'in_progress' WHERE id = ?", [ticketId]);
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[TICKETS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Update ticket status (admin/support only)
+router.post("/api/tickets/:id/status", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  try {
+    const { status } = req.body;
+    const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
+
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ ok: false, error: 'invalid status' });
+    }
+
+    await db.execute("UPDATE tickets SET status = ? WHERE id = ?", [status, req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[TICKETS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ── Session info API ──
+router.get("/api/session", requireAuth, (req, res) => {
+  res.json({
+    ok: true,
+    user: {
+      id: req.session.user.id,
+      username: req.session.user.username,
+      email: req.session.user.email,
+      role: req.session.user.role
+    }
+  });
 });
 
 // Logout

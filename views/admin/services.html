@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <title>Servicios - Cerberus Control</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+  <link rel="stylesheet" href="/assets/css/admin.css"/>
+  <style>
+    .admin-wrap { position: relative; }
+    .admin-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,122,24,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,122,24,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+    }
+    .admin-bg::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
+      animation: scanline 8s linear infinite;
+      opacity: 0.6;
+    }
+    @keyframes scanline {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    .dashboard-header { display: flex; align-items: center; gap: 20px; }
+    .header-logo {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1);
+      animation: logoPulse 3s ease-in-out infinite;
+      padding: 10px;
+    }
+    .header-logo img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255,122,24,0.4)); }
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1); }
+      50% { box-shadow: 0 0 40px rgba(255,122,24,0.35), inset 0 0 25px rgba(255,122,24,0.15); }
+    }
+    .admin-title { position: relative; }
+    .admin-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 60px; height: 3px;
+      background: linear-gradient(90deg, #FF7A18, transparent);
+      border-radius: 2px;
+    }
+    .admin-sub { display: flex; align-items: center; gap: 8px; }
+    .admin-sub::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: statusBlink 2s ease-in-out infinite;
+      box-shadow: 0 0 8px #22c55e;
+    }
+    @keyframes statusBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    /* Service cards */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      width: min(1400px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .service-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .service-card:hover {
+      border-color: rgba(255,122,24,0.3);
+      box-shadow: 0 0 30px rgba(255,122,24,0.1);
+    }
+    .service-card::before, .service-card::after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,122,24,0.3);
+      pointer-events: none;
+    }
+    .service-card::before { top: -1px; left: -1px; border-right: none; border-bottom: none; border-radius: 16px 0 0 0; }
+    .service-card::after { bottom: -1px; right: -1px; border-left: none; border-top: none; border-radius: 0 0 16px 0; }
+
+    .service-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .service-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .service-pm2 {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      font-family: monospace;
+    }
+
+    .service-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .service-status.online {
+      background: rgba(34,197,94,0.2);
+      color: #4ade80;
+      border: 1px solid rgba(34,197,94,0.3);
+    }
+    .service-status.stopped {
+      background: rgba(239,68,68,0.2);
+      color: #f87171;
+      border: 1px solid rgba(239,68,68,0.3);
+    }
+    .service-status.unknown {
+      background: rgba(156,163,175,0.2);
+      color: #9ca3af;
+      border: 1px solid rgba(156,163,175,0.3);
+    }
+    .service-status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+    }
+
+    .service-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .service-meta {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+    }
+    .service-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .service-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .service-actions .btn {
+      padding: 8px 14px;
+      font-size: 12px;
+    }
+    .btn--success { background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.4); color: #4ade80; }
+    .btn--success:hover { background: rgba(34,197,94,0.3); }
+    .btn--danger { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4); color: #f87171; }
+    .btn--danger:hover { background: rgba(239,68,68,0.3); }
+    .btn--warning { background: rgba(234,179,8,0.2); border-color: rgba(234,179,8,0.4); color: #facc15; }
+    .btn--warning:hover { background: rgba(234,179,8,0.3); }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .modal-overlay.is-visible { opacity: 1; visibility: visible; }
+    .modal-content {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 20px;
+      padding: 30px;
+      width: 90%;
+      max-width: 500px;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+    .modal-overlay.is-visible .modal-content { transform: translateY(0); }
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-title::before {
+      content: '';
+      width: 4px; height: 24px;
+      background: linear-gradient(180deg, #FF7A18, #FF9A45);
+      border-radius: 2px;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    .form-textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: rgba(255,122,24,0.5);
+      box-shadow: 0 0 20px rgba(255,122,24,0.1);
+    }
+    .form-select { cursor: pointer; }
+    .form-select option { background: #1a1a1a; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+    .modal-actions .btn { flex: 1; padding: 12px 20px; }
+
+    /* Logs modal */
+    .logs-modal .modal-content {
+      max-width: 800px;
+    }
+    .logs-container {
+      background: #0d0d0d;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 16px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.7);
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Confirm modal */
+    .confirm-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .confirm-modal.is-visible { opacity: 1; visibility: visible; }
+    .confirm-box {
+      background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+      border: 1px solid rgba(255,122,24,0.4);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      max-width: 400px;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+      box-shadow: 0 0 40px rgba(255,122,24,0.2);
+    }
+    .confirm-modal.is-visible .confirm-box { transform: scale(1); }
+    .confirm-icon { font-size: 48px; margin-bottom: 20px; }
+    .confirm-title { font-size: 20px; font-weight: 700; margin-bottom: 10px; color: #fff; }
+    .confirm-text { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 24px; line-height: 1.5; }
+    .confirm-actions { display: flex; gap: 12px; justify-content: center; }
+    .confirm-actions .btn { min-width: 100px; }
+
+    /* Header section */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      width: min(1400px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <main class="admin-wrap">
+    <div class="admin-bg"></div>
+
+    <header class="admin-top">
+      <div class="dashboard-header">
+        <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
+        <div class="admin-brand">
+          <div class="admin-title">Gestion de Servicios</div>
+          <div class="admin-sub">Control de aplicaciones PM2</div>
+        </div>
+      </div>
+      <div class="admin-actions">
+        <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
+        <a class="btn btn--ghost" href="./users">&#x1F465; Usuarios</a>
+        <a class="btn btn--ghost" href="./monitor">&#x1F4CA; Monitor</a>
+        <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
+      </div>
+    </header>
+
+    <div class="section-header">
+      <div>
+        <h2 style="color:#fff;margin:0;">Servicios Registrados</h2>
+        <p style="color:rgba(255,255,255,0.5);margin:4px 0 0;font-size:13px;">Gestiona tus aplicaciones y servicios</p>
+      </div>
+      <button class="btn btn--primary" onclick="openModal()">&#x2795; Nuevo Servicio</button>
+    </div>
+
+    <div class="services-grid" id="servicesGrid">
+      <!-- Services will be loaded here -->
+    </div>
+  </main>
+
+  <!-- Service Modal -->
+  <div class="modal-overlay" id="serviceModal">
+    <div class="modal-content">
+      <div class="modal-title" id="modalTitle">Nuevo Servicio</div>
+      <form id="serviceForm">
+        <input type="hidden" id="serviceId">
+        <div class="form-group">
+          <label class="form-label">Nombre del servicio *</label>
+          <input type="text" class="form-input" id="serviceName" required placeholder="Mi Aplicacion">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nombre en PM2 *</label>
+          <input type="text" class="form-input" id="pm2Name" required placeholder="mi-app">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripcion</label>
+          <textarea class="form-textarea" id="serviceDesc" placeholder="Descripcion del servicio..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Puerto</label>
+          <input type="number" class="form-input" id="servicePort" placeholder="3000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Asignar a usuario</label>
+          <select class="form-select" id="serviceUser">
+            <option value="">Sin asignar</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn--ghost" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn btn--primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Logs Modal -->
+  <div class="modal-overlay logs-modal" id="logsModal">
+    <div class="modal-content">
+      <div class="modal-title">Logs: <span id="logsServiceName"></span></div>
+      <div class="logs-container" id="logsContainer">Cargando...</div>
+      <div class="modal-actions" style="margin-top:16px;">
+        <button class="btn btn--ghost" onclick="closeLogsModal()">Cerrar</button>
+        <button class="btn btn--primary" onclick="refreshLogs()">Actualizar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div class="confirm-modal" id="confirmModal">
+    <div class="confirm-box">
+      <div class="confirm-icon">&#x26A0;</div>
+      <div class="confirm-title" id="confirmTitle">Confirmar</div>
+      <div class="confirm-text" id="confirmText">Estas seguro?</div>
+      <div class="confirm-actions">
+        <button class="btn btn--ghost" onclick="closeConfirm()">Cancelar</button>
+        <button class="btn btn--danger" id="confirmBtn">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = './api/services';
+    let services = [];
+    let users = [];
+    let confirmCallback = null;
+    let currentLogsId = null;
+
+    async function loadData() {
+      try {
+        const [servicesRes, usersRes] = await Promise.all([
+          fetch(API),
+          fetch('./api/users')
+        ]);
+        const servicesData = await servicesRes.json();
+        const usersData = await usersRes.json();
+
+        if (servicesData.ok) services = servicesData.services;
+        if (usersData.ok) users = usersData.users;
+
+        renderServices();
+        populateUsersSelect();
+      } catch (err) {
+        console.error('Error loading data:', err);
+      }
+    }
+
+    function renderServices() {
+      const grid = document.getElementById('servicesGrid');
+      if (services.length === 0) {
+        grid.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.5);padding:60px;grid-column:1/-1;">No hay servicios registrados</div>';
+        return;
+      }
+
+      grid.innerHTML = services.map(s => `
+        <div class="service-card">
+          <div class="service-header">
+            <div>
+              <div class="service-name">${s.name}</div>
+              <div class="service-pm2">pm2: ${s.pm2_name}</div>
+            </div>
+            <div class="service-status ${s.status || 'unknown'}">
+              <span class="service-status-dot"></span>
+              ${s.status || 'unknown'}
+            </div>
+          </div>
+          <div class="service-desc">${s.description || 'Sin descripcion'}</div>
+          <div class="service-meta">
+            ${s.port ? `<div class="service-meta-item">&#x1F310; Puerto: ${s.port}</div>` : ''}
+            ${s.owner_name ? `<div class="service-meta-item">&#x1F464; ${s.owner_name}</div>` : ''}
+          </div>
+          <div class="service-actions">
+            <button class="btn btn--success" onclick="startService(${s.id})">&#x25B6; Start</button>
+            <button class="btn btn--warning" onclick="restartService(${s.id})">&#x21BB; Restart</button>
+            <button class="btn btn--danger" onclick="stopService(${s.id})">&#x25A0; Stop</button>
+            <button class="btn btn--ghost" onclick="viewLogs(${s.id}, '${s.name}')">&#x1F4C4; Logs</button>
+            <button class="btn btn--ghost" onclick="editService(${s.id})">&#x270F;</button>
+            <button class="btn btn--ghost" onclick="deleteService(${s.id}, '${s.name}')">&#x1F5D1;</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function populateUsersSelect() {
+      const select = document.getElementById('serviceUser');
+      select.innerHTML = '<option value="">Sin asignar</option>' +
+        users.map(u => `<option value="${u.id}">${u.username} (${u.role})</option>`).join('');
+    }
+
+    function openModal(service = null) {
+      document.getElementById('serviceModal').classList.add('is-visible');
+      document.getElementById('serviceForm').reset();
+
+      if (service) {
+        document.getElementById('modalTitle').textContent = 'Editar Servicio';
+        document.getElementById('serviceId').value = service.id;
+        document.getElementById('serviceName').value = service.name;
+        document.getElementById('pm2Name').value = service.pm2_name;
+        document.getElementById('serviceDesc').value = service.description || '';
+        document.getElementById('servicePort').value = service.port || '';
+        document.getElementById('serviceUser').value = service.user_id || '';
+      } else {
+        document.getElementById('modalTitle').textContent = 'Nuevo Servicio';
+        document.getElementById('serviceId').value = '';
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('serviceModal').classList.remove('is-visible');
+    }
+
+    function editService(id) {
+      const service = services.find(s => s.id === id);
+      if (service) openModal(service);
+    }
+
+    async function pm2Action(id, action) {
+      try {
+        const res = await fetch(`${API}/${id}/${action}`, { method: 'POST' });
+        const data = await res.json();
+        if (!data.ok) {
+          alert(data.error || `Error en ${action}`);
+        }
+        loadData();
+      } catch (err) {
+        console.error('Error:', err);
+      }
+    }
+
+    function startService(id) { pm2Action(id, 'start'); }
+    function restartService(id) { pm2Action(id, 'restart'); }
+    function stopService(id) {
+      showConfirm('Detener Servicio', 'Estas seguro que deseas detener este servicio?', () => pm2Action(id, 'stop'));
+    }
+
+    async function viewLogs(id, name) {
+      currentLogsId = id;
+      document.getElementById('logsServiceName').textContent = name;
+      document.getElementById('logsContainer').textContent = 'Cargando...';
+      document.getElementById('logsModal').classList.add('is-visible');
+      await refreshLogs();
+    }
+
+    async function refreshLogs() {
+      if (!currentLogsId) return;
+      try {
+        const res = await fetch(`${API}/${currentLogsId}/logs?lines=100`);
+        const data = await res.json();
+        document.getElementById('logsContainer').textContent = data.logs || 'Sin logs disponibles';
+      } catch (err) {
+        document.getElementById('logsContainer').textContent = 'Error cargando logs';
+      }
+    }
+
+    function closeLogsModal() {
+      document.getElementById('logsModal').classList.remove('is-visible');
+      currentLogsId = null;
+    }
+
+    function deleteService(id, name) {
+      showConfirm('Eliminar Servicio', `Estas seguro que deseas eliminar el servicio "${name}"?`, async () => {
+        try {
+          const res = await fetch(`${API}/${id}/delete`, { method: 'POST' });
+          const data = await res.json();
+          if (data.ok) loadData();
+          else alert(data.error || 'Error al eliminar');
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      });
+    }
+
+    function showConfirm(title, text, callback) {
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmText').textContent = text;
+      confirmCallback = callback;
+      document.getElementById('confirmModal').classList.add('is-visible');
+    }
+
+    function closeConfirm() {
+      document.getElementById('confirmModal').classList.remove('is-visible');
+      confirmCallback = null;
+    }
+
+    document.getElementById('confirmBtn').onclick = () => {
+      if (confirmCallback) confirmCallback();
+      closeConfirm();
+    };
+
+    document.getElementById('serviceForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('serviceId').value;
+      const body = {
+        name: document.getElementById('serviceName').value,
+        pm2_name: document.getElementById('pm2Name').value,
+        description: document.getElementById('serviceDesc').value || null,
+        port: document.getElementById('servicePort').value || null,
+        user_id: document.getElementById('serviceUser').value || null
+      };
+
+      try {
+        const url = id ? `${API}/${id}` : API;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.ok) {
+          closeModal();
+          loadData();
+        } else {
+          alert(data.error || 'Error al guardar');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+      }
+    };
+
+    document.getElementById('serviceModal').onclick = (e) => {
+      if (e.target === e.currentTarget) closeModal();
+    };
+
+    document.getElementById('logsModal').onclick = (e) => {
+      if (e.target === e.currentTarget) closeLogsModal();
+    };
+
+    loadData();
+  </script>
+</body>
+</html>
