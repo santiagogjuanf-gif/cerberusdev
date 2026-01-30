@@ -316,6 +316,73 @@
       width: min(1400px, calc(100% - 40px));
       margin: 0 auto;
     }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .admin-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+      .admin-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        width: 100%;
+      }
+      .admin-actions .btn {
+        justify-content: center;
+        text-align: center;
+        font-size: 12px;
+        padding: 10px 8px;
+      }
+      .services-grid {
+        grid-template-columns: 1fr;
+        padding: 12px;
+      }
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px 12px;
+      }
+      .section-header .btn {
+        width: 100%;
+      }
+      .service-card {
+        padding: 16px;
+      }
+      .service-actions {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
+      .service-actions .btn {
+        padding: 8px 6px;
+        font-size: 10px;
+        justify-content: center;
+      }
+      .modal-content {
+        width: calc(100% - 24px);
+        padding: 20px;
+        max-height: 90vh;
+      }
+      .logs-modal .modal-content {
+        max-width: calc(100% - 24px);
+      }
+      .logs-container {
+        max-height: 300px;
+        font-size: 10px;
+      }
+    }
+    @media (max-width: 480px) {
+      .service-actions {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .admin-actions {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>

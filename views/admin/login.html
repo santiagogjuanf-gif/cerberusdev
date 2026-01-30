@@ -646,6 +646,8 @@
           errorText.textContent = 'Usuario o contrasena incorrectos. Intentelo de nuevo.';
         } else if (error === 'session') {
           errorText.textContent = 'Sesion expirada. Por favor inicie sesion nuevamente.';
+        } else if (error === 'database') {
+          errorText.textContent = 'Base de datos no conectada. Contacte al administrador del sistema.';
         } else {
           errorText.textContent = 'Error de autenticacion. Intentelo de nuevo.';
         }

@@ -40,10 +40,17 @@ router.get("/login", (req, res) => {
 router.post("/login", rateLimit, async (req, res) => {
   const { username, password } = req.body;
 
-  const [[user]] = await db.execute(
-    "SELECT * FROM admin_users WHERE username = ? OR email = ?",
-    [username, username]
-  );
+  let user;
+  try {
+    const [[result]] = await db.execute(
+      "SELECT * FROM admin_users WHERE username = ? OR email = ?",
+      [username, username]
+    );
+    user = result;
+  } catch (err) {
+    console.error("[LOGIN ERROR] Database connection failed:", err.message);
+    return res.redirect(process.env.ADMIN_PATH + "/login?error=database");
+  }
 
   if (!user) {
     console.log("[LOGIN FAIL] user not found");
@@ -640,7 +647,7 @@ router.get("/services", requireAuth, requireRole(['admin', 'support']), (req, re
   res.sendFile(path.join(__dirname, "..", "views", "admin", "services.html"));
 });
 
-// List all services
+// List all services (with real-time PM2 status)
 router.get("/api/services", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
   try {
     const [rows] = await db.execute(`
@@ -649,7 +656,28 @@ router.get("/api/services", requireAuth, requireRole(['admin', 'support']), asyn
       LEFT JOIN admin_users u ON s.user_id = u.id
       ORDER BY s.name ASC
     `);
-    res.json({ ok: true, services: rows });
+
+    // Get real-time PM2 status
+    const { exec } = require("child_process");
+    exec("pm2 jlist", (error, stdout) => {
+      let pm2Status = {};
+      if (!error && stdout) {
+        try {
+          const processes = JSON.parse(stdout);
+          processes.forEach(p => {
+            pm2Status[p.name] = p.pm2_env?.status || 'unknown';
+          });
+        } catch (e) {}
+      }
+
+      // Merge PM2 status with service data
+      const services = rows.map(s => ({
+        ...s,
+        status: pm2Status[s.pm2_name] || 'unknown'
+      }));
+
+      res.json({ ok: true, services });
+    });
   } catch (err) {
     console.error("[SERVICES]", err);
     res.status(500).json({ ok: false, error: err.message });
@@ -787,7 +815,7 @@ router.get("/monitor", requireAuth, requireRole(['admin', 'support']), (req, res
   res.sendFile(path.join(__dirname, "..", "views", "admin", "monitor.html"));
 });
 
-// System stats endpoint
+// System stats endpoint - Enhanced with CPU %, multiple disks, network
 router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
   try {
     const os = require("os");
@@ -797,6 +825,10 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
     const cpus = os.cpus();
     const cpuModel = cpus[0].model;
     const cpuCores = cpus.length;
+    const loadAvg = os.loadavg();
+
+    // Calculate CPU percentage from load average (normalized)
+    const cpuPercent = Math.min(100, ((loadAvg[0] / cpuCores) * 100)).toFixed(1);
 
     // Memory info
     const totalMem = os.totalmem();
@@ -810,66 +842,113 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
     // Hostname
     const hostname = os.hostname();
 
-    // Get disk usage - try multiple methods for compatibility
-    exec("df -h --output=size,used,avail,pcent / 2>/dev/null || df -h / 2>/dev/null", (error, stdout) => {
-      let disk = { total: 'N/A', used: 'N/A', free: 'N/A', percent: 'N/A' };
+    // Get all disk usage and network stats
+    exec(`
+      # Get all mounted disks (excluding special filesystems)
+      df -h -T 2>/dev/null | grep -E '^/dev/' | awk '{print $1","$2","$3","$4","$5","$6","$7}';
+      echo "---NETWORK---";
+      # Get network stats
+      cat /proc/net/dev 2>/dev/null | grep -E '(eth|enp|wlan|ens|wlp)' | head -2
+    `, (error, stdout) => {
+      let disks = [];
+      let network = { rx_bytes: 0, tx_bytes: 0, rx_rate: '0 B/s', tx_rate: '0 B/s' };
 
       if (!error && stdout) {
-        const lines = stdout.trim().split('\n');
-        // Get the last line (data line, not header)
-        const dataLine = lines[lines.length - 1];
-        const parts = dataLine.trim().split(/\s+/);
+        const parts = stdout.split('---NETWORK---');
+        const diskLines = parts[0].trim().split('\n').filter(l => l);
+        const netLines = parts[1] ? parts[1].trim().split('\n').filter(l => l) : [];
 
-        // Try to parse based on number of columns
-        if (parts.length >= 5) {
-          // Standard df output: Filesystem Size Used Avail Use% Mounted
-          disk = { total: parts[1], used: parts[2], free: parts[3], percent: parts[4] };
-        } else if (parts.length >= 4) {
-          // df --output format: Size Used Avail Use%
-          disk = { total: parts[0], used: parts[1], free: parts[2], percent: parts[3] };
-        }
-      }
-
-      // If still N/A, try using Node.js statvfs-like approach
-      if (disk.total === 'N/A') {
-        try {
-          const { statfsSync } = require('fs');
-          if (statfsSync) {
-            const stats = statfsSync('/');
-            const total = stats.blocks * stats.bsize;
-            const free = stats.bfree * stats.bsize;
-            const used = total - free;
-            const percent = ((used / total) * 100).toFixed(0) + '%';
-            disk = {
-              total: (total / 1024 / 1024 / 1024).toFixed(1) + 'G',
-              used: (used / 1024 / 1024 / 1024).toFixed(1) + 'G',
-              free: (free / 1024 / 1024 / 1024).toFixed(1) + 'G',
-              percent
-            };
+        // Parse disks
+        diskLines.forEach(line => {
+          const cols = line.split(',');
+          if (cols.length >= 6) {
+            const mountPoint = cols[6] || cols[5];
+            // Filter out small partitions
+            const sizeNum = parseFloat(cols[2]);
+            if (sizeNum > 1 || cols[2].includes('G') || cols[2].includes('T')) {
+              disks.push({
+                device: cols[0],
+                type: cols[1],
+                total: cols[2],
+                used: cols[3],
+                free: cols[4],
+                percent: cols[5],
+                mount: mountPoint
+              });
+            }
           }
-        } catch (e) {
-          // statfsSync not available, keep N/A
-        }
+        });
+
+        // Parse network
+        netLines.forEach(line => {
+          const match = line.match(/^\s*(\w+):\s*(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+(\d+)/);
+          if (match) {
+            network.rx_bytes += parseInt(match[2]) || 0;
+            network.tx_bytes += parseInt(match[3]) || 0;
+          }
+        });
       }
 
-      // Get load average
-      const loadAvg = os.loadavg();
+      // Fallback if no disks found
+      if (disks.length === 0) {
+        exec("df -h / 2>/dev/null", (err2, stdout2) => {
+          if (!err2 && stdout2) {
+            const lines = stdout2.trim().split('\n');
+            if (lines.length > 1) {
+              const p = lines[1].split(/\s+/);
+              disks.push({
+                device: p[0],
+                type: 'unknown',
+                total: p[1],
+                used: p[2],
+                free: p[3],
+                percent: p[4],
+                mount: p[5] || '/'
+              });
+            }
+          }
+          sendResponse();
+        });
+      } else {
+        sendResponse();
+      }
 
-      res.json({
-        ok: true,
-        stats: {
-          hostname,
-          cpu: { model: cpuModel, cores: cpuCores, loadAvg },
-          memory: {
-            total: (totalMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-            used: (usedMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-            free: (freeMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-            percent: memPercent
-          },
-          disk,
-          uptime: Math.floor(uptime / 86400) + 'd ' + Math.floor((uptime % 86400) / 3600) + 'h ' + Math.floor((uptime % 3600) / 60) + 'm'
-        }
-      });
+      function sendResponse() {
+        res.json({
+          ok: true,
+          stats: {
+            hostname,
+            cpu: {
+              model: cpuModel,
+              cores: cpuCores,
+              loadAvg,
+              percent: cpuPercent
+            },
+            memory: {
+              total: (totalMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+              used: (usedMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+              free: (freeMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+              percent: memPercent,
+              totalBytes: totalMem,
+              usedBytes: usedMem
+            },
+            disks: disks.length > 0 ? disks : [{
+              device: 'N/A',
+              total: 'N/A',
+              used: 'N/A',
+              free: 'N/A',
+              percent: '0%',
+              mount: '/'
+            }],
+            network: {
+              rx_bytes: network.rx_bytes,
+              tx_bytes: network.tx_bytes
+            },
+            uptime: Math.floor(uptime / 86400) + 'd ' + Math.floor((uptime % 86400) / 3600) + 'h ' + Math.floor((uptime % 3600) / 60) + 'm',
+            uptimeSeconds: uptime
+          }
+        });
+      }
     });
   } catch (err) {
     console.error("[MONITOR]", err);
