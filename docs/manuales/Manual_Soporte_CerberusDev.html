@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Soporte - Cerberus Dev v3.0</title>
+    <style>
+        @page {
+            margin: 2.5cm;
+            @bottom-center {
+                content: "Cerberus Dev - www.cerberusdev.pro - info@cerberusdev.com";
+            }
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            color: #333;
+            max-width: 21cm;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .portada {
+            text-align: center;
+            page-break-after: always;
+            padding-top: 100px;
+        }
+        .portada img {
+            max-width: 300px;
+            margin-bottom: 50px;
+        }
+        .portada h1 {
+            font-size: 28pt;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+        }
+        .portada .subtitulo {
+            font-size: 18pt;
+            color: #4a4a6a;
+            margin-bottom: 30px;
+        }
+        .portada .version {
+            font-size: 14pt;
+            color: #666;
+            margin-top: 50px;
+        }
+        .portada .info-empresa {
+            margin-top: 100px;
+            font-size: 11pt;
+            color: #666;
+        }
+        h1 {
+            color: #1a1a2e;
+            border-bottom: 3px solid #48bb78;
+            padding-bottom: 10px;
+            page-break-after: avoid;
+        }
+        h2 {
+            color: #2d3748;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-top: 30px;
+            page-break-after: avoid;
+        }
+        h3 {
+            color: #4a5568;
+            margin-top: 25px;
+            page-break-after: avoid;
+        }
+        .indice {
+            background-color: #f7fafc;
+            padding: 20px 30px;
+            border-radius: 8px;
+            margin: 20px 0;
+            page-break-after: always;
+        }
+        .indice h2 {
+            border-bottom: none;
+            color: #1a1a2e;
+        }
+        .indice ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .indice li {
+            padding: 8px 0;
+            border-bottom: 1px dotted #cbd5e0;
+        }
+        .indice a {
+            color: #48bb78;
+            text-decoration: none;
+        }
+        .captura-placeholder {
+            background-color: #edf2f7;
+            border: 2px dashed #a0aec0;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            color: #718096;
+            font-style: italic;
+        }
+        .nota {
+            background-color: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .nota strong {
+            color: #2b6cb0;
+        }
+        .advertencia {
+            background-color: #fffaf0;
+            border-left: 4px solid #ed8936;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .advertencia strong {
+            color: #c05621;
+        }
+        .importante {
+            background-color: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .importante strong {
+            color: #c53030;
+        }
+        .exito {
+            background-color: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .exito strong {
+            color: #276749;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #48bb78;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+        .paso {
+            background-color: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+        .paso-numero {
+            display: inline-block;
+            background-color: #48bb78;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .pie-pagina {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+            text-align: center;
+            font-size: 10pt;
+            color: #718096;
+            page-break-before: avoid;
+        }
+        .pie-pagina img {
+            max-width: 80px;
+            margin-bottom: 10px;
+        }
+        code {
+            background-color: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11pt;
+        }
+        .seccion {
+            page-break-before: always;
+        }
+        .primera-seccion {
+            page-break-before: avoid;
+        }
+        .permiso-si {
+            color: #48bb78;
+            font-weight: bold;
+        }
+        .permiso-no {
+            color: #fc8181;
+            font-weight: bold;
+        }
+        .estado-online {
+            background-color: #c6f6d5;
+            color: #276749;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .estado-stopped {
+            background-color: #fed7d7;
+            color: #c53030;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .estado-error {
+            background-color: #feebc8;
+            color: #c05621;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PORTADA -->
+    <div class="portada">
+        <!-- CAPTURA: Insertar aqui el logo cerberus-logo.png -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR LOGO AQUI</strong><br>
+            Archivo: cerberus-logo.png<br>
+            Ubicacion: /public/assets/img/cerberus-logo.png
+        </div>
+
+        <h1>MANUAL DE SOPORTE</h1>
+        <div class="subtitulo">Sistema de Gestion Cerberus Dev</div>
+        <div class="subtitulo">Panel de Soporte Tecnico</div>
+
+        <div class="version">
+            <strong>Version:</strong> 3.0<br>
+            <strong>Fecha:</strong> Enero 2026
+        </div>
+
+        <div class="info-empresa">
+            <strong>Cerberus Dev</strong><br>
+            Director: Juan Felipe Santiago Gonzalez<br>
+            www.cerberusdev.pro | info@cerberusdev.com
+        </div>
+    </div>
+
+    <!-- INDICE -->
+    <div class="indice">
+        <h2>INDICE DE CONTENIDOS</h2>
+        <ul>
+            <li><a href="#introduccion">1. Introduccion al Sistema</a></li>
+            <li><a href="#acceso">2. Acceso al Panel de Soporte</a></li>
+            <li><a href="#dashboard">3. Dashboard - Vista General</a></li>
+            <li><a href="#servicios">4. Gestion de Servicios</a></li>
+            <li><a href="#monitor">5. Monitor del Sistema</a></li>
+            <li><a href="#tickets">6. Gestion de Tickets</a></li>
+            <li><a href="#password">7. Cambio de Contrasena</a></li>
+            <li><a href="#permisos">8. Permisos y Restricciones</a></li>
+            <li><a href="#contacto">9. Contacto</a></li>
+        </ul>
+    </div>
+
+    <!-- SECCION 1: INTRODUCCION -->
+    <div class="seccion primera-seccion" id="introduccion">
+        <h1>1. Introduccion al Sistema</h1>
+
+        <h2>1.1 Bienvenido al Equipo de Soporte</h2>
+        <p>
+            Bienvenido al Panel de Soporte de <strong>Cerberus Dev</strong>. Como miembro del equipo
+            de soporte tecnico, tienes acceso a herramientas especializadas para monitorear servicios,
+            gestionar tickets de clientes y supervisar el estado del sistema.
+        </p>
+
+        <h2>1.2 Tu Rol como Soporte</h2>
+        <p>
+            El rol de <strong>Soporte (Support)</strong> tiene permisos operativos que te permiten:
+        </p>
+        <ul>
+            <li>Visualizar el dashboard con estadisticas generales</li>
+            <li>Ver y controlar servicios PM2 (iniciar, reiniciar)</li>
+            <li>Monitorear el estado del servidor en tiempo real</li>
+            <li>Gestionar todos los tickets de clientes</li>
+            <li>Responder y actualizar el estado de tickets</li>
+        </ul>
+
+        <div class="advertencia">
+            <strong>Importante:</strong> Tu rol tiene ciertas restricciones disenadas para
+            mantener la seguridad del sistema. No puedes detener servicios, crear usuarios,
+            ni acceder a funciones administrativas avanzadas.
+        </div>
+
+        <h2>1.3 Requisitos del Sistema</h2>
+        <table>
+            <tr>
+                <th>Requisito</th>
+                <th>Especificacion</th>
+            </tr>
+            <tr>
+                <td>Navegador Web</td>
+                <td>Chrome, Firefox, Safari, Edge (versiones actualizadas)</td>
+            </tr>
+            <tr>
+                <td>Conexion a Internet</td>
+                <td>Conexion estable requerida</td>
+            </tr>
+            <tr>
+                <td>JavaScript</td>
+                <td>Debe estar habilitado en el navegador</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- SECCION 2: ACCESO -->
+    <div class="seccion" id="acceso">
+        <h1>2. Acceso al Panel de Soporte</h1>
+
+        <h2>2.1 Iniciar Sesion</h2>
+        <p>Para acceder al Panel de Soporte:</p>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Abre tu navegador web</strong> y accede a la URL del panel administrativo proporcionada.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Ingresa tus credenciales:</strong>
+            <ul>
+                <li><strong>Usuario:</strong> Tu nombre de usuario asignado</li>
+                <li><strong>Contrasena:</strong> Tu contrasena personal</li>
+            </ul>
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Haz clic en "Iniciar Sesion"</strong> para acceder al sistema.
+        </div>
+
+        <!-- CAPTURA: Pantalla de login -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Pantalla de inicio de sesion del sistema<br>
+            Mostrar: Formulario de login con campos de usuario y contrasena
+        </div>
+
+        <h2>2.2 Redireccion Automatica</h2>
+        <p>
+            Una vez autenticado, el sistema te redirigira automaticamente al <strong>Dashboard</strong>,
+            que es tu pagina principal de trabajo.
+        </p>
+
+        <div class="nota">
+            <strong>Nota:</strong> Si es tu primer acceso, es posible que debas cambiar tu
+            contrasena antes de continuar.
+        </div>
+    </div>
+
+    <!-- SECCION 3: DASHBOARD -->
+    <div class="seccion" id="dashboard">
+        <h1>3. Dashboard - Vista General</h1>
+
+        <h2>3.1 Descripcion del Dashboard</h2>
+        <p>
+            El Dashboard es tu centro de operaciones. Desde aqui puedes ver estadisticas
+            generales y acceder rapidamente a todas las funciones disponibles para tu rol.
+        </p>
+
+        <!-- CAPTURA: Dashboard de soporte -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Vista del dashboard para rol de soporte<br>
+            Mostrar: Panel principal con estadisticas y menu de navegacion
+        </div>
+
+        <h2>3.2 Menu de Navegacion</h2>
+        <p>El menu lateral o superior te da acceso a las siguientes secciones:</p>
+
+        <table>
+            <tr>
+                <th>Seccion</th>
+                <th>Descripcion</th>
+                <th>Acceso</th>
+            </tr>
+            <tr>
+                <td><strong>Dashboard</strong></td>
+                <td>Estadisticas generales y resumen</td>
+                <td class="permiso-si">Permitido</td>
+            </tr>
+            <tr>
+                <td><strong>Servicios</strong></td>
+                <td>Lista y control de servicios PM2</td>
+                <td class="permiso-si">Permitido</td>
+            </tr>
+            <tr>
+                <td><strong>Monitor</strong></td>
+                <td>Estado del servidor en tiempo real</td>
+                <td class="permiso-si">Permitido</td>
+            </tr>
+            <tr>
+                <td><strong>Tickets</strong></td>
+                <td>Gestion de tickets de soporte</td>
+                <td class="permiso-si">Permitido</td>
+            </tr>
+            <tr>
+                <td><strong>Usuarios</strong></td>
+                <td>Gestion de usuarios</td>
+                <td class="permiso-no">No Permitido</td>
+            </tr>
+            <tr>
+                <td><strong>Blog</strong></td>
+                <td>Administracion del blog</td>
+                <td class="permiso-no">No Permitido</td>
+            </tr>
+            <tr>
+                <td><strong>Proyectos</strong></td>
+                <td>Administracion de proyectos</td>
+                <td class="permiso-no">No Permitido</td>
+            </tr>
+        </table>
+
+        <h2>3.3 Estadisticas del Dashboard</h2>
+        <p>El dashboard muestra informacion resumida sobre:</p>
+        <ul>
+            <li><strong>Leads:</strong> Cantidad de contactos recibidos y su estado</li>
+            <li><strong>Tickets:</strong> Resumen de tickets activos</li>
+            <li><strong>Actividad reciente:</strong> Ultimas acciones en el sistema</li>
+        </ul>
+
+        <div class="nota">
+            <strong>Nota:</strong> Como soporte, puedes visualizar estas estadisticas pero
+            no puedes gestionar los leads directamente. Esa funcion esta reservada para administradores.
+        </div>
+    </div>
+
+    <!-- SECCION 4: SERVICIOS -->
+    <div class="seccion" id="servicios">
+        <h1>4. Gestion de Servicios</h1>
+
+        <h2>4.1 Que son los Servicios?</h2>
+        <p>
+            Los servicios son aplicaciones y procesos que se ejecutan en el servidor mediante
+            <strong>PM2</strong> (Process Manager 2). Desde el panel puedes monitorear su estado
+            y realizar acciones de control.
+        </p>
+
+        <h2>4.2 Ver Lista de Servicios</h2>
+        <p>Para acceder a la lista de servicios:</p>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Haz clic en "Servicios"</strong> en el menu de navegacion.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Visualiza la tabla</strong> con todos los servicios registrados.
+        </div>
+
+        <!-- CAPTURA: Lista de servicios -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Tabla de servicios con estados y acciones<br>
+            Mostrar: Lista de servicios con botones de control
+        </div>
+
+        <h2>4.3 Informacion de Cada Servicio</h2>
+        <table>
+            <tr>
+                <th>Campo</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><strong>Nombre</strong></td>
+                <td>Nombre descriptivo del servicio</td>
+            </tr>
+            <tr>
+                <td><strong>Nombre PM2</strong></td>
+                <td>Identificador del proceso en PM2</td>
+            </tr>
+            <tr>
+                <td><strong>Descripcion</strong></td>
+                <td>Detalle de lo que hace el servicio</td>
+            </tr>
+            <tr>
+                <td><strong>Estado</strong></td>
+                <td>online, stopped, errored</td>
+            </tr>
+            <tr>
+                <td><strong>Puerto</strong></td>
+                <td>Puerto de red utilizado (si aplica)</td>
+            </tr>
+            <tr>
+                <td><strong>Cliente</strong></td>
+                <td>Usuario propietario del servicio</td>
+            </tr>
+        </table>
+
+        <h2>4.4 Estados de los Servicios</h2>
+        <table>
+            <tr>
+                <th>Estado</th>
+                <th>Significado</th>
+                <th>Accion Recomendada</th>
+            </tr>
+            <tr>
+                <td><span class="estado-online">online</span></td>
+                <td>El servicio esta funcionando correctamente</td>
+                <td>Ninguna - estado normal</td>
+            </tr>
+            <tr>
+                <td><span class="estado-stopped">stopped</span></td>
+                <td>El servicio esta detenido</td>
+                <td>Iniciar si es necesario</td>
+            </tr>
+            <tr>
+                <td><span class="estado-error">errored</span></td>
+                <td>El servicio tiene errores</td>
+                <td>Revisar logs y reiniciar</td>
+            </tr>
+        </table>
+
+        <h2>4.5 Acciones Disponibles</h2>
+
+        <h3>4.5.1 Iniciar un Servicio (Start)</h3>
+        <p>Para iniciar un servicio que esta detenido:</p>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Localiza el servicio</strong> en la lista.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Haz clic en el boton "Iniciar"</strong> (icono de play o boton verde).
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Espera la confirmacion</strong> de que el servicio ha iniciado.
+        </div>
+
+        <div class="exito">
+            <strong>Resultado esperado:</strong> El estado del servicio cambiara a
+            <span class="estado-online">online</span> si inicia correctamente.
+        </div>
+
+        <h3>4.5.2 Reiniciar un Servicio (Restart)</h3>
+        <p>Para reiniciar un servicio (util cuando hay problemas o despues de actualizaciones):</p>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Localiza el servicio</strong> en la lista.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Haz clic en el boton "Reiniciar"</strong> (icono de refresh o boton amarillo).
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Espera la confirmacion</strong> de que el servicio se ha reiniciado.
+        </div>
+
+        <div class="advertencia">
+            <strong>Atencion:</strong> Al reiniciar un servicio, puede haber una breve interrupcion.
+            Asegurate de que no haya operaciones criticas en curso antes de reiniciar.
+        </div>
+
+        <h3>4.5.3 Ver Logs del Servicio</h3>
+        <p>Para ver los registros (logs) de un servicio:</p>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Haz clic en el boton "Logs"</strong> del servicio deseado.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Revisa los registros</strong> que aparecen en la ventana emergente.
+        </div>
+
+        <!-- CAPTURA: Ventana de logs -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Ventana mostrando logs de un servicio<br>
+            Mostrar: Registros de la aplicacion con timestamps
+        </div>
+
+        <div class="nota">
+            <strong>Consejo:</strong> Los logs son muy utiles para diagnosticar problemas.
+            Busca mensajes de error (error, fail, exception) para identificar la causa de fallos.
+        </div>
+
+        <h2>4.6 Restricciones de Soporte</h2>
+        <div class="importante">
+            <strong>Como usuario de Soporte, NO puedes:</strong>
+            <ul>
+                <li>Detener servicios (Stop) - Solo el administrador puede hacerlo</li>
+                <li>Crear nuevos servicios</li>
+                <li>Editar la configuracion de servicios</li>
+                <li>Eliminar servicios</li>
+            </ul>
+            <p>Si necesitas realizar alguna de estas acciones, contacta al administrador.</p>
+        </div>
+    </div>
+
+    <!-- SECCION 5: MONITOR -->
+    <div class="seccion" id="monitor">
+        <h1>5. Monitor del Sistema</h1>
+
+        <h2>5.1 Que es el Monitor?</h2>
+        <p>
+            El Monitor es una herramienta que muestra en tiempo real el estado de salud
+            del servidor y todos los procesos PM2 que estan ejecutandose.
+        </p>
+
+        <h2>5.2 Acceder al Monitor</h2>
+        <p>Haz clic en <strong>"Monitor"</strong> en el menu de navegacion.</p>
+
+        <!-- CAPTURA: Monitor del sistema -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Panel de monitor con metricas del servidor<br>
+            Mostrar: Graficos o indicadores de CPU, memoria, disco
+        </div>
+
+        <h2>5.3 Metricas del Sistema</h2>
+
+        <h3>5.3.1 CPU</h3>
+        <table>
+            <tr>
+                <th>Metrica</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><strong>Modelo</strong></td>
+                <td>Tipo de procesador del servidor</td>
+            </tr>
+            <tr>
+                <td><strong>Nucleos</strong></td>
+                <td>Cantidad de nucleos disponibles</td>
+            </tr>
+            <tr>
+                <td><strong>Carga Promedio</strong></td>
+                <td>Uso promedio del CPU (1, 5, 15 minutos)</td>
+            </tr>
+        </table>
+
+        <h3>5.3.2 Memoria RAM</h3>
+        <table>
+            <tr>
+                <th>Metrica</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><strong>Total</strong></td>
+                <td>Memoria RAM total del servidor</td>
+            </tr>
+            <tr>
+                <td><strong>Usada</strong></td>
+                <td>Memoria actualmente en uso</td>
+            </tr>
+            <tr>
+                <td><strong>Libre</strong></td>
+                <td>Memoria disponible</td>
+            </tr>
+            <tr>
+                <td><strong>Porcentaje</strong></td>
+                <td>Porcentaje de uso de memoria</td>
+            </tr>
+        </table>
+
+        <div class="advertencia">
+            <strong>Alerta:</strong> Si el uso de memoria supera el 90%, podria haber
+            problemas de rendimiento. Notifica al administrador si ves valores criticos.
+        </div>
+
+        <h3>5.3.3 Disco</h3>
+        <table>
+            <tr>
+                <th>Metrica</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><strong>Total</strong></td>
+                <td>Espacio total en disco</td>
+            </tr>
+            <tr>
+                <td><strong>Usado</strong></td>
+                <td>Espacio ocupado</td>
+            </tr>
+            <tr>
+                <td><strong>Libre</strong></td>
+                <td>Espacio disponible</td>
+            </tr>
+            <tr>
+                <td><strong>Porcentaje</strong></td>
+                <td>Porcentaje de uso del disco</td>
+            </tr>
+        </table>
+
+        <div class="importante">
+            <strong>Critico:</strong> Si el disco esta por encima del 85%, contacta
+            inmediatamente al administrador para evitar problemas graves.
+        </div>
+
+        <h3>5.3.4 Uptime</h3>
+        <p>
+            Muestra el tiempo que lleva el servidor encendido desde su ultimo reinicio,
+            expresado en dias, horas y minutos.
+        </p>
+
+        <h2>5.4 Procesos PM2</h2>
+        <p>
+            El monitor tambien muestra una lista de todos los procesos PM2 con
+            informacion detallada:
+        </p>
+
+        <table>
+            <tr>
+                <th>Campo</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><strong>Nombre</strong></td>
+                <td>Identificador del proceso</td>
+            </tr>
+            <tr>
+                <td><strong>PID</strong></td>
+                <td>ID del proceso en el sistema</td>
+            </tr>
+            <tr>
+                <td><strong>Estado</strong></td>
+                <td>online, stopped, errored</td>
+            </tr>
+            <tr>
+                <td><strong>CPU %</strong></td>
+                <td>Porcentaje de CPU utilizado</td>
+            </tr>
+            <tr>
+                <td><strong>Memoria</strong></td>
+                <td>RAM utilizada por el proceso</td>
+            </tr>
+            <tr>
+                <td><strong>Uptime</strong></td>
+                <td>Tiempo desde que inicio el proceso</td>
+            </tr>
+            <tr>
+                <td><strong>Restarts</strong></td>
+                <td>Numero de veces que se ha reiniciado</td>
+            </tr>
+        </table>
+
+        <!-- CAPTURA: Lista de procesos PM2 -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Tabla de procesos PM2 con sus metricas<br>
+            Mostrar: Lista de procesos con CPU, memoria y estado
+        </div>
+
+        <div class="nota">
+            <strong>Consejo:</strong> Si un proceso tiene muchos reinicios (restarts),
+            podria indicar un problema. Revisa los logs para mas informacion.
+        </div>
+    </div>
+
+    <!-- SECCION 6: TICKETS -->
+    <div class="seccion" id="tickets">
+        <h1>6. Gestion de Tickets</h1>
+
+        <h2>6.1 Tu Responsabilidad con los Tickets</h2>
+        <p>
+            Como miembro del equipo de soporte, una de tus principales responsabilidades
+            es atender los tickets de los clientes. Puedes ver todos los tickets del sistema,
+            responderlos y cambiar su estado.
+        </p>
+
+        <h2>6.2 Ver Lista de Tickets</h2>
+        <p>
+            Desde el Dashboard o el menu principal, accede a la seccion de tickets para
+            ver todas las solicitudes de soporte.
+        </p>
+
+        <!-- CAPTURA: Lista de todos los tickets -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Lista completa de tickets de soporte<br>
+            Mostrar: Tabla con tickets de diferentes clientes y estados
+        </div>
+
+        <h2>6.3 Informacion de Cada Ticket</h2>
+        <table>
+            <tr>
+                <th>Campo</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><strong>ID</strong></td>
+                <td>Numero unico del ticket</td>
+            </tr>
+            <tr>
+                <td><strong>Cliente</strong></td>
+                <td>Usuario que creo el ticket</td>
+            </tr>
+            <tr>
+                <td><strong>Asunto</strong></td>
+                <td>Titulo de la solicitud</td>
+            </tr>
+            <tr>
+                <td><strong>Estado</strong></td>
+                <td>Situacion actual del ticket</td>
+            </tr>
+            <tr>
+                <td><strong>Prioridad</strong></td>
+                <td>Nivel de urgencia</td>
+            </tr>
+            <tr>
+                <td><strong>Fecha</strong></td>
+                <td>Cuando fue creado</td>
+            </tr>
+        </table>
+
+        <h2>6.4 Estados de los Tickets</h2>
+        <table>
+            <tr>
+                <th>Estado</th>
+                <th>Descripcion</th>
+                <th>Accion Sugerida</th>
+            </tr>
+            <tr>
+                <td><strong>Abierto (Open)</strong></td>
+                <td>Nuevo, sin atender</td>
+                <td>Revisar y responder</td>
+            </tr>
+            <tr>
+                <td><strong>En Progreso (In Progress)</strong></td>
+                <td>Se esta trabajando en el</td>
+                <td>Continuar seguimiento</td>
+            </tr>
+            <tr>
+                <td><strong>Resuelto (Resolved)</strong></td>
+                <td>Solucion aplicada</td>
+                <td>Esperar confirmacion del cliente</td>
+            </tr>
+            <tr>
+                <td><strong>Cerrado (Closed)</strong></td>
+                <td>Finalizado</td>
+                <td>Ninguna</td>
+            </tr>
+        </table>
+
+        <h2>6.5 Responder un Ticket</h2>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Selecciona el ticket</strong> que deseas atender.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Lee el mensaje del cliente</strong> y respuestas previas si las hay.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Escribe tu respuesta</strong> de forma clara y profesional.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">4</span>
+            <strong>Haz clic en "Enviar Respuesta"</strong> para guardar.
+        </div>
+
+        <!-- CAPTURA: Detalle de ticket con respuestas -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Vista detallada de un ticket con conversacion<br>
+            Mostrar: Historial de mensajes y formulario de respuesta
+        </div>
+
+        <h2>6.6 Cambiar Estado de un Ticket</h2>
+        <p>Puedes actualizar el estado de un ticket segun su progreso:</p>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Abre el ticket</strong> que deseas actualizar.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Selecciona el nuevo estado</strong> del menu desplegable.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Guarda los cambios.</strong>
+        </div>
+
+        <div class="nota">
+            <strong>Buenas practicas:</strong>
+            <ul>
+                <li>Cambia a "En Progreso" cuando empieces a trabajar en un ticket</li>
+                <li>Cambia a "Resuelto" cuando hayas proporcionado una solucion</li>
+                <li>Cambia a "Cerrado" cuando el cliente confirme que esta satisfecho</li>
+            </ul>
+        </div>
+
+        <h2>6.7 Priorizar Tickets</h2>
+        <p>Atiende los tickets segun su prioridad:</p>
+
+        <table>
+            <tr>
+                <th>Prioridad</th>
+                <th>Tiempo de Respuesta Sugerido</th>
+            </tr>
+            <tr>
+                <td><strong>Urgente</strong></td>
+                <td>Lo antes posible (minutos)</td>
+            </tr>
+            <tr>
+                <td><strong>Alta</strong></td>
+                <td>Dentro de pocas horas</td>
+            </tr>
+            <tr>
+                <td><strong>Media</strong></td>
+                <td>Dentro del dia</td>
+            </tr>
+            <tr>
+                <td><strong>Baja</strong></td>
+                <td>Cuando sea posible</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- SECCION 7: CAMBIO DE CONTRASENA -->
+    <div class="seccion" id="password">
+        <h1>7. Cambio de Contrasena</h1>
+
+        <h2>7.1 Como Cambiar tu Contrasena</h2>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Accede a "Cambiar Contrasena"</strong> desde el menu.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Ingresa tu contrasena actual.</strong>
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Ingresa y confirma tu nueva contrasena.</strong>
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">4</span>
+            <strong>Haz clic en "Cambiar Contrasena"</strong> para guardar.
+        </div>
+
+        <!-- CAPTURA: Pantalla de cambio de contrasena -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Formulario de cambio de contrasena<br>
+            Mostrar: Campos para contrasena actual, nueva y confirmacion
+        </div>
+
+        <div class="importante">
+            <strong>Requisitos de seguridad:</strong>
+            <ul>
+                <li>Minimo 6 caracteres</li>
+                <li>Se recomienda combinar letras, numeros y simbolos</li>
+                <li>No uses la misma contrasena que en otros servicios</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- SECCION 8: PERMISOS -->
+    <div class="seccion" id="permisos">
+        <h1>8. Permisos y Restricciones</h1>
+
+        <h2>8.1 Resumen de Permisos del Rol Soporte</h2>
+
+        <table>
+            <tr>
+                <th>Funcion</th>
+                <th>Permitido</th>
+                <th>Notas</th>
+            </tr>
+            <tr>
+                <td>Ver Dashboard</td>
+                <td class="permiso-si">Si</td>
+                <td>Solo lectura de estadisticas</td>
+            </tr>
+            <tr>
+                <td>Ver Servicios</td>
+                <td class="permiso-si">Si</td>
+                <td>Lista completa</td>
+            </tr>
+            <tr>
+                <td>Iniciar Servicios</td>
+                <td class="permiso-si">Si</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Reiniciar Servicios</td>
+                <td class="permiso-si">Si</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Detener Servicios</td>
+                <td class="permiso-no">No</td>
+                <td>Solo administrador</td>
+            </tr>
+            <tr>
+                <td>Crear/Editar/Eliminar Servicios</td>
+                <td class="permiso-no">No</td>
+                <td>Solo administrador</td>
+            </tr>
+            <tr>
+                <td>Ver Logs</td>
+                <td class="permiso-si">Si</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Ver Monitor</td>
+                <td class="permiso-si">Si</td>
+                <td>Completo</td>
+            </tr>
+            <tr>
+                <td>Ver Tickets</td>
+                <td class="permiso-si">Si</td>
+                <td>Todos los tickets</td>
+            </tr>
+            <tr>
+                <td>Responder Tickets</td>
+                <td class="permiso-si">Si</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Cambiar Estado Tickets</td>
+                <td class="permiso-si">Si</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Gestionar Usuarios</td>
+                <td class="permiso-no">No</td>
+                <td>Solo administrador</td>
+            </tr>
+            <tr>
+                <td>Gestionar Leads</td>
+                <td class="permiso-no">No</td>
+                <td>Solo administrador</td>
+            </tr>
+            <tr>
+                <td>Gestionar Blog</td>
+                <td class="permiso-no">No</td>
+                <td>Solo administrador</td>
+            </tr>
+            <tr>
+                <td>Gestionar Proyectos</td>
+                <td class="permiso-no">No</td>
+                <td>Solo administrador</td>
+            </tr>
+            <tr>
+                <td>Cambiar Contrasena Propia</td>
+                <td class="permiso-si">Si</td>
+                <td>-</td>
+            </tr>
+        </table>
+
+        <h2>8.2 Que Hacer si Necesitas Mas Permisos</h2>
+        <p>
+            Si necesitas realizar una accion que no esta dentro de tus permisos,
+            contacta al administrador del sistema explicando:
+        </p>
+        <ul>
+            <li>Que accion necesitas realizar</li>
+            <li>Por que es necesaria</li>
+            <li>El contexto o urgencia de la solicitud</li>
+        </ul>
+    </div>
+
+    <!-- SECCION 9: CONTACTO -->
+    <div class="seccion" id="contacto">
+        <h1>9. Contacto</h1>
+
+        <h2>9.1 Informacion de la Empresa</h2>
+        <table>
+            <tr>
+                <th>Dato</th>
+                <th>Informacion</th>
+            </tr>
+            <tr>
+                <td><strong>Empresa</strong></td>
+                <td>Cerberus Dev</td>
+            </tr>
+            <tr>
+                <td><strong>Director</strong></td>
+                <td>Juan Felipe Santiago Gonzalez</td>
+            </tr>
+            <tr>
+                <td><strong>Sitio Web</strong></td>
+                <td>www.cerberusdev.pro</td>
+            </tr>
+            <tr>
+                <td><strong>Correo</strong></td>
+                <td>info@cerberusdev.com</td>
+            </tr>
+        </table>
+
+        <h2>9.2 Soporte Interno</h2>
+        <p>
+            Si tienes dudas sobre el uso del sistema o necesitas asistencia,
+            contacta al administrador directamente.
+        </p>
+    </div>
+
+    <!-- PIE DE PAGINA -->
+    <div class="pie-pagina">
+        <!-- CAPTURA: Insertar aqui el logo cerberus-mark.png -->
+        <div class="captura-placeholder" style="padding: 20px; margin-bottom: 10px;">
+            <strong>INSERTAR LOGO AQUI</strong><br>
+            Archivo: cerberus-mark.png<br>
+            Ubicacion: /public/assets/img/cerberus-mark.png
+        </div>
+
+        <p>
+            <strong>Cerberus Dev</strong><br>
+            www.cerberusdev.pro | info@cerberusdev.com<br><br>
+            Manual de Soporte - Version 3.0<br>
+            &copy; 2026 Cerberus Dev. Todos los derechos reservados.<br>
+            Director: Juan Felipe Santiago Gonzalez
+        </p>
+    </div>
+
+</body>
+</html>
