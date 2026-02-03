@@ -659,21 +659,31 @@ router.get("/api/services", requireAuth, requireRole(['admin', 'support']), asyn
 
     // Get real-time PM2 status
     const { exec } = require("child_process");
-    exec("pm2 jlist", (error, stdout) => {
+    exec("pm2 jlist", { windowsHide: true, timeout: 5000 }, (error, stdout, stderr) => {
       let pm2Status = {};
-      if (!error && stdout) {
+
+      if (error) {
+        console.log("[SERVICES] PM2 jlist error:", error.message);
+      }
+
+      if (stdout) {
         try {
           const processes = JSON.parse(stdout);
           processes.forEach(p => {
-            pm2Status[p.name] = p.pm2_env?.status || 'unknown';
+            // Store both the original name and lowercase for flexible matching
+            const status = p.pm2_env?.status || 'unknown';
+            pm2Status[p.name] = status;
+            pm2Status[p.name.toLowerCase()] = status;
           });
-        } catch (e) {}
+        } catch (e) {
+          console.log("[SERVICES] PM2 JSON parse error:", e.message);
+        }
       }
 
-      // Merge PM2 status with service data
+      // Merge PM2 status with service data (try exact match first, then lowercase)
       const services = rows.map(s => ({
         ...s,
-        status: pm2Status[s.pm2_name] || 'unknown'
+        status: pm2Status[s.pm2_name] || pm2Status[s.pm2_name?.toLowerCase()] || 'unknown'
       }));
 
       res.json({ ok: true, services });
@@ -740,7 +750,7 @@ router.post("/api/services/:id/restart", requireAuth, requireRole(['admin', 'sup
     if (!service) return res.status(404).json({ ok: false, error: 'not_found' });
 
     const { exec } = require("child_process");
-    exec(`pm2 restart ${service.pm2_name}`, (error, stdout, stderr) => {
+    exec(`pm2 restart ${service.pm2_name}`, { windowsHide: true }, (error, stdout, stderr) => {
       if (error) {
         console.error("[PM2 RESTART]", stderr);
         return res.status(500).json({ ok: false, error: stderr });
@@ -759,7 +769,7 @@ router.post("/api/services/:id/stop", requireAuth, requireRole(['admin']), async
     if (!service) return res.status(404).json({ ok: false, error: 'not_found' });
 
     const { exec } = require("child_process");
-    exec(`pm2 stop ${service.pm2_name}`, (error, stdout, stderr) => {
+    exec(`pm2 stop ${service.pm2_name}`, { windowsHide: true }, (error, stdout, stderr) => {
       if (error) {
         console.error("[PM2 STOP]", stderr);
         return res.status(500).json({ ok: false, error: stderr });
@@ -778,7 +788,7 @@ router.post("/api/services/:id/start", requireAuth, requireRole(['admin', 'suppo
     if (!service) return res.status(404).json({ ok: false, error: 'not_found' });
 
     const { exec } = require("child_process");
-    exec(`pm2 start ${service.pm2_name}`, (error, stdout, stderr) => {
+    exec(`pm2 start ${service.pm2_name}`, { windowsHide: true }, (error, stdout, stderr) => {
       if (error) {
         console.error("[PM2 START]", stderr);
         return res.status(500).json({ ok: false, error: stderr });
@@ -799,7 +809,7 @@ router.get("/api/services/:id/logs", requireAuth, requireRole(['admin', 'support
 
     const lines = req.query.lines || 50;
     const { exec } = require("child_process");
-    exec(`pm2 logs ${service.pm2_name} --lines ${lines} --nostream`, { timeout: 5000 }, (error, stdout, stderr) => {
+    exec(`pm2 logs ${service.pm2_name} --lines ${lines} --nostream`, { timeout: 5000, windowsHide: true }, (error, stdout, stderr) => {
       res.json({ ok: true, logs: stdout + stderr });
     });
   } catch (err) {
@@ -842,14 +852,15 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
     // Hostname
     const hostname = os.hostname();
 
+    // Detect Windows
+    const isWindows = process.platform === 'win32';
+
     // Get all disk usage and network stats
-    exec(`
-      # Get all mounted disks (excluding special filesystems)
-      df -h -T 2>/dev/null | grep -E '^/dev/' | awk '{print $1","$2","$3","$4","$5","$6","$7}';
-      echo "---NETWORK---";
-      # Get network stats
-      cat /proc/net/dev 2>/dev/null | grep -E '(eth|enp|wlan|ens|wlp)' | head -2
-    `, (error, stdout) => {
+    const diskNetCmd = isWindows
+      ? 'wmic logicaldisk get size,freespace,caption /format:csv 2>nul'
+      : `df -h -T 2>/dev/null | grep -E '^/dev/' | awk '{print $1","$2","$3","$4","$5","$6","$7}'; echo "---NETWORK---"; cat /proc/net/dev 2>/dev/null | grep -E '(eth|enp|wlan|ens|wlp)' | head -2`;
+
+    exec(diskNetCmd, { windowsHide: true }, (error, stdout) => {
       let disks = [];
       let network = { rx_bytes: 0, tx_bytes: 0, rx_rate: '0 B/s', tx_rate: '0 B/s' };
 
@@ -891,7 +902,7 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
 
       // Fallback if no disks found
       if (disks.length === 0) {
-        exec("df -h / 2>/dev/null", (err2, stdout2) => {
+        exec(isWindows ? 'wmic logicaldisk get size,freespace,caption /format:csv 2>nul' : "df -h / 2>/dev/null", { windowsHide: true }, (err2, stdout2) => {
           if (!err2 && stdout2) {
             const lines = stdout2.trim().split('\n');
             if (lines.length > 1) {
@@ -960,7 +971,7 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
 router.get("/api/monitor/pm2", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
   try {
     const { exec } = require("child_process");
-    exec("pm2 jlist", (error, stdout, stderr) => {
+    exec("pm2 jlist", { windowsHide: true }, (error, stdout, stderr) => {
       if (error) {
         return res.json({ ok: true, processes: [] });
       }

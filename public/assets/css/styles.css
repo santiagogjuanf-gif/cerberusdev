@@ -165,12 +165,10 @@ img { max-width: 100%; display: block; }
 .nav-toggle span:nth-child(1) { top: 14px; }
 .nav-toggle span:nth-child(2) { top: 22px; }
 
-/* Hamburger to X animation when menu is open */
-.nav-toggle[aria-expanded="true"] span:nth-child(1) {
-  top: 18px; transform: rotate(45deg);
-}
-.nav-toggle[aria-expanded="true"] span:nth-child(2) {
-  top: 18px; transform: rotate(-45deg);
+/* Hide hamburger when menu is open (use mobile__close instead) */
+.nav-toggle[aria-expanded="true"] {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Mobile nav */
