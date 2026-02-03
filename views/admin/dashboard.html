@@ -755,6 +755,7 @@
         <a class="btn btn--ghost" href="./monitor" id="navMonitor" style="display:none;">&#x1F4CA; Monitor</a>
         <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
         <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+        <a class="btn btn--ghost" href="./tech-admin" id="navTech" style="display:none;">&#x1F527; Tecnologias</a>
       </div>
     </header>
 
@@ -767,6 +768,7 @@
       <a class="btn btn--ghost" href="./monitor" id="navMonitorMobile" style="display:none;">&#x1F4CA; Monitor</a>
       <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
       <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+      <a class="btn btn--ghost" href="./tech-admin" id="navTechMobile" style="display:none;">&#x1F527; Tecnologias</a>
       <a class="btn btn--ghost" href="./logout" style="margin-top: auto;">Cerrar sesion</a>
     </div>
 
@@ -994,10 +996,12 @@
             document.getElementById('navUsers').style.display = '';
             document.getElementById('navServices').style.display = '';
             document.getElementById('navMonitor').style.display = '';
+            document.getElementById('navTech').style.display = '';
             // Mobile menu
             document.getElementById('navUsersMobile').style.display = '';
             document.getElementById('navServicesMobile').style.display = '';
             document.getElementById('navMonitorMobile').style.display = '';
+            document.getElementById('navTechMobile').style.display = '';
           } else if (role === 'support') {
             document.getElementById('navServices').style.display = '';
             document.getElementById('navMonitor').style.display = '';

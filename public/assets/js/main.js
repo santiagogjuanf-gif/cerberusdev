@@ -168,6 +168,8 @@ function setLang(lang) {
   applyTranslations(lang);
   updateLangButtons(lang);
   document.documentElement.lang = lang;
+  // Dispatch event for pages that need to reload dynamic content
+  window.dispatchEvent(new CustomEvent("langChange", { detail: { lang } }));
 }
 
 function applyTranslations(lang) {

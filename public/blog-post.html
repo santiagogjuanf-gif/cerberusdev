@@ -65,6 +65,13 @@
     const parts = location.pathname.split("/").filter(Boolean);
     const slug = parts[1]; // /blog/SLUG
     if (!slug || slug === "blog") return;
+
+    // Listen for language changes and reload page
+    window.addEventListener("storage", (e) => {
+      if (e.key === "cerberus_lang") location.reload();
+    });
+    window.addEventListener("langChange", () => location.reload());
+
     const lang = localStorage.getItem("cerberus_lang") || "es";
 
     const postTitle = document.getElementById("postTitle");

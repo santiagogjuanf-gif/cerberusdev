@@ -413,8 +413,40 @@
       return;
     }
     wrap.innerHTML = allCats.map(c => `
-      <div class="chip is-on" style="cursor:default;">${esc(c.name)}</div>
+      <div class="chip is-on" style="cursor:default;display:inline-flex;align-items:center;gap:8px;">
+        ${esc(c.name)}
+        <button type="button" data-delete-cat="${c.id}" title="Eliminar" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;padding:0;font-size:14px;line-height:1;">&times;</button>
+      </div>
     `).join("");
+
+    // Add delete handlers
+    wrap.querySelectorAll("[data-delete-cat]").forEach(btn => {
+      btn.addEventListener("click", () => deleteCategory(Number(btn.dataset.deleteCat)));
+    });
+  }
+
+  // ── Delete category ──
+  async function deleteCategory(id) {
+    const cat = allCats.find(c => c.id === id);
+    if (!cat) return;
+
+    const res = await api(`./api/blog/categories/${id}/delete`, { method: "POST" });
+    if (!res.ok && res.error === 'has_posts') {
+      const force = await showConfirm(
+        "Categoria con articulos",
+        `Esta categoria tiene ${res.postCount} articulo(s). Si la eliminas, los articulos quedaran sin categoria. ¿Continuar?`
+      );
+      if (force) {
+        await api(`./api/blog/categories/${id}/delete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ force: true })
+        });
+        await loadAll();
+      }
+    } else {
+      await loadAll();
+    }
   }
 
   function renderCatSelect() {

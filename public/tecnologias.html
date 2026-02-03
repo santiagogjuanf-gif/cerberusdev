@@ -31,19 +31,9 @@
 
         <div data-reveal><div class="section-label" data-i18n="tech.tools_label">Herramientas que usamos</div></div>
 
-        <div class="tech-grid" data-reveal-stagger>
-          <div class="tech"><img src="/assets/img/tech/html.svg" alt="HTML"><span>HTML5</span></div>
-          <div class="tech"><img src="/assets/img/tech/css.svg" alt="CSS"><span>CSS3</span></div>
-          <div class="tech"><img src="/assets/img/tech/js.svg" alt="JavaScript"><span>JavaScript</span></div>
-          <div class="tech"><img src="/assets/img/tech/ts.svg" alt="TypeScript"><span>TypeScript</span></div>
-          <div class="tech"><img src="/assets/img/tech/angular.svg" alt="Angular"><span>Angular</span></div>
-          <div class="tech"><img src="/assets/img/tech/node.svg" alt="Node.js"><span>Node.js</span></div>
-          <div class="tech"><img src="/assets/img/tech/express.svg" alt="Express"><span>Express</span></div>
-          <div class="tech"><img src="/assets/img/tech/mysql.svg" alt="MySQL"><span>MySQL</span></div>
-          <div class="tech"><img src="/assets/img/tech/mssql.svg" alt="SQL Server"><span>SQL Server</span></div>
-          <div class="tech"><img src="/assets/img/tech/windows-server.svg" alt="Windows Server"><span>Windows Server</span></div>
-          <div class="tech"><img src="/assets/img/tech/git.svg" alt="Git"><span>Git</span></div>
-          <div class="tech"><img src="/assets/img/tech/github.svg" alt="GitHub"><span>GitHub</span></div>
+        <div class="tech-grid" data-reveal-stagger id="techGrid">
+          <!-- Cargado dinamicamente desde la BD -->
+          <div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.4);padding:40px;">Cargando tecnologias...</div>
         </div>
       </div>
     </section>
@@ -69,5 +59,34 @@
   <div data-include="/partials/footer.html"></div>
   <script src="/assets/js/i18n-data.js"></script>
   <script src="/assets/js/main.js"></script>
+  <script>
+  (function() {
+    const grid = document.getElementById("techGrid");
+    if (!grid) return;
+
+    function esc(s) {
+      return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    fetch("/api/technologies")
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok || !data.technologies || data.technologies.length === 0) {
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.4);padding:40px;">No hay tecnologias disponibles.</div>';
+          return;
+        }
+
+        grid.innerHTML = data.technologies.map(t => `
+          <div class="tech-item">
+            <img src="${esc(t.icon_url)}" alt="${esc(t.name)}" onerror="this.style.display='none'">
+            <span>${esc(t.name)}</span>
+          </div>
+        `).join("");
+      })
+      .catch(() => {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.4);padding:40px;">Error al cargar tecnologias.</div>';
+      });
+  })();
+  </script>
 </body>
 </html>

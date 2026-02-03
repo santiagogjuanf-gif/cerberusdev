@@ -208,6 +208,30 @@ router.post("/api/blog/categories", requireAuth, async (req, res) => {
   }
 });
 
+// Delete category
+router.post("/api/blog/categories/:id/delete", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const catId = req.params.id;
+    // Check if category has posts
+    const [[countResult]] = await db.execute("SELECT COUNT(*) as count FROM blog_posts WHERE category_id = ?", [catId]);
+    const postCount = countResult?.count || 0;
+
+    if (postCount > 0 && !req.body.force) {
+      return res.json({ ok: false, error: 'has_posts', postCount });
+    }
+
+    // If force delete or no posts, remove category (posts will have NULL category)
+    if (postCount > 0) {
+      await db.execute("UPDATE blog_posts SET category_id = NULL WHERE category_id = ?", [catId]);
+    }
+    await db.execute("DELETE FROM blog_categories WHERE id = ?", [catId]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[BLOG ADMIN]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Notifications API ──
 
 router.get("/api/notifications", requireAuth, async (req, res) => {
@@ -830,15 +854,12 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
   try {
     const os = require("os");
     const { exec } = require("child_process");
+    const isWindows = process.platform === 'win32';
 
     // CPU info
     const cpus = os.cpus();
-    const cpuModel = cpus[0].model;
+    const cpuModel = cpus[0]?.model || 'Unknown CPU';
     const cpuCores = cpus.length;
-    const loadAvg = os.loadavg();
-
-    // Calculate CPU percentage from load average (normalized)
-    const cpuPercent = Math.min(100, ((loadAvg[0] / cpuCores) * 100)).toFixed(1);
 
     // Memory info
     const totalMem = os.totalmem();
@@ -848,35 +869,91 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
 
     // Uptime
     const uptime = os.uptime();
-
-    // Hostname
     const hostname = os.hostname();
 
-    // Detect Windows
-    const isWindows = process.platform === 'win32';
+    // Helper to format bytes
+    function formatBytes(bytes) {
+      if (bytes >= 1099511627776) return (bytes / 1099511627776).toFixed(2) + ' TB';
+      if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(2) + ' GB';
+      if (bytes >= 1048576) return (bytes / 1048576).toFixed(2) + ' MB';
+      return bytes + ' B';
+    }
 
-    // Get all disk usage and network stats
-    const diskNetCmd = isWindows
-      ? 'wmic logicaldisk get size,freespace,caption /format:csv 2>nul'
-      : `df -h -T 2>/dev/null | grep -E '^/dev/' | awk '{print $1","$2","$3","$4","$5","$6","$7}'; echo "---NETWORK---"; cat /proc/net/dev 2>/dev/null | grep -E '(eth|enp|wlan|ens|wlp)' | head -2`;
+    if (isWindows) {
+      // Windows: Get CPU, Disk, and Network using PowerShell
+      const psCommand = `powershell -Command "
+        $cpu = (Get-WmiObject Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average;
+        $disks = Get-WmiObject Win32_LogicalDisk -Filter 'DriveType=3' | Select-Object DeviceID, Size, FreeSpace, VolumeName;
+        $net = Get-WmiObject Win32_PerfRawData_Tcpip_NetworkInterface | Select-Object -First 1 BytesReceivedPersec, BytesSentPersec;
+        @{cpu=$cpu; disks=$disks; net=$net} | ConvertTo-Json -Depth 3
+      "`;
 
-    exec(diskNetCmd, { windowsHide: true }, (error, stdout) => {
-      let disks = [];
-      let network = { rx_bytes: 0, tx_bytes: 0, rx_rate: '0 B/s', tx_rate: '0 B/s' };
+      exec(psCommand, { windowsHide: true, timeout: 10000 }, (error, stdout) => {
+        let cpuPercent = 0;
+        let disks = [];
+        let network = { rx_bytes: 0, tx_bytes: 0 };
 
-      if (!error && stdout) {
-        const parts = stdout.split('---NETWORK---');
-        const diskLines = parts[0].trim().split('\n').filter(l => l);
-        const netLines = parts[1] ? parts[1].trim().split('\n').filter(l => l) : [];
+        if (!error && stdout) {
+          try {
+            const data = JSON.parse(stdout);
+            cpuPercent = data.cpu || 0;
 
-        // Parse disks
-        diskLines.forEach(line => {
-          const cols = line.split(',');
-          if (cols.length >= 6) {
-            const mountPoint = cols[6] || cols[5];
-            // Filter out small partitions
-            const sizeNum = parseFloat(cols[2]);
-            if (sizeNum > 1 || cols[2].includes('G') || cols[2].includes('T')) {
+            // Parse disks
+            const diskData = Array.isArray(data.disks) ? data.disks : [data.disks];
+            diskData.forEach(d => {
+              if (d && d.Size && d.Size > 0) {
+                const total = parseInt(d.Size);
+                const free = parseInt(d.FreeSpace) || 0;
+                const used = total - free;
+                const percent = ((used / total) * 100).toFixed(1);
+                disks.push({
+                  device: d.DeviceID,
+                  type: d.VolumeName || 'Local Disk',
+                  total: formatBytes(total),
+                  used: formatBytes(used),
+                  free: formatBytes(free),
+                  percent: percent + '%',
+                  mount: d.DeviceID
+                });
+              }
+            });
+
+            // Parse network
+            if (data.net) {
+              network.rx_bytes = parseInt(data.net.BytesReceivedPersec) || 0;
+              network.tx_bytes = parseInt(data.net.BytesSentPersec) || 0;
+            }
+          } catch (e) {
+            console.log("[MONITOR] PowerShell parse error:", e.message);
+          }
+        }
+
+        sendResponse(cpuPercent, disks, network);
+      });
+    } else {
+      // Linux: Use shell commands
+      const loadAvg = os.loadavg();
+      const cpuPercent = Math.min(100, ((loadAvg[0] / cpuCores) * 100)).toFixed(1);
+
+      const linuxCmd = `
+        df -h -T 2>/dev/null | grep -E '^/dev/' | awk '{print $1","$2","$3","$4","$5","$6","$7}';
+        echo "---NETWORK---";
+        cat /proc/net/dev 2>/dev/null | grep -E '(eth|enp|wlan|ens|wlp)' | head -2
+      `;
+
+      exec(linuxCmd, { windowsHide: true }, (error, stdout) => {
+        let disks = [];
+        let network = { rx_bytes: 0, tx_bytes: 0 };
+
+        if (!error && stdout) {
+          const parts = stdout.split('---NETWORK---');
+          const diskLines = parts[0].trim().split('\n').filter(l => l);
+          const netLines = parts[1] ? parts[1].trim().split('\n').filter(l => l) : [];
+
+          // Parse disks
+          diskLines.forEach(line => {
+            const cols = line.split(',');
+            if (cols.length >= 6) {
               disks.push({
                 device: cols[0],
                 type: cols[1],
@@ -884,83 +961,61 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
                 used: cols[3],
                 free: cols[4],
                 percent: cols[5],
-                mount: mountPoint
+                mount: cols[6] || cols[5]
               });
             }
-          }
-        });
+          });
 
-        // Parse network
-        netLines.forEach(line => {
-          const match = line.match(/^\s*(\w+):\s*(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+(\d+)/);
-          if (match) {
-            network.rx_bytes += parseInt(match[2]) || 0;
-            network.tx_bytes += parseInt(match[3]) || 0;
-          }
-        });
-      }
-
-      // Fallback if no disks found
-      if (disks.length === 0) {
-        exec(isWindows ? 'wmic logicaldisk get size,freespace,caption /format:csv 2>nul' : "df -h / 2>/dev/null", { windowsHide: true }, (err2, stdout2) => {
-          if (!err2 && stdout2) {
-            const lines = stdout2.trim().split('\n');
-            if (lines.length > 1) {
-              const p = lines[1].split(/\s+/);
-              disks.push({
-                device: p[0],
-                type: 'unknown',
-                total: p[1],
-                used: p[2],
-                free: p[3],
-                percent: p[4],
-                mount: p[5] || '/'
-              });
+          // Parse network
+          netLines.forEach(line => {
+            const match = line.match(/^\s*(\w+):\s*(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+(\d+)/);
+            if (match) {
+              network.rx_bytes += parseInt(match[2]) || 0;
+              network.tx_bytes += parseInt(match[3]) || 0;
             }
-          }
-          sendResponse();
-        });
-      } else {
-        sendResponse();
-      }
+          });
+        }
 
-      function sendResponse() {
-        res.json({
-          ok: true,
-          stats: {
-            hostname,
-            cpu: {
-              model: cpuModel,
-              cores: cpuCores,
-              loadAvg,
-              percent: cpuPercent
-            },
-            memory: {
-              total: (totalMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-              used: (usedMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-              free: (freeMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
-              percent: memPercent,
-              totalBytes: totalMem,
-              usedBytes: usedMem
-            },
-            disks: disks.length > 0 ? disks : [{
-              device: 'N/A',
-              total: 'N/A',
-              used: 'N/A',
-              free: 'N/A',
-              percent: '0%',
-              mount: '/'
-            }],
-            network: {
-              rx_bytes: network.rx_bytes,
-              tx_bytes: network.tx_bytes
-            },
-            uptime: Math.floor(uptime / 86400) + 'd ' + Math.floor((uptime % 86400) / 3600) + 'h ' + Math.floor((uptime % 3600) / 60) + 'm',
-            uptimeSeconds: uptime
-          }
-        });
-      }
-    });
+        sendResponse(cpuPercent, disks, network);
+      });
+    }
+
+    function sendResponse(cpuPercent, disks, network) {
+      res.json({
+        ok: true,
+        stats: {
+          hostname,
+          cpu: {
+            model: cpuModel,
+            cores: cpuCores,
+            loadAvg: os.loadavg(),
+            percent: cpuPercent
+          },
+          memory: {
+            total: formatBytes(totalMem),
+            used: formatBytes(usedMem),
+            free: formatBytes(freeMem),
+            percent: memPercent,
+            totalBytes: totalMem,
+            usedBytes: usedMem
+          },
+          disks: disks.length > 0 ? disks : [{
+            device: 'N/A',
+            total: 'N/A',
+            used: 'N/A',
+            free: 'N/A',
+            percent: '0%',
+            mount: '/'
+          }],
+          network: {
+            rx_bytes: network.rx_bytes,
+            tx_bytes: network.tx_bytes
+          },
+          uptime: Math.floor(uptime / 86400) + 'd ' + Math.floor((uptime % 86400) / 3600) + 'h ' + Math.floor((uptime % 3600) / 60) + 'm',
+          uptimeSeconds: uptime
+        }
+      });
+    }
   } catch (err) {
     console.error("[MONITOR]", err);
     res.status(500).json({ ok: false, error: err.message });
@@ -1204,6 +1259,83 @@ router.get("/logout", (req, res) => {
   req.session.destroy(() => {
     res.sendFile("logout.html", { root: "./views/admin" });
   });
+});
+
+// ── Technologies API (Admin) ──
+
+// Tech admin page
+router.get("/tech-admin", requireAuth, requireRole(['admin']), (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "tech-admin.html"));
+});
+
+// List all technologies
+router.get("/api/technologies", async (req, res) => {
+  try {
+    const [rows] = await db.execute("SELECT * FROM technologies ORDER BY category ASC, sort_order ASC, name ASC");
+    res.json({ ok: true, technologies: rows });
+  } catch (err) {
+    // If table doesn't exist, return empty array
+    console.error("[TECHNOLOGIES]", err);
+    res.json({ ok: true, technologies: [] });
+  }
+});
+
+// Create technology
+router.post("/api/technologies", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const { name, slug, icon_url, category, sort_order } = req.body;
+    if (!name) return res.status(400).json({ ok: false, error: 'name required' });
+
+    const techSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+    await db.execute(`
+      INSERT INTO technologies (name, slug, icon_url, category, sort_order)
+      VALUES (?, ?, ?, ?, ?)
+    `, [name, techSlug, icon_url || null, category || 'tools', sort_order || 0]);
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[TECHNOLOGIES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Update technology
+router.post("/api/technologies/:id", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const { name, slug, icon_url, category, sort_order, is_active } = req.body;
+
+    await db.execute(`
+      UPDATE technologies SET name = ?, slug = ?, icon_url = ?, category = ?, sort_order = ?, is_active = ?
+      WHERE id = ?
+    `, [name, slug, icon_url, category, sort_order || 0, is_active !== false ? 1 : 0, req.params.id]);
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[TECHNOLOGIES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Delete technology
+router.post("/api/technologies/:id/delete", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    // First check if used in any projects
+    const [[countResult]] = await db.execute(
+      "SELECT COUNT(*) as count FROM project_technologies WHERE tech_name = (SELECT name FROM technologies WHERE id = ?)",
+      [req.params.id]
+    );
+
+    if (countResult?.count > 0 && !req.body.force) {
+      return res.json({ ok: false, error: 'in_use', projectCount: countResult.count });
+    }
+
+    await db.execute("DELETE FROM technologies WHERE id = ?", [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[TECHNOLOGIES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 module.exports = router;

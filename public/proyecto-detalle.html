@@ -111,13 +111,18 @@
       font-size: 12px;
       color: white;
     }
-    /* Thumbnails strip */
+    /* Thumbnails strip - hide scrollbar */
     .proj-thumbs {
       display: flex;
       gap: 8px;
       margin-top: 12px;
       overflow-x: auto;
       padding: 4px 0;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE/Edge */
+    }
+    .proj-thumbs::-webkit-scrollbar {
+      display: none; /* Chrome/Safari */
     }
     .proj-thumb {
       flex-shrink: 0;
@@ -342,6 +347,14 @@
     const parts = location.pathname.split("/").filter(Boolean);
     const slug = parts[1];
     if (!slug || slug === "proyectos") return;
+
+    // Listen for language changes and reload page
+    window.addEventListener("storage", (e) => {
+      if (e.key === "cerberus_lang") location.reload();
+    });
+    // Also listen for custom event from same tab
+    window.addEventListener("langChange", () => location.reload());
+
     const lang = localStorage.getItem("cerberus_lang") || "es";
 
     const projTitle = document.getElementById("projTitle");
