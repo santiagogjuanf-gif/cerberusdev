@@ -885,84 +885,84 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
     }
 
     if (isWindows) {
-      // Windows: Use PowerShell for all metrics (more reliable than wmic)
-      const psScript = `
-        $ErrorActionPreference = 'SilentlyContinue'
-        $result = @{}
+      // Windows: Use separate commands for reliability
+      let cpuPercent = 0;
+      let disks = [];
+      let network = { rx_bytes: 0, tx_bytes: 0 };
+      let completed = 0;
+      const total = 3;
 
-        # CPU - use Get-Counter for real-time value
-        try {
-          $cpu = (Get-Counter '\\Processor(_Total)\\% Processor Time' -SampleInterval 1 -MaxSamples 1).CounterSamples[0].CookedValue
-          $result.cpu = [math]::Round($cpu, 1)
-        } catch {
-          $result.cpu = 0
+      function checkDone() {
+        completed++;
+        if (completed >= total) {
+          sendResponse(cpuPercent, disks, network);
         }
+      }
 
-        # Disks
-        $disks = @()
-        Get-WmiObject Win32_LogicalDisk -Filter "DriveType=3" | ForEach-Object {
-          $disks += @{
-            device = $_.DeviceID
-            size = $_.Size
-            free = $_.FreeSpace
-            name = if ($_.VolumeName) { $_.VolumeName } else { "Local Disk" }
-          }
-        }
-        $result.disks = $disks
-
-        # Network
-        try {
-          $net = Get-NetAdapterStatistics | Select-Object -First 1
-          $result.rx = $net.ReceivedBytes
-          $result.tx = $net.SentBytes
-        } catch {
-          $result.rx = 0
-          $result.tx = 0
-        }
-
-        $result | ConvertTo-Json -Depth 3 -Compress
-      `;
-
-      exec(`powershell -NoProfile -Command "${psScript.replace(/"/g, '\\"').replace(/\n/g, ' ')}"`,
-        { windowsHide: true, timeout: 15000 }, (err, stdout) => {
-        let cpuPercent = 0;
-        let disks = [];
-        let network = { rx_bytes: 0, tx_bytes: 0 };
-
+      // CPU - using wmic (most reliable on Windows)
+      exec('wmic cpu get loadpercentage /value', { windowsHide: true, timeout: 5000 }, (err, stdout) => {
         if (!err && stdout) {
-          try {
-            const data = JSON.parse(stdout.trim());
-            cpuPercent = data.cpu || 0;
-            network.rx_bytes = data.rx || 0;
-            network.tx_bytes = data.tx || 0;
+          const match = stdout.match(/LoadPercentage=(\d+)/);
+          if (match) cpuPercent = parseInt(match[1]) || 0;
+        }
+        checkDone();
+      });
 
-            if (data.disks && Array.isArray(data.disks)) {
-              data.disks.forEach(d => {
-                if (d.size && d.size > 0) {
-                  const total = parseInt(d.size);
-                  const free = parseInt(d.free) || 0;
-                  const used = total - free;
-                  const percent = ((used / total) * 100).toFixed(1);
-                  disks.push({
-                    device: d.device,
-                    type: d.name || 'Local Disk',
-                    total: formatBytes(total),
-                    used: formatBytes(used),
-                    free: formatBytes(free),
-                    percent: percent + '%',
-                    mount: d.device
-                  });
-                }
+      // Disks - using wmic with list format
+      exec('wmic logicaldisk where "DriveType=3" get DeviceID,FreeSpace,Size,VolumeName /format:list', { windowsHide: true, timeout: 5000 }, (err, stdout) => {
+        if (!err && stdout) {
+          // Parse the list format output
+          const blocks = stdout.split(/\r?\n\r?\n/).filter(b => b.trim());
+          blocks.forEach(block => {
+            const lines = block.split(/\r?\n/);
+            let device = '', freeSpace = 0, size = 0, volumeName = 'Local Disk';
+            lines.forEach(line => {
+              const [key, val] = line.split('=');
+              if (key && val) {
+                const k = key.trim();
+                const v = val.trim();
+                if (k === 'DeviceID') device = v;
+                else if (k === 'FreeSpace') freeSpace = parseInt(v) || 0;
+                else if (k === 'Size') size = parseInt(v) || 0;
+                else if (k === 'VolumeName' && v) volumeName = v;
+              }
+            });
+            if (device && size > 0) {
+              const used = size - freeSpace;
+              const percent = ((used / size) * 100).toFixed(1);
+              disks.push({
+                device: device,
+                type: volumeName,
+                total: formatBytes(size),
+                used: formatBytes(used),
+                free: formatBytes(freeSpace),
+                percent: percent + '%',
+                mount: device
               });
             }
-          } catch (e) {
-            console.log("[MONITOR] PowerShell parse error:", e.message, stdout.substring(0, 200));
-          }
-        } else if (err) {
-          console.log("[MONITOR] PowerShell error:", err.message);
+          });
         }
+        checkDone();
+      });
 
-        sendResponse(cpuPercent, disks, network);
+      // Network - using netstat -e (reliable on Windows)
+      exec('netstat -e', { windowsHide: true, timeout: 5000 }, (err, stdout) => {
+        if (!err && stdout) {
+          const lines = stdout.split('\n');
+          for (const line of lines) {
+            // Look for the Bytes row
+            if (line.toLowerCase().includes('bytes')) {
+              const parts = line.trim().split(/\s+/);
+              if (parts.length >= 3) {
+                // Format: "Bytes     <received>     <sent>"
+                network.rx_bytes = parseInt(parts[1]) || 0;
+                network.tx_bytes = parseInt(parts[2]) || 0;
+              }
+              break;
+            }
+          }
+        }
+        checkDone();
       });
     } else {
       // Linux: Use shell commands

@@ -8,27 +8,57 @@
   <link rel="stylesheet" href="/assets/css/styles.css"/>
   <link rel="stylesheet" href="/assets/css/admin.css"/>
   <style>
-    .leads-header {
+    /* Header styles */
+    .header-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-      gap: 16px;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(255,122,24,0.2);
+      padding: 10px;
+      flex-shrink: 0;
     }
-    .leads-title {
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .admin-top {
+      width: min(1200px, calc(100% - 40px));
+      margin: 0 auto 24px;
+    }
+    .admin-title {
       font-size: 24px;
       font-weight: 700;
       color: var(--text);
+      margin: 0;
     }
+    .admin-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin: 4px 0 0;
+    }
+
+    /* Leads specific */
     .leads-back {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 8px;
       color: var(--text-muted);
       text-decoration: none;
       font-size: 14px;
       transition: color 0.2s;
+      width: min(1200px, calc(100% - 40px));
+      margin: 0 auto 24px;
     }
     .leads-back:hover {
       color: var(--orange);
@@ -38,17 +68,20 @@
       gap: 16px;
       margin-bottom: 24px;
       flex-wrap: wrap;
+      width: min(1200px, calc(100% - 40px));
+      margin-left: auto;
+      margin-right: auto;
     }
     .leads-stat {
       background: rgba(255,255,255,0.03);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 16px 24px;
+      padding: 20px 28px;
       text-align: center;
-      min-width: 120px;
+      min-width: 130px;
     }
     .leads-stat-value {
-      font-size: 28px;
+      font-size: 32px;
       font-weight: 700;
       color: var(--text);
     }
@@ -57,10 +90,32 @@
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 1px;
+      margin-top: 4px;
     }
     .leads-stat.new .leads-stat-value { color: #ef4444; }
     .leads-stat.replied .leads-stat-value { color: #3b82f6; }
     .leads-stat.closed .leads-stat-value { color: #22c55e; }
+
+    /* Table container */
+    .leads-table-container {
+      width: min(1200px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    @media (max-width: 768px) {
+      .header-logo {
+        width: 44px;
+        height: 44px;
+        padding: 8px;
+      }
+      .admin-title { font-size: 18px; }
+      .admin-sub { font-size: 12px; }
+      .leads-stat {
+        padding: 16px 20px;
+        min-width: 100px;
+      }
+      .leads-stat-value { font-size: 24px; }
+    }
   </style>
 </head>
 <body>
@@ -96,37 +151,39 @@
     </div>
 
     <!-- Filters and Table -->
-    <section class="admin-card">
-      <div class="admin-card-head">
-        <div>
-          <div class="admin-card-title">Todos los leads</div>
-          <div class="admin-card-sub">Ordenado por importante y mas reciente</div>
+    <div class="leads-table-container">
+      <section class="admin-card">
+        <div class="admin-card-head">
+          <div>
+            <div class="admin-card-title">Todos los leads</div>
+            <div class="admin-card-sub">Ordenado por importante y mas reciente</div>
+          </div>
+          <div class="admin-filters">
+            <button class="chip is-on" data-filter="all">Todos</button>
+            <button class="chip" data-filter="new">Nuevos</button>
+            <button class="chip" data-filter="replied">Respondidos</button>
+            <button class="chip" data-filter="closed">Cerrados</button>
+          </div>
         </div>
-        <div class="admin-filters">
-          <button class="chip is-on" data-filter="all">Todos</button>
-          <button class="chip" data-filter="new">Nuevos</button>
-          <button class="chip" data-filter="replied">Respondidos</button>
-          <button class="chip" data-filter="closed">Cerrados</button>
-        </div>
-      </div>
 
-      <div class="table-wrap">
-        <table class="table" id="leadsTable">
-          <thead>
-            <tr>
-              <th class="col-star">&#x2605;</th>
-              <th>Cliente</th>
-              <th>Email</th>
-              <th>Telefono</th>
-              <th>Estado</th>
-              <th class="col-date">Fecha</th>
-              <th class="col-actions">Accion</th>
-            </tr>
-          </thead>
-          <tbody id="leadsTbody"></tbody>
-        </table>
-      </div>
-    </section>
+        <div class="table-wrap">
+          <table class="table" id="leadsTable">
+            <thead>
+              <tr>
+                <th class="col-star">&#x2605;</th>
+                <th>Cliente</th>
+                <th>Email</th>
+                <th>Telefono</th>
+                <th>Estado</th>
+                <th class="col-date">Fecha</th>
+                <th class="col-actions">Accion</th>
+              </tr>
+            </thead>
+            <tbody id="leadsTbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
   </main>
 
   <script>
@@ -177,17 +234,21 @@
     }
 
     async function load() {
-      const [sum, leads] = await Promise.all([
-        api("./api/summary"),
-        api("./api/leads")
-      ]);
+      try {
+        const [sum, leads] = await Promise.all([
+          api("./api/summary"),
+          api("./api/leads")
+        ]);
 
-      $("#statNew").textContent = sum.summary.new;
-      $("#statReplied").textContent = sum.summary.replied;
-      $("#statClosed").textContent = sum.summary.closed;
+        $("#statNew").textContent = sum.summary?.new || 0;
+        $("#statReplied").textContent = sum.summary?.replied || 0;
+        $("#statClosed").textContent = sum.summary?.closed || 0;
 
-      ALL = leads.leads || [];
-      render();
+        ALL = leads.leads || [];
+        render();
+      } catch (err) {
+        console.error("Error loading leads:", err);
+      }
     }
 
     function render() {
