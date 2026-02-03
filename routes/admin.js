@@ -880,55 +880,75 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
     }
 
     if (isWindows) {
-      // Windows: Get CPU, Disk, and Network using PowerShell
-      const psCommand = `powershell -Command "
-        $cpu = (Get-WmiObject Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average;
-        $disks = Get-WmiObject Win32_LogicalDisk -Filter 'DriveType=3' | Select-Object DeviceID, Size, FreeSpace, VolumeName;
-        $net = Get-WmiObject Win32_PerfRawData_Tcpip_NetworkInterface | Select-Object -First 1 BytesReceivedPersec, BytesSentPersec;
-        @{cpu=$cpu; disks=$disks; net=$net} | ConvertTo-Json -Depth 3
-      "`;
+      // Windows: Get CPU, Disk, and Network using separate commands for reliability
+      let cpuPercent = 0;
+      let disks = [];
+      let network = { rx_bytes: 0, tx_bytes: 0 };
+      let completed = 0;
+      const total = 3;
 
-      exec(psCommand, { windowsHide: true, timeout: 10000 }, (error, stdout) => {
-        let cpuPercent = 0;
-        let disks = [];
-        let network = { rx_bytes: 0, tx_bytes: 0 };
+      function checkComplete() {
+        completed++;
+        if (completed >= total) {
+          sendResponse(cpuPercent, disks, network);
+        }
+      }
 
-        if (!error && stdout) {
-          try {
-            const data = JSON.parse(stdout);
-            cpuPercent = data.cpu || 0;
+      // CPU using wmic (more reliable)
+      exec('wmic cpu get loadpercentage /value', { windowsHide: true, timeout: 5000 }, (err, stdout) => {
+        if (!err && stdout) {
+          const match = stdout.match(/LoadPercentage=(\d+)/);
+          if (match) cpuPercent = parseInt(match[1]) || 0;
+        }
+        checkComplete();
+      });
 
-            // Parse disks
-            const diskData = Array.isArray(data.disks) ? data.disks : [data.disks];
-            diskData.forEach(d => {
-              if (d && d.Size && d.Size > 0) {
-                const total = parseInt(d.Size);
-                const free = parseInt(d.FreeSpace) || 0;
-                const used = total - free;
-                const percent = ((used / total) * 100).toFixed(1);
+      // Disks using wmic
+      exec('wmic logicaldisk where "DriveType=3" get DeviceID,Size,FreeSpace,VolumeName /format:csv', { windowsHide: true, timeout: 5000 }, (err, stdout) => {
+        if (!err && stdout) {
+          const lines = stdout.trim().split('\n').filter(l => l.trim() && !l.startsWith('Node'));
+          lines.forEach(line => {
+            const cols = line.split(',');
+            if (cols.length >= 4) {
+              const deviceId = cols[1];
+              const freeSpace = parseInt(cols[2]) || 0;
+              const size = parseInt(cols[3]) || 0;
+              const volumeName = cols[4] || 'Local Disk';
+              if (size > 0) {
+                const used = size - freeSpace;
+                const percent = ((used / size) * 100).toFixed(1);
                 disks.push({
-                  device: d.DeviceID,
-                  type: d.VolumeName || 'Local Disk',
-                  total: formatBytes(total),
+                  device: deviceId,
+                  type: volumeName.trim(),
+                  total: formatBytes(size),
                   used: formatBytes(used),
-                  free: formatBytes(free),
+                  free: formatBytes(freeSpace),
                   percent: percent + '%',
-                  mount: d.DeviceID
+                  mount: deviceId
                 });
               }
-            });
-
-            // Parse network
-            if (data.net) {
-              network.rx_bytes = parseInt(data.net.BytesReceivedPersec) || 0;
-              network.tx_bytes = parseInt(data.net.BytesSentPersec) || 0;
             }
-          } catch (e) {
-            console.log("[MONITOR] PowerShell parse error:", e.message);
+          });
+        }
+        checkComplete();
+      });
+
+      // Network using netstat (bytes since boot)
+      exec('netstat -e', { windowsHide: true, timeout: 5000 }, (err, stdout) => {
+        if (!err && stdout) {
+          const lines = stdout.split('\n');
+          for (const line of lines) {
+            if (line.includes('Bytes') || line.includes('bytes')) {
+              const nums = line.match(/(\d+)\s+(\d+)/);
+              if (nums) {
+                network.rx_bytes = parseInt(nums[1]) || 0;
+                network.tx_bytes = parseInt(nums[2]) || 0;
+              }
+              break;
+            }
           }
         }
-
-        sendResponse(cpuPercent, disks, network);
+        checkComplete();
       });
     } else {
       // Linux: Use shell commands
@@ -1022,27 +1042,74 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
   }
 });
 
-// PM2 processes list
+// PM2 processes list with real-time metrics
 router.get("/api/monitor/pm2", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
   try {
     const { exec } = require("child_process");
-    exec("pm2 jlist", { windowsHide: true }, (error, stdout, stderr) => {
+    const isWindows = process.platform === 'win32';
+
+    // Use pm2 prettylist or jlist - prettylist sometimes has more current data
+    exec("pm2 jlist", { windowsHide: true, timeout: 8000 }, async (error, stdout, stderr) => {
       if (error) {
+        console.log("[PM2] jlist error:", error.message);
         return res.json({ ok: true, processes: [] });
       }
       try {
         const processes = JSON.parse(stdout);
-        const simplified = processes.map(p => ({
-          name: p.name,
-          pm_id: p.pm_id,
-          status: p.pm2_env?.status || 'unknown',
-          cpu: p.monit?.cpu || 0,
-          memory: p.monit?.memory || 0,
-          uptime: p.pm2_env?.pm_uptime || 0,
-          restarts: p.pm2_env?.restart_time || 0
-        }));
-        res.json({ ok: true, processes: simplified });
+
+        // Build the simplified list
+        const simplified = processes.map(p => {
+          // Get CPU and memory from monit, but also check pm2_env
+          let cpu = 0;
+          let memory = 0;
+
+          if (p.monit) {
+            cpu = typeof p.monit.cpu === 'number' ? p.monit.cpu : 0;
+            memory = typeof p.monit.memory === 'number' ? p.monit.memory : 0;
+          }
+
+          return {
+            name: p.name,
+            pm_id: p.pm_id,
+            status: p.pm2_env?.status || 'unknown',
+            cpu: cpu,
+            memory: memory,
+            uptime: p.pm2_env?.pm_uptime || 0,
+            restarts: p.pm2_env?.restart_time || 0,
+            pid: p.pid || 0
+          };
+        });
+
+        // On Windows, try to get CPU usage from tasklist for each PID
+        if (isWindows && simplified.some(p => p.pid > 0)) {
+          const pids = simplified.filter(p => p.pid > 0).map(p => p.pid);
+
+          // Use wmic to get CPU time for processes (not perfect but gives indication)
+          exec(`wmic path Win32_PerfFormattedData_PerfProc_Process where "IDProcess=${pids.join(' or IDProcess=')}" get IDProcess,PercentProcessorTime /format:csv`,
+            { windowsHide: true, timeout: 5000 },
+            (err2, stdout2) => {
+              if (!err2 && stdout2) {
+                const lines = stdout2.trim().split('\n').filter(l => l.trim() && !l.startsWith('Node'));
+                lines.forEach(line => {
+                  const cols = line.split(',');
+                  if (cols.length >= 3) {
+                    const pid = parseInt(cols[1]);
+                    const cpuPct = parseFloat(cols[2]) || 0;
+                    const proc = simplified.find(p => p.pid === pid);
+                    if (proc && cpuPct > 0) {
+                      proc.cpu = cpuPct;
+                    }
+                  }
+                });
+              }
+              res.json({ ok: true, processes: simplified });
+            }
+          );
+        } else {
+          res.json({ ok: true, processes: simplified });
+        }
       } catch (parseErr) {
+        console.log("[PM2] parse error:", parseErr.message);
         res.json({ ok: true, processes: [] });
       }
     });

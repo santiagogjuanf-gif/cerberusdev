@@ -34,6 +34,18 @@ app.use("/api/blog", require("./routes/blog"));
 // Public API – Projects
 app.use("/api/projects", require("./routes/projects"));
 
+// Public API – Technologies (for tecnologias.html)
+app.get("/api/technologies", async (req, res) => {
+  try {
+    const db = require("./db");
+    const [rows] = await db.execute("SELECT * FROM technologies WHERE is_active = 1 ORDER BY category ASC, sort_order ASC, name ASC");
+    res.json({ ok: true, technologies: rows });
+  } catch (err) {
+    console.error("[TECHNOLOGIES]", err);
+    res.json({ ok: true, technologies: [] });
+  }
+});
+
 // Admin panel (only if ADMIN_PATH is configured)
 const ADMIN_PATH = process.env.ADMIN_PATH;
 if (ADMIN_PATH) {

@@ -551,21 +551,8 @@
     const $ = s => document.querySelector(s);
     const $$ = s => document.querySelectorAll(s);
 
-    // Available technologies
-    const TECHNOLOGIES = [
-      { name: "HTML5", icon: "/assets/img/tech/html.svg" },
-      { name: "CSS3", icon: "/assets/img/tech/css.svg" },
-      { name: "JavaScript", icon: "/assets/img/tech/js.svg" },
-      { name: "TypeScript", icon: "/assets/img/tech/ts.svg" },
-      { name: "Angular", icon: "/assets/img/tech/angular.svg" },
-      { name: "Node.js", icon: "/assets/img/tech/node.svg" },
-      { name: "Express", icon: "/assets/img/tech/express.svg" },
-      { name: "MySQL", icon: "/assets/img/tech/mysql.svg" },
-      { name: "SQL Server", icon: "/assets/img/tech/mssql.svg" },
-      { name: "Windows Server", icon: "/assets/img/tech/windows-server.svg" },
-      { name: "Git", icon: "/assets/img/tech/git.svg" },
-      { name: "GitHub", icon: "/assets/img/tech/github.svg" }
-    ];
+    // Available technologies - loaded from database
+    let TECHNOLOGIES = [];
 
     let allProjects = [];
     let selectedTechs = new Set();
@@ -1039,9 +1026,26 @@
       });
     }
 
+    // ── Load technologies from API ──
+    async function loadTechnologies() {
+      try {
+        const res = await api("./api/technologies");
+        TECHNOLOGIES = (res.technologies || []).map(t => ({
+          name: t.name,
+          icon: t.icon_url
+        }));
+      } catch (err) {
+        console.error("Error loading technologies:", err);
+        TECHNOLOGIES = [];
+      }
+    }
+
     // ── Init ──
-    buildTechCheckboxes();
-    loadProjects();
+    (async function init() {
+      await loadTechnologies();
+      buildTechCheckboxes();
+      loadProjects();
+    })();
   })();
   </script>
 

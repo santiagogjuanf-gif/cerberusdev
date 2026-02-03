@@ -271,6 +271,69 @@
       .lightbox-nav.prev { left: 10px; }
       .lightbox-nav.next { right: 10px; }
     }
+
+    /* Mobile Responsive Fixes */
+    @media (max-width: 768px) {
+      html, body {
+        overflow-x: hidden;
+        max-width: 100vw;
+      }
+      .page {
+        overflow-x: hidden;
+        max-width: 100vw;
+      }
+      .container {
+        padding-left: 16px;
+        padding-right: 16px;
+        max-width: 100%;
+        overflow-x: hidden;
+        box-sizing: border-box;
+      }
+      .proj-detail {
+        gap: 24px;
+      }
+      .proj-main {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      .proj-description,
+      .proj-content {
+        max-width: 100%;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        word-break: break-word;
+        hyphens: auto;
+      }
+      .proj-content img {
+        max-width: 100%;
+        height: auto;
+      }
+      .proj-content pre,
+      .proj-content code {
+        max-width: 100%;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .proj-techs-section {
+        padding-left: 0;
+        padding-right: 0;
+      }
+      .proj-techs-grid {
+        gap: 10px;
+      }
+      .proj-techs-grid .tech {
+        padding: 12px 14px;
+      }
+      .hero h1,
+      .h-title {
+        font-size: 24px !important;
+        word-break: break-word;
+      }
+      .hero-content {
+        padding: 0 8px;
+      }
+    }
   </style>
 </head>
 <body>
