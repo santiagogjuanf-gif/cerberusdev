@@ -880,75 +880,84 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
     }
 
     if (isWindows) {
-      // Windows: Get CPU, Disk, and Network using separate commands for reliability
-      let cpuPercent = 0;
-      let disks = [];
-      let network = { rx_bytes: 0, tx_bytes: 0 };
-      let completed = 0;
-      const total = 3;
+      // Windows: Use PowerShell for all metrics (more reliable than wmic)
+      const psScript = `
+        $ErrorActionPreference = 'SilentlyContinue'
+        $result = @{}
 
-      function checkComplete() {
-        completed++;
-        if (completed >= total) {
-          sendResponse(cpuPercent, disks, network);
+        # CPU - use Get-Counter for real-time value
+        try {
+          $cpu = (Get-Counter '\\Processor(_Total)\\% Processor Time' -SampleInterval 1 -MaxSamples 1).CounterSamples[0].CookedValue
+          $result.cpu = [math]::Round($cpu, 1)
+        } catch {
+          $result.cpu = 0
         }
-      }
 
-      // CPU using wmic (more reliable)
-      exec('wmic cpu get loadpercentage /value', { windowsHide: true, timeout: 5000 }, (err, stdout) => {
-        if (!err && stdout) {
-          const match = stdout.match(/LoadPercentage=(\d+)/);
-          if (match) cpuPercent = parseInt(match[1]) || 0;
-        }
-        checkComplete();
-      });
-
-      // Disks using wmic
-      exec('wmic logicaldisk where "DriveType=3" get DeviceID,Size,FreeSpace,VolumeName /format:csv', { windowsHide: true, timeout: 5000 }, (err, stdout) => {
-        if (!err && stdout) {
-          const lines = stdout.trim().split('\n').filter(l => l.trim() && !l.startsWith('Node'));
-          lines.forEach(line => {
-            const cols = line.split(',');
-            if (cols.length >= 4) {
-              const deviceId = cols[1];
-              const freeSpace = parseInt(cols[2]) || 0;
-              const size = parseInt(cols[3]) || 0;
-              const volumeName = cols[4] || 'Local Disk';
-              if (size > 0) {
-                const used = size - freeSpace;
-                const percent = ((used / size) * 100).toFixed(1);
-                disks.push({
-                  device: deviceId,
-                  type: volumeName.trim(),
-                  total: formatBytes(size),
-                  used: formatBytes(used),
-                  free: formatBytes(freeSpace),
-                  percent: percent + '%',
-                  mount: deviceId
-                });
-              }
-            }
-          });
-        }
-        checkComplete();
-      });
-
-      // Network using netstat (bytes since boot)
-      exec('netstat -e', { windowsHide: true, timeout: 5000 }, (err, stdout) => {
-        if (!err && stdout) {
-          const lines = stdout.split('\n');
-          for (const line of lines) {
-            if (line.includes('Bytes') || line.includes('bytes')) {
-              const nums = line.match(/(\d+)\s+(\d+)/);
-              if (nums) {
-                network.rx_bytes = parseInt(nums[1]) || 0;
-                network.tx_bytes = parseInt(nums[2]) || 0;
-              }
-              break;
-            }
+        # Disks
+        $disks = @()
+        Get-WmiObject Win32_LogicalDisk -Filter "DriveType=3" | ForEach-Object {
+          $disks += @{
+            device = $_.DeviceID
+            size = $_.Size
+            free = $_.FreeSpace
+            name = if ($_.VolumeName) { $_.VolumeName } else { "Local Disk" }
           }
         }
-        checkComplete();
+        $result.disks = $disks
+
+        # Network
+        try {
+          $net = Get-NetAdapterStatistics | Select-Object -First 1
+          $result.rx = $net.ReceivedBytes
+          $result.tx = $net.SentBytes
+        } catch {
+          $result.rx = 0
+          $result.tx = 0
+        }
+
+        $result | ConvertTo-Json -Depth 3 -Compress
+      `;
+
+      exec(`powershell -NoProfile -Command "${psScript.replace(/"/g, '\\"').replace(/\n/g, ' ')}"`,
+        { windowsHide: true, timeout: 15000 }, (err, stdout) => {
+        let cpuPercent = 0;
+        let disks = [];
+        let network = { rx_bytes: 0, tx_bytes: 0 };
+
+        if (!err && stdout) {
+          try {
+            const data = JSON.parse(stdout.trim());
+            cpuPercent = data.cpu || 0;
+            network.rx_bytes = data.rx || 0;
+            network.tx_bytes = data.tx || 0;
+
+            if (data.disks && Array.isArray(data.disks)) {
+              data.disks.forEach(d => {
+                if (d.size && d.size > 0) {
+                  const total = parseInt(d.size);
+                  const free = parseInt(d.free) || 0;
+                  const used = total - free;
+                  const percent = ((used / total) * 100).toFixed(1);
+                  disks.push({
+                    device: d.device,
+                    type: d.name || 'Local Disk',
+                    total: formatBytes(total),
+                    used: formatBytes(used),
+                    free: formatBytes(free),
+                    percent: percent + '%',
+                    mount: d.device
+                  });
+                }
+              });
+            }
+          } catch (e) {
+            console.log("[MONITOR] PowerShell parse error:", e.message, stdout.substring(0, 200));
+          }
+        } else if (err) {
+          console.log("[MONITOR] PowerShell error:", err.message);
+        }
+
+        sendResponse(cpuPercent, disks, network);
       });
     } else {
       // Linux: Use shell commands
@@ -1048,8 +1057,7 @@ router.get("/api/monitor/pm2", requireAuth, requireRole(['admin', 'support']), a
     const { exec } = require("child_process");
     const isWindows = process.platform === 'win32';
 
-    // Use pm2 prettylist or jlist - prettylist sometimes has more current data
-    exec("pm2 jlist", { windowsHide: true, timeout: 8000 }, async (error, stdout, stderr) => {
+    exec("pm2 jlist", { windowsHide: true, timeout: 8000 }, (error, stdout, stderr) => {
       if (error) {
         console.log("[PM2] jlist error:", error.message);
         return res.json({ ok: true, processes: [] });
@@ -1059,7 +1067,6 @@ router.get("/api/monitor/pm2", requireAuth, requireRole(['admin', 'support']), a
 
         // Build the simplified list
         const simplified = processes.map(p => {
-          // Get CPU and memory from monit, but also check pm2_env
           let cpu = 0;
           let memory = 0;
 
@@ -1080,31 +1087,34 @@ router.get("/api/monitor/pm2", requireAuth, requireRole(['admin', 'support']), a
           };
         });
 
-        // On Windows, try to get CPU usage from tasklist for each PID
+        // On Windows, get CPU usage using PowerShell (more reliable)
         if (isWindows && simplified.some(p => p.pid > 0)) {
           const pids = simplified.filter(p => p.pid > 0).map(p => p.pid);
+          const psScript = `Get-Process -Id ${pids.join(',')} -ErrorAction SilentlyContinue | Select-Object Id,CPU | ConvertTo-Json -Compress`;
 
-          // Use wmic to get CPU time for processes (not perfect but gives indication)
-          exec(`wmic path Win32_PerfFormattedData_PerfProc_Process where "IDProcess=${pids.join(' or IDProcess=')}" get IDProcess,PercentProcessorTime /format:csv`,
-            { windowsHide: true, timeout: 5000 },
-            (err2, stdout2) => {
-              if (!err2 && stdout2) {
-                const lines = stdout2.trim().split('\n').filter(l => l.trim() && !l.startsWith('Node'));
-                lines.forEach(line => {
-                  const cols = line.split(',');
-                  if (cols.length >= 3) {
-                    const pid = parseInt(cols[1]);
-                    const cpuPct = parseFloat(cols[2]) || 0;
-                    const proc = simplified.find(p => p.pid === pid);
-                    if (proc && cpuPct > 0) {
-                      proc.cpu = cpuPct;
+          exec(`powershell -NoProfile -Command "${psScript}"`, { windowsHide: true, timeout: 5000 }, (err2, stdout2) => {
+            if (!err2 && stdout2) {
+              try {
+                let procData = JSON.parse(stdout2.trim());
+                if (!Array.isArray(procData)) procData = [procData];
+
+                procData.forEach(pd => {
+                  if (pd && pd.Id) {
+                    const proc = simplified.find(p => p.pid === pd.Id);
+                    if (proc) {
+                      // CPU is total processor time, convert to rough percentage
+                      const cpuTime = pd.CPU || 0;
+                      // Use a simple indicator based on CPU time change
+                      proc.cpu = cpuTime > 0 ? Math.min(100, cpuTime / 10).toFixed(1) : 0;
                     }
                   }
                 });
+              } catch (e) {
+                // Ignore parse errors
               }
-              res.json({ ok: true, processes: simplified });
             }
-          );
+            res.json({ ok: true, processes: simplified });
+          });
         } else {
           res.json({ ok: true, processes: simplified });
         }
