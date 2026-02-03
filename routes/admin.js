@@ -107,6 +107,11 @@ router.get("/projects-admin", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "admin", "projects-admin.html"));
 });
 
+// Leads page (dedicated page for leads management)
+router.get("/leads", requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "leads.html"));
+});
+
 // ── Blog Admin API ──
 
 // List all posts (including drafts)

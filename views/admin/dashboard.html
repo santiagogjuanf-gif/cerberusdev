@@ -253,6 +253,67 @@
       background: linear-gradient(135deg, rgba(255,122,24,0.15), transparent);
     }
 
+    /* KPI Link styles */
+    .kpi-link {
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .kpi-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,122,24,0.15);
+    }
+
+    /* Alerts panel */
+    .alert-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(255,122,24,0.05);
+      border: 1px solid rgba(255,122,24,0.15);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+    }
+    .alert-item:hover {
+      background: rgba(255,122,24,0.1);
+      border-color: rgba(255,122,24,0.3);
+    }
+    .alert-item:last-child {
+      margin-bottom: 0;
+    }
+    .alert-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .alert-text {
+      flex: 1;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .alert-action {
+      font-size: 13px;
+      color: var(--orange);
+      text-decoration: none;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .alert-action:hover {
+      text-decoration: underline;
+    }
+    .no-alerts {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .no-alerts-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      opacity: 0.5;
+    }
+
     /* Table enhancements - no position relative to avoid layout issues */
     .table tbody tr {
       transition: background 0.3s ease;
@@ -806,60 +867,61 @@
       <div class="quick-stats-time" id="currentTime">--:--:--</div>
     </div>
 
-    <!-- KPIs -->
-    <section class="admin-kpis" id="kpis">
-      <div class="kpi">
-        <div class="kpi-icon">&#x1F4E9;</div>
-        <div class="kpi-label">Leads nuevos</div>
-        <div class="kpi-value" id="kpiNew">0</div>
+    <!-- Alerts/Notifications Panel -->
+    <section class="admin-card" id="alertsPanel" style="margin-bottom:24px;">
+      <div class="admin-card-head" style="padding-bottom:12px;">
+        <div>
+          <div class="admin-card-title">&#x1F514; Pendientes</div>
+          <div class="admin-card-sub">Acciones que requieren tu atencion</div>
+        </div>
       </div>
-      <div class="kpi">
-        <div class="kpi-icon">&#x2709;</div>
-        <div class="kpi-label">Respondidos</div>
-        <div class="kpi-value" id="kpiReplied">0</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-icon">&#x2705;</div>
-        <div class="kpi-label">Cerrados</div>
-        <div class="kpi-value" id="kpiClosed">0</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-icon">&#x1F4AC;</div>
-        <div class="kpi-label">Comentarios nuevos</div>
-        <div class="kpi-value" id="kpiComments">0</div>
+      <div id="alertsList" style="padding:0 24px 20px;">
+        <div style="color:var(--text-muted);font-size:14px;">Cargando...</div>
       </div>
     </section>
 
-    <!-- Leads table -->
-    <section class="admin-card">
-      <div class="admin-card-head">
+    <!-- KPIs - Stats Overview -->
+    <section class="admin-kpis" id="kpis">
+      <a href="./projects-admin" class="kpi kpi-link">
+        <div class="kpi-icon">&#x1F4C1;</div>
+        <div class="kpi-label">Proyectos</div>
+        <div class="kpi-value" id="kpiProjects">0</div>
+      </a>
+      <a href="./blog-admin" class="kpi kpi-link">
+        <div class="kpi-icon">&#x1F4DD;</div>
+        <div class="kpi-label">Posts</div>
+        <div class="kpi-value" id="kpiPosts">0</div>
+      </a>
+      <a href="./leads" class="kpi kpi-link">
+        <div class="kpi-icon">&#x1F4E9;</div>
+        <div class="kpi-label">Leads</div>
+        <div class="kpi-value" id="kpiLeads">0</div>
+      </a>
+      <a href="./tech-admin" class="kpi kpi-link" id="kpiTechWrap" style="display:none;">
+        <div class="kpi-icon">&#x1F527;</div>
+        <div class="kpi-label">Tecnologias</div>
+        <div class="kpi-value" id="kpiTech">0</div>
+      </a>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="admin-card" style="margin-top:24px;">
+      <div class="admin-card-head" style="padding-bottom:12px;">
         <div>
-          <div class="admin-card-title">Bandeja de leads</div>
-          <div class="admin-card-sub">Ordenado por importante y mas reciente</div>
-        </div>
-        <div class="admin-filters">
-          <button class="chip is-on" data-filter="all">Todos</button>
-          <button class="chip" data-filter="new">Nuevos</button>
-          <button class="chip" data-filter="replied">Respondidos</button>
-          <button class="chip" data-filter="closed">Cerrados</button>
+          <div class="admin-card-title">&#x26A1; Acciones rapidas</div>
+          <div class="admin-card-sub">Crea contenido nuevo rapidamente</div>
         </div>
       </div>
-
-      <div class="table-wrap">
-        <table class="table" id="leadsTable">
-          <thead>
-            <tr>
-              <th class="col-star">&#x2605;</th>
-              <th>Cliente</th>
-              <th>Email</th>
-              <th>Telefono</th>
-              <th>Estado</th>
-              <th class="col-date">Fecha</th>
-              <th class="col-actions">Accion</th>
-            </tr>
-          </thead>
-          <tbody id="leadsTbody"></tbody>
-        </table>
+      <div style="padding:0 24px 24px;display:flex;gap:16px;flex-wrap:wrap;">
+        <a href="./projects-admin" class="btn btn--primary" style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:18px;">+</span> Nuevo Proyecto
+        </a>
+        <a href="./blog-admin" class="btn btn--primary" style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:18px;">+</span> Nuevo Post
+        </a>
+        <a href="./leads" class="btn btn--ghost" style="display:flex;align-items:center;gap:8px;">
+          &#x1F4E9; Ver Leads
+        </a>
       </div>
     </section>
   </main>
@@ -881,8 +943,76 @@
     </div>
   </div>
 
-  <script src="/assets/js/admin.js"></script>
   <script>
+    // Dashboard data loading (replaces admin.js for this page)
+    (async function loadDashboardData() {
+      const $ = q => document.querySelector(q);
+
+      try {
+        // Fetch all stats in parallel
+        const [summaryRes, projectsRes, postsRes, techRes] = await Promise.all([
+          fetch('./api/summary').then(r => r.json()),
+          fetch('./api/projects').then(r => r.json()),
+          fetch('./api/blog/posts').then(r => r.json()),
+          fetch('./api/technologies').then(r => r.json()).catch(() => ({ technologies: [] }))
+        ]);
+
+        // Update KPIs
+        const totalLeads = (summaryRes.summary?.new || 0) + (summaryRes.summary?.replied || 0) + (summaryRes.summary?.closed || 0);
+        $('#kpiLeads').textContent = totalLeads;
+        $('#kpiProjects').textContent = projectsRes.projects?.length || 0;
+        $('#kpiPosts').textContent = postsRes.posts?.length || 0;
+        $('#kpiTech').textContent = techRes.technologies?.length || 0;
+
+        // Build alerts
+        const alerts = [];
+        const newLeads = summaryRes.summary?.new || 0;
+        if (newLeads > 0) {
+          alerts.push({
+            icon: '&#x1F4E9;',
+            text: `${newLeads} lead${newLeads > 1 ? 's' : ''} nuevo${newLeads > 1 ? 's' : ''} esperando respuesta`,
+            link: './leads',
+            action: 'Ver leads'
+          });
+        }
+
+        // Check for pending comments (notifications)
+        try {
+          const notifRes = await fetch('./api/notifications').then(r => r.json());
+          const unreadComments = (notifRes.notifications || []).filter(n => !Number(n.is_read) && n.type === 'comment');
+          if (unreadComments.length > 0) {
+            alerts.push({
+              icon: '&#x1F4AC;',
+              text: `${unreadComments.length} comentario${unreadComments.length > 1 ? 's' : ''} pendiente${unreadComments.length > 1 ? 's' : ''}`,
+              link: './blog-admin',
+              action: 'Ver blog'
+            });
+          }
+        } catch (e) {}
+
+        // Render alerts
+        const alertsList = $('#alertsList');
+        if (alerts.length === 0) {
+          alertsList.innerHTML = `
+            <div class="no-alerts">
+              <div class="no-alerts-icon">&#x2705;</div>
+              <div>Todo al dia - no hay pendientes</div>
+            </div>`;
+        } else {
+          alertsList.innerHTML = alerts.map(a => `
+            <div class="alert-item">
+              <span class="alert-icon">${a.icon}</span>
+              <span class="alert-text">${a.text}</span>
+              <a href="${a.link}" class="alert-action">${a.action} &rarr;</a>
+            </div>
+          `).join('');
+        }
+
+      } catch (err) {
+        console.error('Dashboard load error:', err);
+      }
+    })();
+
     // Update clock
     function updateClock() {
       const now = new Date();
@@ -997,6 +1127,7 @@
             document.getElementById('navServices').style.display = '';
             document.getElementById('navMonitor').style.display = '';
             document.getElementById('navTech').style.display = '';
+            document.getElementById('kpiTechWrap').style.display = '';
             // Mobile menu
             document.getElementById('navUsersMobile').style.display = '';
             document.getElementById('navServicesMobile').style.display = '';

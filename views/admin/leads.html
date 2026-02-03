@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <title>Leads - Cerberus Control Room</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+  <link rel="stylesheet" href="/assets/css/admin.css"/>
+  <style>
+    .leads-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .leads-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .leads-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    .leads-back:hover {
+      color: var(--orange);
+    }
+    .leads-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .leads-stat {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      text-align: center;
+      min-width: 120px;
+    }
+    .leads-stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .leads-stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .leads-stat.new .leads-stat-value { color: #ef4444; }
+    .leads-stat.replied .leads-stat-value { color: #3b82f6; }
+    .leads-stat.closed .leads-stat-value { color: #22c55e; }
+  </style>
+</head>
+<body>
+  <main class="admin-wrap admin-bg">
+    <header class="admin-top">
+      <div class="dashboard-header">
+        <div class="header-logo">
+          <img src="/assets/img/cerberus-mark.png" alt="Cerberus">
+        </div>
+        <div>
+          <h1 class="admin-title">Bandeja de Leads</h1>
+          <p class="admin-sub">Gestiona los contactos recibidos</p>
+        </div>
+      </div>
+    </header>
+
+    <a href="./" class="leads-back">&larr; Volver al Dashboard</a>
+
+    <!-- Stats -->
+    <div class="leads-stats">
+      <div class="leads-stat new">
+        <div class="leads-stat-value" id="statNew">0</div>
+        <div class="leads-stat-label">Nuevos</div>
+      </div>
+      <div class="leads-stat replied">
+        <div class="leads-stat-value" id="statReplied">0</div>
+        <div class="leads-stat-label">Respondidos</div>
+      </div>
+      <div class="leads-stat closed">
+        <div class="leads-stat-value" id="statClosed">0</div>
+        <div class="leads-stat-label">Cerrados</div>
+      </div>
+    </div>
+
+    <!-- Filters and Table -->
+    <section class="admin-card">
+      <div class="admin-card-head">
+        <div>
+          <div class="admin-card-title">Todos los leads</div>
+          <div class="admin-card-sub">Ordenado por importante y mas reciente</div>
+        </div>
+        <div class="admin-filters">
+          <button class="chip is-on" data-filter="all">Todos</button>
+          <button class="chip" data-filter="new">Nuevos</button>
+          <button class="chip" data-filter="replied">Respondidos</button>
+          <button class="chip" data-filter="closed">Cerrados</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table" id="leadsTable">
+          <thead>
+            <tr>
+              <th class="col-star">&#x2605;</th>
+              <th>Cliente</th>
+              <th>Email</th>
+              <th>Telefono</th>
+              <th>Estado</th>
+              <th class="col-date">Fecha</th>
+              <th class="col-actions">Accion</th>
+            </tr>
+          </thead>
+          <tbody id="leadsTbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  (function() {
+    let ALL = [];
+    let filter = "all";
+    const $ = (q) => document.querySelector(q);
+
+    function fmtDate(iso) {
+      try {
+        const d = new Date(iso);
+        return d.toLocaleString("es-MX", {
+          year: "numeric", month: "2-digit", day: "2-digit",
+          hour: "2-digit", minute: "2-digit"
+        });
+      } catch { return iso || ""; }
+    }
+
+    function badge(status) {
+      const s = status || "new";
+      const text = s === "replied" ? "Respondido" : (s === "closed" ? "Cerrado" : "Nuevo");
+      return `<span class="badge ${s}">${text}</span>`;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    function setChips() {
+      document.querySelectorAll(".chip").forEach(c => {
+        c.classList.toggle("is-on", c.dataset.filter === filter);
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      const chip = e.target.closest?.(".chip");
+      if (chip && chip.dataset.filter) {
+        filter = chip.dataset.filter;
+        setChips();
+        render();
+      }
+    });
+
+    async function api(url, opts) {
+      const res = await fetch(url, opts);
+      if (!res.ok) throw new Error(`${res.status}`);
+      return res.json();
+    }
+
+    async function load() {
+      const [sum, leads] = await Promise.all([
+        api("./api/summary"),
+        api("./api/leads")
+      ]);
+
+      $("#statNew").textContent = sum.summary.new;
+      $("#statReplied").textContent = sum.summary.replied;
+      $("#statClosed").textContent = sum.summary.closed;
+
+      ALL = leads.leads || [];
+      render();
+    }
+
+    function render() {
+      const tbody = $("#leadsTbody");
+      const rows = ALL.filter(l => {
+        if (filter === "all") return true;
+        return (l.status || "new") === filter;
+      });
+
+      if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:40px;">No hay leads en esta categoria</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(l => {
+        const isOn = Number(l.is_important) === 1;
+        return `
+          <tr class="${isOn ? "is-starred" : ""}">
+            <td class="col-star">
+              <button class="star-btn ${isOn ? "on" : ""}" title="Importante" data-act="star" data-id="${l.id}">
+                ${isOn ? "\u2605" : "\u2606"}
+              </button>
+            </td>
+            <td>${escapeHtml(l.name || "")}</td>
+            <td>${escapeHtml(l.email || "")}</td>
+            <td>${escapeHtml(l.phone || "")}</td>
+            <td>${badge(l.status)}</td>
+            <td class="col-date">${fmtDate(l.created_at)}</td>
+            <td class="col-actions">
+              <div class="row-actions">
+                <a class="small-btn" href="./lead?id=${l.id}">Detalle</a>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      tbody.querySelectorAll("[data-act]").forEach(btn => {
+        btn.addEventListener("click", onAction);
+      });
+    }
+
+    async function onAction(e) {
+      const btn = e.currentTarget;
+      const id = btn.dataset.id;
+      const act = btn.dataset.act;
+
+      if (act === "star") {
+        await api(`./api/leads/${id}/important`, { method: "POST" });
+        await load();
+      }
+    }
+
+    load();
+  })();
+  </script>
+</body>
+</html>
