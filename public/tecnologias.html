@@ -194,7 +194,7 @@
         categoryOrder.forEach(cat => {
           if (grouped[cat] && grouped[cat].length > 0) {
             html += `
-              <div class="tech-section" data-reveal>
+              <div class="tech-section">
                 <div class="tech-category-title">${categoryNames[cat] || cat}</div>
                 <div class="tech-grid-custom">
                   ${grouped[cat].map(t => `
@@ -210,6 +210,10 @@
         });
 
         container.innerHTML = html || '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:60px 20px;">No hay tecnologías disponibles.</div>';
+
+        // Force visibility in case CSS hides it
+        container.style.opacity = '1';
+        container.style.visibility = 'visible';
       })
       .catch(err => {
         console.error("[TECH API ERROR]", err);

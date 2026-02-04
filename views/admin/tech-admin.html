@@ -10,60 +10,81 @@
   <style>
     .tech-list {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 16px;
-      margin-top: 24px;
+      margin-top: 20px;
     }
     .tech-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 16px;
+      gap: 14px;
+      padding: 14px 16px;
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 12px;
       transition: all 0.3s ease;
+      position: relative;
     }
     .tech-item:hover {
       border-color: rgba(255,122,24,0.3);
       background: rgba(255,255,255,0.05);
     }
     .tech-item img {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       object-fit: contain;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 6px;
     }
     .tech-item-info {
       flex: 1;
       min-width: 0;
+      overflow: hidden;
     }
     .tech-item-name {
       font-size: 14px;
       font-weight: 600;
-      color: rgba(255,255,255,0.9);
+      color: rgba(255,255,255,0.95);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .tech-item-category {
-      font-size: 11px;
+      font-size: 10px;
       color: rgba(255,255,255,0.4);
       text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
     }
     .tech-item-actions {
       display: flex;
-      gap: 8px;
+      gap: 4px;
+      flex-shrink: 0;
     }
     .tech-item-actions button {
-      background: none;
-      border: none;
-      color: rgba(255,255,255,0.4);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.5);
       cursor: pointer;
-      padding: 4px;
       font-size: 14px;
-      transition: color 0.2s;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .tech-item-actions button:hover {
+      background: rgba(255,122,24,0.15);
+      border-color: rgba(255,122,24,0.3);
       color: var(--orange);
     }
     .tech-item-actions button.delete:hover {
+      background: rgba(239,68,68,0.15);
+      border-color: rgba(239,68,68,0.3);
       color: #ef4444;
     }
 
@@ -121,17 +142,30 @@
 
     /* Category sections */
     .category-section {
-      margin-bottom: 32px;
+      margin-bottom: 36px;
+    }
+    .category-section:last-child {
+      margin-bottom: 0;
     }
     .category-title {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--orange);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
       margin-bottom: 16px;
-      padding-bottom: 8px;
+      padding-bottom: 10px;
       border-bottom: 1px solid rgba(255,122,24,0.2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .category-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: var(--orange);
+      border-radius: 2px;
     }
 
     /* Empty state */
