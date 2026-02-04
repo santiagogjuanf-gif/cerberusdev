@@ -4,10 +4,245 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
-  <title>Tecnologias | Admin</title>
+  <title>Tecnologias | Cerberus Admin</title>
   <link rel="stylesheet" href="/assets/css/styles.css"/>
   <link rel="stylesheet" href="/assets/css/admin.css"/>
   <style>
+    /* ========== Dashboard-style Background ========== */
+    .admin-wrap { position: relative; }
+    .admin-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,122,24,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,122,24,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+    }
+    .admin-bg::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
+      animation: scanline 8s linear infinite;
+      opacity: 0.6;
+    }
+    @keyframes scanline {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    /* ========== Header Styles ========== */
+    .admin-top {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 16px !important;
+    }
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .header-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1);
+      animation: logoPulse 3s ease-in-out infinite;
+      padding: 10px;
+      flex-shrink: 0;
+    }
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 8px rgba(255,122,24,0.4));
+    }
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1); }
+      50% { box-shadow: 0 0 40px rgba(255,122,24,0.35), inset 0 0 25px rgba(255,122,24,0.15); }
+    }
+    .admin-brand { flex: 1; }
+    .admin-title {
+      position: relative;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .admin-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #FF7A18, transparent);
+      border-radius: 2px;
+    }
+    .admin-sub {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    .admin-sub::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: statusBlink 2s ease-in-out infinite;
+      box-shadow: 0 0 8px #22c55e;
+    }
+    @keyframes statusBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn--ghost.is-active {
+      background: rgba(255,122,24,0.15);
+      border-color: rgba(255,122,24,0.4);
+      color: var(--orange);
+    }
+
+    /* ========== Mobile Menu ========== */
+    .mobile-menu-toggle {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 40px;
+      height: 40px;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .mobile-menu-toggle span {
+      width: 100%;
+      height: 2px;
+      background: var(--text);
+      border-radius: 1px;
+      transition: all 0.3s ease;
+    }
+    .mobile-menu-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 998;
+    }
+    .mobile-menu-backdrop.is-open { display: block; }
+    .mobile-menu-panel {
+      position: fixed;
+      top: 0;
+      right: -300px;
+      width: 300px;
+      height: 100vh;
+      background: var(--bg);
+      border-left: 1px solid var(--border);
+      z-index: 999;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: right 0.3s ease;
+    }
+    .mobile-menu-panel.is-open { right: 0; }
+    .mobile-menu-close {
+      align-self: flex-end;
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 18px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 768px) {
+      .admin-actions { display: none !important; }
+      .header-right .btn-logout { display: none; }
+      .mobile-menu-toggle { display: flex; }
+    }
+
+    /* ========== Card Styles ========== */
+    .admin-card {
+      position: relative;
+    }
+    .admin-card::before,
+    .admin-card::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,122,24,0.3);
+      pointer-events: none;
+    }
+    .admin-card::before {
+      top: -1px;
+      left: -1px;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 16px 0 0 0;
+    }
+    .admin-card::after {
+      bottom: -1px;
+      right: -1px;
+      border-left: none;
+      border-top: none;
+      border-radius: 0 0 16px 0;
+    }
+    .admin-card-head::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 24px;
+      right: 24px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.3), transparent);
+    }
+    .admin-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-card-title::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(180deg, #FF7A18, #FF9A45);
+      border-radius: 2px;
+    }
+
+    /* ========== Tech Items Grid ========== */
     .tech-list {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -23,7 +258,6 @@
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 12px;
       transition: all 0.3s ease;
-      position: relative;
     }
     .tech-item:hover {
       border-color: rgba(255,122,24,0.3);
@@ -88,7 +322,42 @@
       color: #ef4444;
     }
 
-    /* Modal styles */
+    /* ========== Category Sections ========== */
+    .category-section {
+      margin-bottom: 36px;
+    }
+    .category-section:last-child {
+      margin-bottom: 0;
+    }
+    .category-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,122,24,0.2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .category-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: var(--orange);
+      border-radius: 2px;
+    }
+
+    /* ========== Empty & Loading States ========== */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ========== Modal Styles ========== */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -139,43 +408,6 @@
     .form-select option { background: #1a1a1a; }
     .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
     .modal-actions .btn { flex: 1; padding: 12px 20px; }
-
-    /* Category sections */
-    .category-section {
-      margin-bottom: 36px;
-    }
-    .category-section:last-child {
-      margin-bottom: 0;
-    }
-    .category-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--orange);
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      margin-bottom: 16px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255,122,24,0.2);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .category-title::before {
-      content: '';
-      width: 4px;
-      height: 16px;
-      background: var(--orange);
-      border-radius: 2px;
-    }
-
-    /* Empty state */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: rgba(255,255,255,0.4);
-    }
-
-    /* Icon preview */
     .icon-preview {
       width: 60px;
       height: 60px;
@@ -195,29 +427,60 @@
   </style>
 </head>
 <body>
-  <main class="admin-wrap">
+  <main class="admin-wrap admin-bg">
     <header class="admin-top">
-      <div class="admin-brand">
-        <div class="admin-title">Tecnologias</div>
-        <div class="admin-sub">Gestiona las tecnologias que aparecen en la pagina</div>
+      <div class="dashboard-header">
+        <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
+        <div class="admin-brand">
+          <div class="admin-title">Tecnologias</div>
+          <div class="admin-sub">Gestiona el catalogo de tecnologias</div>
+        </div>
+        <div class="header-right">
+          <a class="btn btn--ghost btn-logout" href="./logout">Cerrar sesion</a>
+          <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menu">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
       </div>
       <div class="admin-actions">
-        <a class="btn btn--ghost" href="./dashboard">Dashboard</a>
-        <a class="btn btn--ghost" href="./projects-admin">Proyectos</a>
-        <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
+        <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
+        <a class="btn btn--ghost" href="./users" id="navUsers" style="display:none;">&#x1F465; Usuarios</a>
+        <a class="btn btn--ghost" href="./services" id="navServices" style="display:none;">&#x2699; Servicios</a>
+        <a class="btn btn--ghost" href="./monitor" id="navMonitor" style="display:none;">&#x1F4CA; Monitor</a>
+        <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
+        <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+        <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
+        <a class="btn btn--ghost is-active" href="./tech-admin">&#x1F527; Tecnologias</a>
       </div>
     </header>
 
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
+    <div class="mobile-menu-panel" id="mobileMenuPanel">
+      <button class="mobile-menu-close" id="mobileMenuClose">&#x2715;</button>
+      <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
+      <a class="btn btn--ghost" href="./users" id="navUsersMobile" style="display:none;">&#x1F465; Usuarios</a>
+      <a class="btn btn--ghost" href="./services" id="navServicesMobile" style="display:none;">&#x2699; Servicios</a>
+      <a class="btn btn--ghost" href="./monitor" id="navMonitorMobile" style="display:none;">&#x1F4CA; Monitor</a>
+      <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
+      <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+      <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
+      <a class="btn btn--ghost is-active" href="./tech-admin">&#x1F527; Tecnologias</a>
+      <a class="btn btn--ghost" href="./logout" style="margin-top: auto;">Cerrar sesion</a>
+    </div>
+
+    <!-- Main Content -->
     <section class="admin-card">
-      <div class="admin-card-head" style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="admin-card-head" style="display:flex;justify-content:space-between;align-items:center;position:relative;">
         <div>
           <div class="admin-card-title">Todas las Tecnologias</div>
-          <div class="admin-card-sub">Agrega o elimina tecnologias del catálogo</div>
+          <div class="admin-card-sub">Agrega o elimina tecnologias del catalogo</div>
         </div>
-        <button class="btn btn--outline" id="btnActivateAll" style="margin-right:10px;">Activar todas</button>
-        <button class="btn" id="btnAdd">+ Nueva tecnologia</button>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn--outline" id="btnActivateAll">Activar todas</button>
+          <button class="btn" id="btnAdd">+ Nueva</button>
+        </div>
       </div>
-
       <div id="techContainer">
         <div class="empty-state">Cargando tecnologias...</div>
       </div>
@@ -230,22 +493,18 @@
       <div class="modal-title" id="modalTitle">Nueva tecnologia</div>
       <form id="techForm">
         <input type="hidden" name="id" id="techId">
-
         <div class="icon-preview" id="iconPreview" style="display:none;">
           <img id="iconPreviewImg" src="" alt="">
         </div>
-
         <div class="form-group">
           <label class="form-label">Nombre *</label>
-          <input type="text" class="form-input" name="name" id="techName" required placeholder="Ej: SQLite">
+          <input type="text" class="form-input" name="name" id="techName" required placeholder="Ej: React">
         </div>
-
         <div class="form-group">
           <label class="form-label">URL del icono</label>
-          <input type="text" class="form-input" name="icon_url" id="techIcon" placeholder="/assets/img/tech/sqlite.png">
+          <input type="text" class="form-input" name="icon_url" id="techIcon" placeholder="/assets/img/tech/react.svg">
           <small style="color:rgba(255,255,255,0.4);font-size:11px;">Sube tu icono a /assets/img/tech/ primero</small>
         </div>
-
         <div class="form-group">
           <label class="form-label">Categoria</label>
           <select class="form-select" name="category" id="techCategory">
@@ -256,19 +515,16 @@
             <option value="devops">DevOps</option>
           </select>
         </div>
-
         <div class="form-group">
           <label class="form-label">Orden (menor = primero)</label>
           <input type="number" class="form-input" name="sort_order" id="techOrder" value="0" min="0">
         </div>
-
         <div class="form-group" id="activeGroup" style="display:none;">
           <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
             <input type="checkbox" name="is_active" id="techActive" checked style="width:18px;height:18px;accent-color:var(--orange);">
-            <span class="form-label" style="margin:0;">Visible en la página pública</span>
+            <span class="form-label" style="margin:0;">Visible en la pagina publica</span>
           </label>
         </div>
-
         <div class="modal-actions">
           <button type="button" class="btn btn--outline" id="btnCancel">Cancelar</button>
           <button type="submit" class="btn">Guardar</button>
@@ -277,31 +533,31 @@
     </div>
   </div>
 
-  <!-- Confirm Modal (styled like the design) -->
+  <!-- Confirm Modal -->
   <div class="modal-overlay" id="confirmModal">
     <div class="modal-content" style="text-align:center;max-width:340px;padding:32px 24px;">
-      <div class="modal-icon-circle" id="confirmIconCircle" style="width:64px;height:64px;border-radius:50%;background:rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-        <span id="confirmIcon" style="font-size:28px;">⚠️</span>
+      <div id="confirmIconCircle" style="width:64px;height:64px;border-radius:50%;background:rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+        <span id="confirmIcon" style="font-size:28px;">&#x26A0;</span>
       </div>
       <div class="modal-title" id="confirmTitle" style="font-size:18px;font-weight:700;margin-bottom:8px;">Confirmar</div>
       <p id="confirmText" style="color:rgba(255,255,255,0.6);margin-bottom:28px;font-size:14px;line-height:1.5;"></p>
       <div style="display:flex;justify-content:center;gap:16px;">
-        <button type="button" id="confirmNo" style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">✕</button>
-        <button type="button" id="confirmYes" style="width:48px;height:48px;border-radius:50%;background:#ef4444;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">✓</button>
+        <button type="button" id="confirmNo" style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;">&#x2715;</button>
+        <button type="button" id="confirmYes" style="width:48px;height:48px;border-radius:50%;background:#ef4444;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;">&#x2713;</button>
       </div>
     </div>
   </div>
 
-  <!-- Result Modal (Success/Error) -->
+  <!-- Result Modal -->
   <div class="modal-overlay" id="resultModal">
     <div class="modal-content" style="text-align:center;max-width:340px;padding:32px 24px;">
       <div id="resultIconCircle" style="width:64px;height:64px;border-radius:50%;background:rgba(34,197,94,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-        <span id="resultIcon" style="font-size:28px;">✓</span>
+        <span id="resultIcon" style="font-size:28px;">&#x2713;</span>
       </div>
       <div class="modal-title" id="resultTitle" style="font-size:18px;font-weight:700;margin-bottom:8px;">Resultado</div>
       <p id="resultText" style="color:rgba(255,255,255,0.6);margin-bottom:28px;font-size:14px;line-height:1.5;"></p>
       <div style="display:flex;justify-content:center;">
-        <button type="button" id="resultOk" style="width:48px;height:48px;border-radius:50%;background:#22c55e;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">✓</button>
+        <button type="button" id="resultOk" style="width:48px;height:48px;border-radius:50%;background:#22c55e;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;">&#x2713;</button>
       </div>
     </div>
   </div>
@@ -319,11 +575,48 @@
       devops: 'DevOps'
     };
 
+    // ========== Mobile Menu ==========
+    const mobileToggle = $('#mobileMenuToggle');
+    const mobileBackdrop = $('#mobileMenuBackdrop');
+    const mobilePanel = $('#mobileMenuPanel');
+    const mobileClose = $('#mobileMenuClose');
+
+    function openMobileMenu() {
+      mobileBackdrop.classList.add('is-open');
+      mobilePanel.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileMenu() {
+      mobileBackdrop.classList.remove('is-open');
+      mobilePanel.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+    if (mobileToggle) mobileToggle.addEventListener('click', openMobileMenu);
+    if (mobileBackdrop) mobileBackdrop.addEventListener('click', closeMobileMenu);
+    if (mobileClose) mobileClose.addEventListener('click', closeMobileMenu);
+
+    // ========== Role-based Navigation ==========
+    async function checkRole() {
+      try {
+        const res = await fetch('./api/session');
+        const data = await res.json();
+        if (data.ok && data.user) {
+          const role = data.user.role;
+          if (role === 'admin' || role === 'support') {
+            $$('#navUsers, #navUsersMobile, #navServices, #navServicesMobile, #navMonitor, #navMonitorMobile').forEach(el => el.style.display = '');
+          }
+        }
+      } catch (e) { console.error('Role check error:', e); }
+    }
+    checkRole();
+
+    // ========== API Helper ==========
     async function api(url, opts = {}) {
       const res = await fetch(url, opts);
       return res.json();
     }
 
+    // ========== Load Technologies ==========
     async function loadTechs() {
       const data = await api('./api/technologies');
       allTechs = data.technologies || [];
@@ -333,16 +626,9 @@
     function renderTechs() {
       const container = $('#techContainer');
       if (allTechs.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <p>No hay tecnologias registradas.</p>
-            <p style="margin-top:12px;font-size:13px;">Nota: Debes crear la tabla 'technologies' en la BD primero.</p>
-          </div>
-        `;
+        container.innerHTML = '<div class="empty-state"><p>No hay tecnologias registradas.</p></div>';
         return;
       }
-
-      // Group by category
       const grouped = {};
       allTechs.forEach(t => {
         const cat = t.category || 'tools';
@@ -360,14 +646,14 @@
               <div class="tech-list">
                 ${grouped[cat].map(t => `
                   <div class="tech-item">
-                    <img src="${esc(t.icon_url || '/assets/img/tech/default.png')}" alt="${esc(t.name)}">
+                    <img src="${esc(t.icon_url || '/assets/img/tech/default.png')}" alt="${esc(t.name)}" onerror="this.style.opacity='0.3'">
                     <div class="tech-item-info">
                       <div class="tech-item-name">${esc(t.name)}</div>
                       <div class="tech-item-category">${categoryLabels[t.category] || t.category}</div>
                     </div>
                     <div class="tech-item-actions">
                       <button title="Editar" data-edit="${t.id}">&#9998;</button>
-                      <button class="delete" title="Eliminar" data-delete="${t.id}">&times;</button>
+                      <button class="delete" title="Eliminar" data-delete="${t.id}">&#x2715;</button>
                     </div>
                   </div>
                 `).join('')}
@@ -376,10 +662,8 @@
           `;
         }
       });
-
       container.innerHTML = html;
 
-      // Bind events
       container.querySelectorAll('[data-edit]').forEach(btn => {
         btn.addEventListener('click', () => editTech(Number(btn.dataset.edit)));
       });
@@ -392,10 +676,8 @@
       return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    // Modal functions
-    function openModal() {
-      $('#techModal').classList.add('is-visible');
-    }
+    // ========== Modal Functions ==========
+    function openModal() { $('#techModal').classList.add('is-visible'); }
     function closeModal() {
       $('#techModal').classList.remove('is-visible');
       $('#techForm').reset();
@@ -406,19 +688,10 @@
       $('#techActive').checked = true;
     }
 
-    // Add new
-    $('#btnAdd').addEventListener('click', () => {
-      closeModal();
-      openModal();
-    });
-
-    // Cancel
+    $('#btnAdd').addEventListener('click', () => { closeModal(); openModal(); });
     $('#btnCancel').addEventListener('click', closeModal);
-    $('#techModal').addEventListener('click', (e) => {
-      if (e.target === $('#techModal')) closeModal();
-    });
+    $('#techModal').addEventListener('click', (e) => { if (e.target === $('#techModal')) closeModal(); });
 
-    // Icon preview
     $('#techIcon').addEventListener('input', () => {
       const url = $('#techIcon').value.trim();
       if (url) {
@@ -429,11 +702,9 @@
       }
     });
 
-    // Edit
     function editTech(id) {
       const tech = allTechs.find(t => t.id === id);
       if (!tech) return;
-
       $('#techId').value = tech.id;
       $('#techName').value = tech.name;
       $('#techIcon').value = tech.icon_url || '';
@@ -442,16 +713,13 @@
       $('#techActive').checked = tech.is_active == 1;
       $('#activeGroup').style.display = 'block';
       $('#modalTitle').textContent = 'Editar tecnologia';
-
       if (tech.icon_url) {
         $('#iconPreview').style.display = 'flex';
         $('#iconPreviewImg').src = tech.icon_url;
       }
-
       openModal();
     }
 
-    // Save
     $('#techForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = $('#techId').value;
@@ -461,11 +729,7 @@
         category: $('#techCategory').value,
         sort_order: Number($('#techOrder').value) || 0
       };
-
-      // Include is_active only on edit
-      if (id) {
-        payload.is_active = $('#techActive').checked;
-      }
+      if (id) payload.is_active = $('#techActive').checked;
 
       const url = id ? `./api/technologies/${id}` : './api/technologies';
       await api(url, {
@@ -473,35 +737,29 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-
       closeModal();
       await loadTechs();
     });
 
-    // Result modal functions
+    // ========== Result Modal ==========
     function showResult(success, title, message) {
-      const icon = success ? '✓' : '✗';
+      const icon = success ? '&#x2713;' : '&#x2715;';
       const color = success ? '#22c55e' : '#ef4444';
       const bgColor = success ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)';
-      $('#resultIcon').textContent = icon;
+      $('#resultIcon').innerHTML = icon;
       $('#resultIconCircle').style.background = bgColor;
       $('#resultOk').style.background = color;
       $('#resultTitle').textContent = title;
       $('#resultText').textContent = message;
       $('#resultModal').classList.add('is-visible');
     }
+    $('#resultOk').addEventListener('click', () => $('#resultModal').classList.remove('is-visible'));
+    $('#resultModal').addEventListener('click', (e) => { if (e.target === $('#resultModal')) $('#resultModal').classList.remove('is-visible'); });
 
-    $('#resultOk').addEventListener('click', () => {
-      $('#resultModal').classList.remove('is-visible');
-    });
-    $('#resultModal').addEventListener('click', (e) => {
-      if (e.target === $('#resultModal')) $('#resultModal').classList.remove('is-visible');
-    });
-
-    // Custom confirm modal function
+    // ========== Confirm Modal ==========
     let pendingConfirmAction = null;
     function showConfirm(title, text, icon, iconBgColor, btnColor, onConfirm) {
-      $('#confirmIcon').textContent = icon || '⚠️';
+      $('#confirmIcon').innerHTML = icon || '&#x26A0;';
       $('#confirmIconCircle').style.background = iconBgColor || 'rgba(239,68,68,0.15)';
       $('#confirmTitle').textContent = title;
       $('#confirmText').textContent = text;
@@ -510,45 +768,41 @@
       $('#confirmModal').classList.add('is-visible');
     }
 
-    // Activate all technologies
     $('#btnActivateAll').addEventListener('click', () => {
       showConfirm(
         'Activar todas',
-        '¿Activar todas las tecnologías para que sean visibles en la página pública?',
-        '⚡',
+        '¿Activar todas las tecnologias para que sean visibles en la pagina publica?',
+        '&#x26A1;',
         'rgba(34,197,94,0.15)',
         '#22c55e',
         async () => {
           const res = await api('./api/technologies/activate-all', { method: 'POST' });
           if (res.ok) {
-            showResult(true, 'Tecnologías activadas', `${res.updated} tecnología(s) activada(s) correctamente.`);
+            showResult(true, 'Activadas', `${res.updated} tecnologia(s) activada(s).`);
             await loadTechs();
           } else {
-            showResult(false, 'Error', res.error || 'No se pudieron activar las tecnologías.');
+            showResult(false, 'Error', res.error || 'No se pudieron activar.');
           }
         }
       );
     });
 
-    // Delete
     function deleteTech(id) {
       const tech = allTechs.find(t => t.id === id);
       if (!tech) return;
-
       showConfirm(
-        'Eliminar tecnología',
-        `¿Seguro que deseas eliminar "${tech.name}"? Esta acción no se puede deshacer.`,
-        '⚠️',
+        'Eliminar tecnologia',
+        `¿Seguro que deseas eliminar "${tech.name}"?`,
+        '&#x26A0;',
         'rgba(239,68,68,0.15)',
         '#ef4444',
         async () => {
           const res = await api(`./api/technologies/${id}/delete`, { method: 'POST' });
           if (!res.ok && res.error === 'in_use') {
-            // Show second confirm for force delete
             showConfirm(
-              'Tecnología en uso',
-              `Esta tecnología se usa en ${res.projectCount} proyecto(s). ¿Eliminar de todas formas?`,
-              '⚠️',
+              'En uso',
+              `Esta tecnologia se usa en ${res.projectCount} proyecto(s). ¿Eliminar igualmente?`,
+              '&#x26A0;',
               'rgba(239,68,68,0.15)',
               '#ef4444',
               async () => {
@@ -557,26 +811,24 @@
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ force: true })
                 });
-                showResult(true, 'Eliminada', 'Tecnología eliminada correctamente.');
+                showResult(true, 'Eliminada', 'Tecnologia eliminada.');
                 await loadTechs();
               }
             );
           } else if (res.ok) {
-            showResult(true, 'Eliminada', 'Tecnología eliminada correctamente.');
+            showResult(true, 'Eliminada', 'Tecnologia eliminada.');
             await loadTechs();
           } else {
-            showResult(false, 'Error', res.error || 'No se pudo eliminar la tecnología.');
+            showResult(false, 'Error', res.error || 'No se pudo eliminar.');
           }
         }
       );
     }
 
-    // Confirm modal handlers
     $('#confirmNo').addEventListener('click', () => {
       $('#confirmModal').classList.remove('is-visible');
       pendingConfirmAction = null;
     });
-
     $('#confirmYes').addEventListener('click', async () => {
       $('#confirmModal').classList.remove('is-visible');
       if (pendingConfirmAction) {
@@ -584,7 +836,6 @@
         pendingConfirmAction = null;
       }
     });
-
     $('#confirmModal').addEventListener('click', (e) => {
       if (e.target === $('#confirmModal')) {
         $('#confirmModal').classList.remove('is-visible');
@@ -592,7 +843,7 @@
       }
     });
 
-    // Init
+    // ========== Init ==========
     loadTechs();
   </script>
 </body>

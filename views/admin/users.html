@@ -37,10 +37,34 @@
       100% { top: 100%; opacity: 0; }
     }
 
+    /* Enhanced header layout */
+    .admin-top {
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      flex-wrap: wrap;
+      gap: 12px !important;
+    }
     .dashboard-header {
+      flex: 1;
       display: flex;
       align-items: center;
       gap: 20px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .admin-actions {
+      width: 100%;
+      order: 3;
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
     }
     .header-logo {
       width: 56px; height: 56px;
@@ -82,6 +106,97 @@
       box-shadow: 0 0 8px #22c55e;
     }
     @keyframes statusBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    /* Mobile hamburger menu */
+    .mobile-menu-toggle {
+      display: none;
+      width: 44px;
+      height: 40px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .mobile-menu-toggle span {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      height: 2px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+    .mobile-menu-toggle span:nth-child(1) { top: 13px; }
+    .mobile-menu-toggle span:nth-child(2) { top: 19px; }
+    .mobile-menu-toggle span:nth-child(3) { top: 25px; }
+    .mobile-menu-toggle.is-open span:nth-child(1) { top: 19px; transform: rotate(45deg); }
+    .mobile-menu-toggle.is-open span:nth-child(2) { opacity: 0; }
+    .mobile-menu-toggle.is-open span:nth-child(3) { top: 19px; transform: rotate(-45deg); }
+
+    /* Mobile menu panel */
+    .mobile-menu-panel {
+      display: none;
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(280px, 85vw);
+      height: 100%;
+      background: rgba(12,15,24,0.98);
+      border-left: 1px solid rgba(255,122,24,0.3);
+      padding: 20px;
+      z-index: 9999;
+      flex-direction: column;
+      gap: 8px;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+    .mobile-menu-panel.is-open {
+      display: flex;
+      transform: translateX(0);
+    }
+    .mobile-menu-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 9998;
+    }
+    .mobile-menu-backdrop.is-open {
+      display: block;
+    }
+    .mobile-menu-close {
+      align-self: flex-end;
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .mobile-menu-panel .btn {
+      width: 100%;
+      justify-content: flex-start !important;
+      padding: 14px 16px !important;
+      font-size: 14px !important;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .mobile-menu-toggle { display: block; }
+      .admin-actions { display: none !important; }
+      .header-right .btn-logout { display: none; }
+      .admin-top { padding: 12px 16px !important; }
+      .header-logo { width: 44px !important; height: 44px !important; padding: 8px !important; }
+      .admin-title { font-size: 16px !important; }
+      .admin-sub { font-size: 11px !important; }
+    }
 
     .admin-card { position: relative; }
     .admin-card::before, .admin-card::after {
@@ -226,13 +341,38 @@
           <div class="admin-sub">Administracion de cuentas</div>
         </div>
       </div>
+
+      <div class="header-right">
+        <a class="btn btn--ghost btn-logout" href="./logout">Cerrar sesion</a>
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+
       <div class="admin-actions">
         <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
         <a class="btn btn--ghost" href="./services">&#x2699; Servicios</a>
         <a class="btn btn--ghost" href="./monitor">&#x1F4CA; Monitor</a>
-        <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
+        <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
+        <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+        <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
+        <a class="btn btn--ghost" href="./tech-admin">&#x1F527; Tecnologias</a>
       </div>
     </header>
+
+    <!-- Mobile menu backdrop and panel -->
+    <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
+    <div class="mobile-menu-panel" id="mobileMenuPanel">
+      <button class="mobile-menu-close" id="mobileMenuClose">&#x2715;</button>
+      <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
+      <a class="btn btn--ghost" href="./services">&#x2699; Servicios</a>
+      <a class="btn btn--ghost" href="./monitor">&#x1F4CA; Monitor</a>
+      <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
+      <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+      <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
+      <a class="btn btn--ghost" href="./tech-admin">&#x1F527; Tecnologias</a>
+      <a class="btn btn--ghost" href="./logout" style="margin-top: auto;">Cerrar sesion</a>
+    </div>
 
     <section class="admin-card" style="margin: 20px auto; width: min(1200px, calc(100% - 40px));">
       <div class="admin-card-head">
@@ -463,6 +603,36 @@
     };
 
     loadUsers();
+
+    // Mobile menu toggle
+    (function() {
+      const toggle = document.getElementById('mobileMenuToggle');
+      const panel = document.getElementById('mobileMenuPanel');
+      const backdrop = document.getElementById('mobileMenuBackdrop');
+      const closeBtn = document.getElementById('mobileMenuClose');
+      if (!toggle || !panel) return;
+
+      function openMenu() {
+        toggle.classList.add('is-open');
+        panel.classList.add('is-open');
+        backdrop.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeMenu() {
+        toggle.classList.remove('is-open');
+        panel.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        document.body.style.overflow = '';
+      }
+
+      toggle.addEventListener('click', () => {
+        if (panel.classList.contains('is-open')) closeMenu();
+        else openMenu();
+      });
+      closeBtn?.addEventListener('click', closeMenu);
+      backdrop?.addEventListener('click', closeMenu);
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+    })();
   </script>
 </body>
 </html>
