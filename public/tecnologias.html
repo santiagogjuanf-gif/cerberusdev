@@ -147,8 +147,13 @@
     }
 
     fetch("/api/technologies")
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
       .then(data => {
+        console.log("[TECH API]", data);
+
         if (!data.ok || !data.technologies || data.technologies.length === 0) {
           container.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:60px 20px;">No hay tecnologías disponibles.</div>';
           return;
@@ -172,7 +177,7 @@
                 <div class="tech-grid-custom">
                   ${grouped[cat].map(t => `
                     <div class="tech-card">
-                      <img src="${esc(t.icon_url)}" alt="${esc(t.name)}" onerror="this.style.opacity='0.3'">
+                      <img src="${esc(t.icon_url || '/assets/img/tech/default.png')}" alt="${esc(t.name)}" onerror="this.style.opacity='0.3'">
                       <span>${esc(t.name)}</span>
                     </div>
                   `).join("")}
@@ -182,9 +187,10 @@
           }
         });
 
-        container.innerHTML = html;
+        container.innerHTML = html || '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:60px 20px;">No hay tecnologías disponibles.</div>';
       })
-      .catch(() => {
+      .catch(err => {
+        console.error("[TECH API ERROR]", err);
         container.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:60px 20px;">Error al cargar tecnologías.</div>';
       });
   })();

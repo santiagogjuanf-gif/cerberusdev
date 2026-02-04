@@ -246,12 +246,24 @@
   <!-- Confirm Modal -->
   <div class="modal-overlay" id="confirmModal">
     <div class="modal-content" style="text-align:center;">
-      <div style="font-size:48px;margin-bottom:20px;">⚠️</div>
+      <div style="font-size:48px;margin-bottom:20px;" id="confirmIcon">⚠️</div>
       <div class="modal-title" id="confirmTitle" style="margin-bottom:10px;">Confirmar</div>
       <p id="confirmText" style="color:rgba(255,255,255,0.6);margin-bottom:24px;"></p>
       <div class="modal-actions">
         <button type="button" class="btn btn--outline" id="confirmNo">Cancelar</button>
-        <button type="button" class="btn" id="confirmYes" style="background:#ef4444;">Eliminar</button>
+        <button type="button" class="btn" id="confirmYes">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result Modal (Success/Error) -->
+  <div class="modal-overlay" id="resultModal">
+    <div class="modal-content" style="text-align:center;">
+      <div style="font-size:56px;margin-bottom:16px;" id="resultIcon">✓</div>
+      <div class="modal-title" id="resultTitle" style="margin-bottom:10px;">Resultado</div>
+      <p id="resultText" style="color:rgba(255,255,255,0.6);margin-bottom:24px;"></p>
+      <div class="modal-actions" style="justify-content:center;">
+        <button type="button" class="btn" id="resultOk">Aceptar</button>
       </div>
     </div>
   </div>
@@ -428,55 +440,114 @@
       await loadTechs();
     });
 
-    // Activate all technologies
-    $('#btnActivateAll').addEventListener('click', async () => {
-      if (!confirm('¿Activar todas las tecnologías?')) return;
-      const res = await api('./api/technologies/activate-all', { method: 'POST' });
-      if (res.ok) {
-        alert(`${res.updated} tecnología(s) activada(s)`);
-        await loadTechs();
-      } else {
-        alert('Error: ' + (res.error || 'desconocido'));
-      }
+    // Result modal functions
+    function showResult(success, title, message) {
+      $('#resultIcon').textContent = success ? '✓' : '✗';
+      $('#resultIcon').style.color = success ? '#22c55e' : '#ef4444';
+      $('#resultTitle').textContent = title;
+      $('#resultText').textContent = message;
+      $('#resultModal').classList.add('is-visible');
+    }
+
+    $('#resultOk').addEventListener('click', () => {
+      $('#resultModal').classList.remove('is-visible');
+    });
+    $('#resultModal').addEventListener('click', (e) => {
+      if (e.target === $('#resultModal')) $('#resultModal').classList.remove('is-visible');
     });
 
-    // Delete
-    let deleteId = null;
-    function deleteTech(id) {
-      const tech = allTechs.find(t => t.id === id);
-      if (!tech) return;
-      deleteId = id;
-      $('#confirmTitle').textContent = 'Eliminar tecnologia';
-      $('#confirmText').textContent = `¿Seguro que deseas eliminar "${tech.name}"?`;
+    // Custom confirm modal function
+    let pendingConfirmAction = null;
+    function showConfirm(title, text, icon, btnText, btnColor, onConfirm) {
+      $('#confirmIcon').textContent = icon || '⚠️';
+      $('#confirmTitle').textContent = title;
+      $('#confirmText').textContent = text;
+      $('#confirmYes').textContent = btnText || 'Confirmar';
+      $('#confirmYes').style.background = btnColor || '#FF7A18';
+      pendingConfirmAction = onConfirm;
       $('#confirmModal').classList.add('is-visible');
     }
 
+    // Activate all technologies
+    $('#btnActivateAll').addEventListener('click', () => {
+      showConfirm(
+        'Activar todas',
+        '¿Activar todas las tecnologías para que sean visibles en la página pública?',
+        '🔄',
+        'Activar',
+        '#22c55e',
+        async () => {
+          const res = await api('./api/technologies/activate-all', { method: 'POST' });
+          if (res.ok) {
+            showResult(true, 'Tecnologías activadas', `${res.updated} tecnología(s) activada(s) correctamente.`);
+            await loadTechs();
+          } else {
+            showResult(false, 'Error', res.error || 'No se pudieron activar las tecnologías.');
+          }
+        }
+      );
+    });
+
+    // Delete
+    function deleteTech(id) {
+      const tech = allTechs.find(t => t.id === id);
+      if (!tech) return;
+
+      showConfirm(
+        'Eliminar tecnología',
+        `¿Seguro que deseas eliminar "${tech.name}"?`,
+        '🗑️',
+        'Eliminar',
+        '#ef4444',
+        async () => {
+          const res = await api(`./api/technologies/${id}/delete`, { method: 'POST' });
+          if (!res.ok && res.error === 'in_use') {
+            // Show second confirm for force delete
+            showConfirm(
+              'Tecnología en uso',
+              `Esta tecnología se usa en ${res.projectCount} proyecto(s). ¿Eliminar de todas formas?`,
+              '⚠️',
+              'Eliminar igualmente',
+              '#ef4444',
+              async () => {
+                await api(`./api/technologies/${id}/delete`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ force: true })
+                });
+                showResult(true, 'Eliminada', 'Tecnología eliminada correctamente.');
+                await loadTechs();
+              }
+            );
+          } else if (res.ok) {
+            showResult(true, 'Eliminada', 'Tecnología eliminada correctamente.');
+            await loadTechs();
+          } else {
+            showResult(false, 'Error', res.error || 'No se pudo eliminar la tecnología.');
+          }
+        }
+      );
+    }
+
+    // Confirm modal handlers
     $('#confirmNo').addEventListener('click', () => {
       $('#confirmModal').classList.remove('is-visible');
-      deleteId = null;
+      pendingConfirmAction = null;
     });
 
     $('#confirmYes').addEventListener('click', async () => {
-      if (deleteId) {
-        const res = await api(`./api/technologies/${deleteId}/delete`, { method: 'POST' });
-        if (!res.ok && res.error === 'in_use') {
-          $('#confirmText').textContent = `Esta tecnologia se usa en ${res.projectCount} proyecto(s). ¿Eliminar de todas formas?`;
-          $('#confirmYes').onclick = async () => {
-            await api(`./api/technologies/${deleteId}/delete`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ force: true })
-            });
-            $('#confirmModal').classList.remove('is-visible');
-            deleteId = null;
-            await loadTechs();
-          };
-          return;
-        }
-      }
       $('#confirmModal').classList.remove('is-visible');
-      deleteId = null;
-      await loadTechs();
+      if (pendingConfirmAction) {
+        await pendingConfirmAction();
+        pendingConfirmAction = null;
+      }
+    });
+
+    $('#confirmModal').addEventListener('click', (e) => {
+      if (e.target === $('#confirmModal')) {
+        $('#confirmModal').classList.remove('is-visible');
+        pendingConfirmAction = null;
+      }
     });
 
     // Init
