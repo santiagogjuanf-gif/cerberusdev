@@ -818,6 +818,7 @@
         <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
         <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
         <a class="btn btn--ghost" href="./tech-admin" id="navTech" style="display:none;">&#x1F527; Tecnologias</a>
+        <a class="btn btn--ghost" href="./support" id="navSupport" style="display:none;">&#x1F3AB; Soporte</a>
       </div>
     </header>
 
@@ -832,6 +833,7 @@
       <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
       <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
       <a class="btn btn--ghost" href="./tech-admin" id="navTechMobile" style="display:none;">&#x1F527; Tecnologias</a>
+      <a class="btn btn--ghost" href="./support" id="navSupportMobile" style="display:none;">&#x1F3AB; Soporte</a>
       <a class="btn btn--ghost" href="./logout" style="margin-top: auto;">Cerrar sesion</a>
     </div>
 
@@ -1108,18 +1110,22 @@
             document.getElementById('navServices').style.display = '';
             document.getElementById('navMonitor').style.display = '';
             document.getElementById('navTech').style.display = '';
+            document.getElementById('navSupport').style.display = '';
             document.getElementById('kpiTechWrap').style.display = '';
             // Mobile menu
             document.getElementById('navUsersMobile').style.display = '';
             document.getElementById('navServicesMobile').style.display = '';
             document.getElementById('navMonitorMobile').style.display = '';
             document.getElementById('navTechMobile').style.display = '';
+            document.getElementById('navSupportMobile').style.display = '';
           } else if (role === 'support') {
             document.getElementById('navServices').style.display = '';
             document.getElementById('navMonitor').style.display = '';
+            document.getElementById('navSupport').style.display = '';
             // Mobile menu
             document.getElementById('navServicesMobile').style.display = '';
             document.getElementById('navMonitorMobile').style.display = '';
+            document.getElementById('navSupportMobile').style.display = '';
           }
         }
       } catch (err) {

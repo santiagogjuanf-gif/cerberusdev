@@ -53,6 +53,7 @@ if (ADMIN_PATH) {
     return res.redirect(ADMIN_PATH + "/");
   });
   app.use(ADMIN_PATH, require("./routes/admin"));
+  app.use(ADMIN_PATH, require("./routes/tickets"));
 }
 
 // Fallback – serve the matching HTML page or index.html for clean URLs
