@@ -49,19 +49,144 @@
     }
 
     /* Leads specific */
-    .leads-back {
-      display: inline-flex;
+    /* Navigation styles like dashboard */
+    .admin-top {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 16px !important;
+    }
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .admin-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #FF7A18, transparent);
+      border-radius: 2px;
+    }
+    .admin-title { position: relative; }
+    .admin-sub {
+      display: flex;
       align-items: center;
       gap: 8px;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 14px;
-      transition: color 0.2s;
-      width: min(1200px, calc(100% - 40px));
-      margin: 0 auto 24px;
     }
-    .leads-back:hover {
+    .admin-sub::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: statusBlink 2s ease-in-out infinite;
+      box-shadow: 0 0 8px #22c55e;
+    }
+    @keyframes statusBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+    .mobile-menu-toggle {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 36px;
+      height: 36px;
+      padding: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .mobile-menu-toggle span {
+      width: 100%;
+      height: 2px;
+      background: var(--text);
+      border-radius: 1px;
+      transition: all 0.3s ease;
+    }
+    .mobile-menu-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 998;
+    }
+    .mobile-menu-backdrop.is-open { display: block; }
+    .mobile-menu-panel {
+      position: fixed;
+      top: 0;
+      right: -280px;
+      width: 280px;
+      height: 100vh;
+      background: var(--bg);
+      border-left: 1px solid var(--border);
+      z-index: 999;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: right 0.3s ease;
+    }
+    .mobile-menu-panel.is-open { right: 0; }
+    .admin-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,122,24,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,122,24,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+    }
+    .admin-bg::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
+      animation: scanline 8s linear infinite;
+      opacity: 0.6;
+    }
+    @keyframes scanline {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { top: 100%; opacity: 0; }
+    }
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1); }
+      50% { box-shadow: 0 0 40px rgba(255,122,24,0.35), inset 0 0 25px rgba(255,122,24,0.15); }
+    }
+    .header-logo {
+      animation: logoPulse 3s ease-in-out infinite;
+    }
+    .header-logo img {
+      filter: drop-shadow(0 0 8px rgba(255,122,24,0.4));
+    }
+    .btn--ghost.is-active {
+      background: rgba(255,122,24,0.15);
+      border-color: rgba(255,122,24,0.4);
       color: var(--orange);
+    }
+    @media (max-width: 768px) {
+      .admin-actions { display: none !important; }
+      .header-right .btn-logout { display: none; }
+      .mobile-menu-toggle { display: flex; }
     }
     .leads-stats {
       display: flex;
@@ -125,14 +250,42 @@
         <div class="header-logo">
           <img src="/assets/img/cerberus-mark.png" alt="Cerberus">
         </div>
-        <div>
+        <div class="admin-brand">
           <h1 class="admin-title">Bandeja de Leads</h1>
           <p class="admin-sub">Gestiona los contactos recibidos</p>
         </div>
+        <div class="header-right">
+          <a class="btn btn--ghost btn-logout" href="./logout">Cerrar sesion</a>
+          <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menu">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </div>
+      <div class="admin-actions">
+        <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
+        <a class="btn btn--ghost" href="./users" id="navUsers" style="display:none;">&#x1F465; Usuarios</a>
+        <a class="btn btn--ghost" href="./services" id="navServices" style="display:none;">&#x2699; Servicios</a>
+        <a class="btn btn--ghost" href="./monitor" id="navMonitor" style="display:none;">&#x1F4CA; Monitor</a>
+        <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
+        <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+        <a class="btn btn--ghost is-active" href="./leads">&#x1F4E9; Leads</a>
+        <a class="btn btn--ghost" href="./tech-admin" id="navTech" style="display:none;">&#x1F527; Tecnologias</a>
       </div>
     </header>
 
-    <a href="./" class="leads-back">&larr; Volver al Dashboard</a>
+    <!-- Mobile menu backdrop and panel -->
+    <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
+    <div class="mobile-menu-panel" id="mobileMenuPanel">
+      <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
+      <a class="btn btn--ghost" href="./users" id="navUsersMobile" style="display:none;">&#x1F465; Usuarios</a>
+      <a class="btn btn--ghost" href="./services" id="navServicesMobile" style="display:none;">&#x2699; Servicios</a>
+      <a class="btn btn--ghost" href="./monitor" id="navMonitorMobile" style="display:none;">&#x1F4CA; Monitor</a>
+      <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
+      <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+      <a class="btn btn--ghost is-active" href="./leads">&#x1F4E9; Leads</a>
+      <a class="btn btn--ghost" href="./tech-admin" id="navTechMobile" style="display:none;">&#x1F527; Tecnologias</a>
+      <a class="btn btn--ghost" href="./logout" style="margin-top: auto;">Cerrar sesion</a>
+    </div>
 
     <!-- Stats -->
     <div class="leads-stats">
@@ -303,6 +456,56 @@
     }
 
     load();
+  })();
+
+  // Mobile menu toggle
+  (function() {
+    const toggle = document.getElementById('mobileMenuToggle');
+    const backdrop = document.getElementById('mobileMenuBackdrop');
+    const panel = document.getElementById('mobileMenuPanel');
+
+    function openMenu() {
+      backdrop.classList.add('is-open');
+      panel.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMenu() {
+      backdrop.classList.remove('is-open');
+      panel.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+
+    if (toggle) toggle.addEventListener('click', openMenu);
+    if (backdrop) backdrop.addEventListener('click', closeMenu);
+  })();
+
+  // Role-based navigation
+  (function() {
+    async function checkRole() {
+      try {
+        const res = await fetch('./api/session');
+        const data = await res.json();
+        if (data.ok && data.user) {
+          const role = data.user.role;
+          // Show admin/support only buttons
+          if (role === 'admin' || role === 'support') {
+            document.querySelectorAll('#navUsers, #navUsersMobile, #navServices, #navServicesMobile, #navMonitor, #navMonitorMobile').forEach(el => {
+              el.style.display = '';
+            });
+          }
+          // Show admin only buttons
+          if (role === 'admin') {
+            document.querySelectorAll('#navTech, #navTechMobile').forEach(el => {
+              el.style.display = '';
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Error checking role:', e);
+      }
+    }
+    checkRole();
   })();
   </script>
 </body>

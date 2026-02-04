@@ -180,6 +180,7 @@
           <div class="admin-card-title">Todas las Tecnologias</div>
           <div class="admin-card-sub">Agrega o elimina tecnologias del catálogo</div>
         </div>
+        <button class="btn btn--outline" id="btnActivateAll" style="margin-right:10px;">Activar todas</button>
         <button class="btn" id="btnAdd">+ Nueva tecnologia</button>
       </div>
 
@@ -225,6 +226,13 @@
         <div class="form-group">
           <label class="form-label">Orden (menor = primero)</label>
           <input type="number" class="form-input" name="sort_order" id="techOrder" value="0" min="0">
+        </div>
+
+        <div class="form-group" id="activeGroup" style="display:none;">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="checkbox" name="is_active" id="techActive" checked style="width:18px;height:18px;accent-color:var(--orange);">
+            <span class="form-label" style="margin:0;">Visible en la página pública</span>
+          </label>
         </div>
 
         <div class="modal-actions">
@@ -344,6 +352,8 @@
       $('#techId').value = '';
       $('#modalTitle').textContent = 'Nueva tecnologia';
       $('#iconPreview').style.display = 'none';
+      $('#activeGroup').style.display = 'none';
+      $('#techActive').checked = true;
     }
 
     // Add new
@@ -379,6 +389,8 @@
       $('#techIcon').value = tech.icon_url || '';
       $('#techCategory').value = tech.category || 'tools';
       $('#techOrder').value = tech.sort_order || 0;
+      $('#techActive').checked = tech.is_active == 1;
+      $('#activeGroup').style.display = 'block';
       $('#modalTitle').textContent = 'Editar tecnologia';
 
       if (tech.icon_url) {
@@ -400,6 +412,11 @@
         sort_order: Number($('#techOrder').value) || 0
       };
 
+      // Include is_active only on edit
+      if (id) {
+        payload.is_active = $('#techActive').checked;
+      }
+
       const url = id ? `./api/technologies/${id}` : './api/technologies';
       await api(url, {
         method: 'POST',
@@ -409,6 +426,18 @@
 
       closeModal();
       await loadTechs();
+    });
+
+    // Activate all technologies
+    $('#btnActivateAll').addEventListener('click', async () => {
+      if (!confirm('¿Activar todas las tecnologías?')) return;
+      const res = await api('./api/technologies/activate-all', { method: 'POST' });
+      if (res.ok) {
+        alert(`${res.updated} tecnología(s) activada(s)`);
+        await loadTechs();
+      } else {
+        alert('Error: ' + (res.error || 'desconocido'));
+      }
     });
 
     // Delete

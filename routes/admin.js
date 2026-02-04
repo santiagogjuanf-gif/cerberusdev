@@ -885,7 +885,7 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
     }
 
     if (isWindows) {
-      // Windows: Use separate commands for reliability
+      // Windows: Use PowerShell commands (WMIC is deprecated/removed in Windows 11 24H2+)
       let cpuPercent = 0;
       let disks = [];
       let network = { rx_bytes: 0, tx_bytes: 0 };
@@ -899,70 +899,90 @@ router.get("/api/monitor/stats", requireAuth, requireRole(['admin', 'support']),
         }
       }
 
-      // CPU - using wmic (most reliable on Windows)
-      exec('wmic cpu get loadpercentage /value', { windowsHide: true, timeout: 5000 }, (err, stdout) => {
+      // CPU - using PowerShell Get-CimInstance (modern, reliable)
+      const cpuCmd = 'powershell -NoProfile -Command "Get-CimInstance Win32_Processor | Select-Object -ExpandProperty LoadPercentage"';
+      exec(cpuCmd, { windowsHide: true, timeout: 8000 }, (err, stdout) => {
         if (!err && stdout) {
-          const match = stdout.match(/LoadPercentage=(\d+)/);
-          if (match) cpuPercent = parseInt(match[1]) || 0;
+          const val = parseInt(stdout.trim());
+          if (!isNaN(val)) cpuPercent = val;
+        }
+        // Fallback: Calculate from Node.js os.cpus() if PowerShell fails
+        if (cpuPercent === 0) {
+          const loadAvg = os.loadavg();
+          cpuPercent = Math.min(100, Math.round((loadAvg[0] / cpuCores) * 100));
         }
         checkDone();
       });
 
-      // Disks - using wmic with list format
-      exec('wmic logicaldisk where "DriveType=3" get DeviceID,FreeSpace,Size,VolumeName /format:list', { windowsHide: true, timeout: 5000 }, (err, stdout) => {
+      // Disks - using PowerShell Get-CimInstance (works on all Windows versions)
+      const diskCmd = 'powershell -NoProfile -Command "Get-CimInstance Win32_LogicalDisk -Filter \\"DriveType=3\\" | Select-Object DeviceID, Size, FreeSpace, VolumeName | ConvertTo-Json"';
+      exec(diskCmd, { windowsHide: true, timeout: 8000 }, (err, stdout) => {
         if (!err && stdout) {
-          // Parse the list format output
-          const blocks = stdout.split(/\r?\n\r?\n/).filter(b => b.trim());
-          blocks.forEach(block => {
-            const lines = block.split(/\r?\n/);
-            let device = '', freeSpace = 0, size = 0, volumeName = 'Local Disk';
-            lines.forEach(line => {
-              const [key, val] = line.split('=');
-              if (key && val) {
-                const k = key.trim();
-                const v = val.trim();
-                if (k === 'DeviceID') device = v;
-                else if (k === 'FreeSpace') freeSpace = parseInt(v) || 0;
-                else if (k === 'Size') size = parseInt(v) || 0;
-                else if (k === 'VolumeName' && v) volumeName = v;
+          try {
+            let data = JSON.parse(stdout.trim());
+            // Ensure it's an array
+            if (!Array.isArray(data)) data = [data];
+            data.forEach(d => {
+              if (d.DeviceID && d.Size > 0) {
+                const size = d.Size || 0;
+                const freeSpace = d.FreeSpace || 0;
+                const used = size - freeSpace;
+                const percent = ((used / size) * 100).toFixed(1);
+                disks.push({
+                  device: d.DeviceID,
+                  type: d.VolumeName || 'Local Disk',
+                  total: formatBytes(size),
+                  used: formatBytes(used),
+                  free: formatBytes(freeSpace),
+                  percent: percent + '%',
+                  mount: d.DeviceID
+                });
               }
             });
-            if (device && size > 0) {
-              const used = size - freeSpace;
-              const percent = ((used / size) * 100).toFixed(1);
-              disks.push({
-                device: device,
-                type: volumeName,
-                total: formatBytes(size),
-                used: formatBytes(used),
-                free: formatBytes(freeSpace),
-                percent: percent + '%',
-                mount: device
-              });
-            }
-          });
-        }
-        checkDone();
-      });
-
-      // Network - using netstat -e (reliable on Windows)
-      exec('netstat -e', { windowsHide: true, timeout: 5000 }, (err, stdout) => {
-        if (!err && stdout) {
-          const lines = stdout.split('\n');
-          for (const line of lines) {
-            // Look for the Bytes row
-            if (line.toLowerCase().includes('bytes')) {
-              const parts = line.trim().split(/\s+/);
-              if (parts.length >= 3) {
-                // Format: "Bytes     <received>     <sent>"
-                network.rx_bytes = parseInt(parts[1]) || 0;
-                network.tx_bytes = parseInt(parts[2]) || 0;
-              }
-              break;
-            }
+          } catch (e) {
+            console.error('[MONITOR DISK PARSE]', e.message);
           }
         }
         checkDone();
+      });
+
+      // Network - using PowerShell Get-NetAdapterStatistics (modern, reliable)
+      const netCmd = 'powershell -NoProfile -Command "Get-NetAdapterStatistics | Select-Object ReceivedBytes, SentBytes | ConvertTo-Json"';
+      exec(netCmd, { windowsHide: true, timeout: 8000 }, (err, stdout) => {
+        if (!err && stdout) {
+          try {
+            let data = JSON.parse(stdout.trim());
+            // Sum all adapters
+            if (!Array.isArray(data)) data = [data];
+            data.forEach(adapter => {
+              network.rx_bytes += adapter.ReceivedBytes || 0;
+              network.tx_bytes += adapter.SentBytes || 0;
+            });
+          } catch (e) {
+            console.error('[MONITOR NET PARSE]', e.message);
+          }
+        }
+        // Fallback: Try netstat -e if PowerShell fails
+        if (network.rx_bytes === 0 && network.tx_bytes === 0) {
+          exec('netstat -e', { windowsHide: true, timeout: 5000 }, (err2, stdout2) => {
+            if (!err2 && stdout2) {
+              const lines = stdout2.split('\n');
+              for (const line of lines) {
+                if (line.toLowerCase().includes('bytes')) {
+                  const parts = line.trim().split(/\s+/);
+                  if (parts.length >= 3) {
+                    network.rx_bytes = parseInt(parts[1]) || 0;
+                    network.tx_bytes = parseInt(parts[2]) || 0;
+                  }
+                  break;
+                }
+              }
+            }
+            checkDone();
+          });
+        } else {
+          checkDone();
+        }
       });
     } else {
       // Linux: Use shell commands
@@ -1371,8 +1391,8 @@ router.post("/api/technologies", requireAuth, requireRole(['admin']), async (req
     const techSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
     await db.execute(`
-      INSERT INTO technologies (name, slug, icon_url, category, sort_order)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO technologies (name, slug, icon_url, category, sort_order, is_active)
+      VALUES (?, ?, ?, ?, ?, 1)
     `, [name, techSlug, icon_url || null, category || 'tools', sort_order || 0]);
 
     res.json({ ok: true });
@@ -1414,6 +1434,17 @@ router.post("/api/technologies/:id/delete", requireAuth, requireRole(['admin']),
 
     await db.execute("DELETE FROM technologies WHERE id = ?", [req.params.id]);
     res.json({ ok: true });
+  } catch (err) {
+    console.error("[TECHNOLOGIES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Activate all technologies (fix for existing records)
+router.post("/api/technologies/activate-all", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const [result] = await db.execute("UPDATE technologies SET is_active = 1 WHERE is_active IS NULL OR is_active = 0");
+    res.json({ ok: true, updated: result.affectedRows || 0 });
   } catch (err) {
     console.error("[TECHNOLOGIES]", err);
     res.status(500).json({ ok: false, error: err.message });
