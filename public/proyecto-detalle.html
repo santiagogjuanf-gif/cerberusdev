@@ -438,7 +438,7 @@
 
           <!-- Right: Gallery Carousel -->
           <div class="proj-gallery-side" id="gallerySide" style="display:none;">
-            <div class="proj-gallery-title">Galeria</div>
+            <div class="proj-gallery-title" data-i18n="projects.gallery">Galeria</div>
             <div class="proj-carousel" id="carousel">
               <img class="proj-carousel-img" id="carouselImg" src="" alt="Gallery">
               <button class="proj-carousel-nav prev" id="carouselPrev">&#8249;</button>
@@ -456,7 +456,7 @@
 
         <!-- Technologies - Centered -->
         <div class="proj-techs-section" id="projTechsSection" style="display:none;">
-          <div class="proj-techs-title">Tecnologias utilizadas</div>
+          <div class="proj-techs-title" data-i18n="projects.techs_used">Tecnologias utilizadas</div>
           <div class="proj-techs-grid" id="projTechsGrid"></div>
         </div>
       </div>
@@ -551,7 +551,8 @@
 
     function fmtDate(d) {
       try {
-        return new Date(d).toLocaleDateString("es-MX", { year:"numeric", month:"long", day:"numeric" });
+        const locale = lang === 'en' ? 'en-US' : 'es-MX';
+        return new Date(d).toLocaleDateString(locale, { year:"numeric", month:"long", day:"numeric" });
       } catch { return ""; }
     }
 

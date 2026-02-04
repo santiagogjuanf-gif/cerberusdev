@@ -30,23 +30,23 @@
 
         <!-- Comments Section -->
         <div class="blog-post comments-section" id="commentsSection">
-          <h3 class="comments-title" id="commentsTitle">Comentarios</h3>
+          <h3 class="comments-title" id="commentsTitle" data-i18n="blog.comments_title">Comentarios</h3>
 
           <div id="commentsList"></div>
 
           <div class="comment-form card" style="margin-top:24px;padding:28px;">
-            <h4 style="font-size:18px;font-weight:700;margin-bottom:16px;color:rgba(255,255,255,0.92);">Deja un comentario</h4>
+            <h4 style="font-size:18px;font-weight:700;margin-bottom:16px;color:rgba(255,255,255,0.92);" data-i18n="blog.leave_comment">Deja un comentario</h4>
             <form id="commentForm">
               <div class="field">
-                <span>Tu nombre</span>
-                <input name="author_name" required placeholder="Escribe tu nombre" maxlength="100"/>
+                <span data-i18n="blog.comment_name">Tu nombre</span>
+                <input name="author_name" required placeholder="Escribe tu nombre" maxlength="100" id="inputAuthorName"/>
               </div>
               <div class="field" style="margin-top:16px;">
-                <span>Comentario</span>
-                <textarea name="comment" required placeholder="Escribe tu comentario o pregunta..." rows="4" maxlength="2000"></textarea>
+                <span data-i18n="blog.comment_text">Comentario</span>
+                <textarea name="comment" required placeholder="Escribe tu comentario o pregunta..." rows="4" maxlength="2000" id="inputComment"></textarea>
               </div>
               <div style="margin-top:16px;">
-                <button class="btn" type="submit">Enviar comentario</button>
+                <button class="btn" type="submit" data-i18n="blog.comment_submit" id="btnSubmitComment">Enviar comentario</button>
               </div>
               <div class="toast" id="commentToast"></div>
             </form>
@@ -86,9 +86,43 @@
 
     function fmtDate(iso) {
       try {
-        return new Date(iso).toLocaleDateString("es-MX", { year:"numeric", month:"long", day:"numeric" });
+        const locale = lang === 'en' ? 'en-US' : 'es-MX';
+        return new Date(iso).toLocaleDateString(locale, { year:"numeric", month:"long", day:"numeric" });
       } catch { return ""; }
     }
+
+    // Translations for dynamic content
+    const t = {
+      comments_title: lang === 'en' ? 'Comments' : 'Comentarios',
+      no_comments: lang === 'en' ? 'Be the first to comment.' : 'Se el primero en comentar.',
+      comment_sent: lang === 'en' ? 'Comment submitted. It will be visible after approval.' : 'Comentario enviado. Sera visible despues de ser aprobado.',
+      comment_error: lang === 'en' ? 'Error sending. Please try again.' : 'Error al enviar. Intenta de nuevo.',
+      submit_btn: lang === 'en' ? 'Post comment' : 'Enviar comentario',
+      submitting: lang === 'en' ? 'Submitting...' : 'Enviando...',
+      name_placeholder: lang === 'en' ? 'Enter your name' : 'Escribe tu nombre',
+      comment_placeholder: lang === 'en' ? 'Write your comment or question...' : 'Escribe tu comentario o pregunta...'
+    };
+
+    // Category translation
+    function translateCategory(name) {
+      if (lang !== 'en') return name;
+      const translations = {
+        'Tecnología': 'Technology',
+        'Tecnologia': 'Technology',
+        'Desarrollo': 'Development',
+        'Tutoriales': 'Tutorials',
+        'Noticias': 'News',
+        'Tips': 'Tips',
+        'General': 'General'
+      };
+      return translations[name] || name;
+    }
+
+    // Update placeholders based on language
+    const inputAuthor = document.getElementById('inputAuthorName');
+    const inputComment = document.getElementById('inputComment');
+    if (inputAuthor) inputAuthor.placeholder = t.name_placeholder;
+    if (inputComment) inputComment.placeholder = t.comment_placeholder;
 
     // Load post
     fetch(`/api/blog/posts/${slug}?lang=${lang}`)
@@ -102,7 +136,7 @@
         const p = data.post;
         document.title = `Cerberus Dev | ${p.title}`;
         postTitle.textContent = p.title;
-        postMeta.innerHTML = `${p.category_name ? '<span style="color:var(--orange);">' + esc(p.category_name) + '</span> &bull; ' : ''}${fmtDate(p.created_at)}`;
+        postMeta.innerHTML = `${p.category_name ? '<span style="color:var(--orange);">' + esc(translateCategory(p.category_name)) + '</span> &bull; ' : ''}${fmtDate(p.created_at)}`;
 
         // Render content (HTML from admin)
         postContent.innerHTML = `
@@ -119,10 +153,10 @@
       .then(r => r.json())
       .then(data => {
         const comments = data.comments || [];
-        commentsTitle.textContent = `Comentarios (${comments.length})`;
+        commentsTitle.textContent = `${t.comments_title} (${comments.length})`;
 
         if (comments.length === 0) {
-          commentsList.innerHTML = '<p style="color:rgba(255,255,255,0.4);margin-bottom:16px;">Se el primero en comentar.</p>';
+          commentsList.innerHTML = `<p style="color:rgba(255,255,255,0.4);margin-bottom:16px;">${t.no_comments}</p>`;
           return;
         }
 
@@ -148,7 +182,7 @@
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const btn = form.querySelector('button[type="submit"]');
-      btn.textContent = "Enviando...";
+      btn.textContent = t.submitting;
       btn.disabled = true;
 
       try {
@@ -163,11 +197,11 @@
         });
         if (!res.ok) throw new Error("bad");
         form.reset();
-        showToast("Comentario enviado. Sera visible despues de ser aprobado.", true);
+        showToast(t.comment_sent, true);
       } catch {
-        showToast("Error al enviar. Intenta de nuevo.", false);
+        showToast(t.comment_error, false);
       } finally {
-        btn.textContent = "Enviar comentario";
+        btn.textContent = t.submit_btn;
         btn.disabled = false;
       }
     });

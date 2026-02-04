@@ -132,7 +132,23 @@
     const container = document.getElementById("techContainer");
     if (!container) return;
 
-    const categoryNames = {
+    // Listen for language changes and reload
+    window.addEventListener("storage", (e) => {
+      if (e.key === "cerberus_lang") location.reload();
+    });
+    window.addEventListener("langChange", () => location.reload());
+
+    const lang = localStorage.getItem("cerberus_lang") || "es";
+
+    // Category names based on language
+    const categoryNames = lang === 'en' ? {
+      frontend: "Frontend",
+      backend: "Backend",
+      database: "Database",
+      tools: "Tools",
+      devops: "DevOps / Infrastructure",
+      other: "Other Technologies"
+    } : {
       frontend: "Frontend",
       backend: "Backend",
       database: "Base de Datos",

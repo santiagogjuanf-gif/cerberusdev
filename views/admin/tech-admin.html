@@ -20,6 +20,7 @@
       background-size: 60px 60px;
       mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
       -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      pointer-events: none;
     }
     .admin-bg::after {
       content: '';
@@ -31,6 +32,7 @@
       background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
       animation: scanline 8s linear infinite;
       opacity: 0.6;
+      pointer-events: none;
     }
     @keyframes scanline {
       0% { top: 0; opacity: 0; }
