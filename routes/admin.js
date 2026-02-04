@@ -1407,10 +1407,13 @@ router.post("/api/technologies/:id", requireAuth, requireRole(['admin']), async 
   try {
     const { name, slug, icon_url, category, sort_order, is_active } = req.body;
 
+    // Generate slug from name if not provided
+    const techSlug = slug || (name ? name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : null);
+
     await db.execute(`
       UPDATE technologies SET name = ?, slug = ?, icon_url = ?, category = ?, sort_order = ?, is_active = ?
       WHERE id = ?
-    `, [name, slug, icon_url, category, sort_order || 0, is_active !== false ? 1 : 0, req.params.id]);
+    `, [name || null, techSlug, icon_url || null, category || 'tools', sort_order || 0, is_active !== false ? 1 : 0, req.params.id]);
 
     res.json({ ok: true });
   } catch (err) {
