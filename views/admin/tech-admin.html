@@ -243,27 +243,31 @@
     </div>
   </div>
 
-  <!-- Confirm Modal -->
+  <!-- Confirm Modal (styled like the design) -->
   <div class="modal-overlay" id="confirmModal">
-    <div class="modal-content" style="text-align:center;">
-      <div style="font-size:48px;margin-bottom:20px;" id="confirmIcon">⚠️</div>
-      <div class="modal-title" id="confirmTitle" style="margin-bottom:10px;">Confirmar</div>
-      <p id="confirmText" style="color:rgba(255,255,255,0.6);margin-bottom:24px;"></p>
-      <div class="modal-actions">
-        <button type="button" class="btn btn--outline" id="confirmNo">Cancelar</button>
-        <button type="button" class="btn" id="confirmYes">Confirmar</button>
+    <div class="modal-content" style="text-align:center;max-width:340px;padding:32px 24px;">
+      <div class="modal-icon-circle" id="confirmIconCircle" style="width:64px;height:64px;border-radius:50%;background:rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+        <span id="confirmIcon" style="font-size:28px;">⚠️</span>
+      </div>
+      <div class="modal-title" id="confirmTitle" style="font-size:18px;font-weight:700;margin-bottom:8px;">Confirmar</div>
+      <p id="confirmText" style="color:rgba(255,255,255,0.6);margin-bottom:28px;font-size:14px;line-height:1.5;"></p>
+      <div style="display:flex;justify-content:center;gap:16px;">
+        <button type="button" id="confirmNo" style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">✕</button>
+        <button type="button" id="confirmYes" style="width:48px;height:48px;border-radius:50%;background:#ef4444;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">✓</button>
       </div>
     </div>
   </div>
 
   <!-- Result Modal (Success/Error) -->
   <div class="modal-overlay" id="resultModal">
-    <div class="modal-content" style="text-align:center;">
-      <div style="font-size:56px;margin-bottom:16px;" id="resultIcon">✓</div>
-      <div class="modal-title" id="resultTitle" style="margin-bottom:10px;">Resultado</div>
-      <p id="resultText" style="color:rgba(255,255,255,0.6);margin-bottom:24px;"></p>
-      <div class="modal-actions" style="justify-content:center;">
-        <button type="button" class="btn" id="resultOk">Aceptar</button>
+    <div class="modal-content" style="text-align:center;max-width:340px;padding:32px 24px;">
+      <div id="resultIconCircle" style="width:64px;height:64px;border-radius:50%;background:rgba(34,197,94,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+        <span id="resultIcon" style="font-size:28px;">✓</span>
+      </div>
+      <div class="modal-title" id="resultTitle" style="font-size:18px;font-weight:700;margin-bottom:8px;">Resultado</div>
+      <p id="resultText" style="color:rgba(255,255,255,0.6);margin-bottom:28px;font-size:14px;line-height:1.5;"></p>
+      <div style="display:flex;justify-content:center;">
+        <button type="button" id="resultOk" style="width:48px;height:48px;border-radius:50%;background:#22c55e;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">✓</button>
       </div>
     </div>
   </div>
@@ -442,8 +446,12 @@
 
     // Result modal functions
     function showResult(success, title, message) {
-      $('#resultIcon').textContent = success ? '✓' : '✗';
-      $('#resultIcon').style.color = success ? '#22c55e' : '#ef4444';
+      const icon = success ? '✓' : '✗';
+      const color = success ? '#22c55e' : '#ef4444';
+      const bgColor = success ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)';
+      $('#resultIcon').textContent = icon;
+      $('#resultIconCircle').style.background = bgColor;
+      $('#resultOk').style.background = color;
       $('#resultTitle').textContent = title;
       $('#resultText').textContent = message;
       $('#resultModal').classList.add('is-visible');
@@ -458,12 +466,12 @@
 
     // Custom confirm modal function
     let pendingConfirmAction = null;
-    function showConfirm(title, text, icon, btnText, btnColor, onConfirm) {
+    function showConfirm(title, text, icon, iconBgColor, btnColor, onConfirm) {
       $('#confirmIcon').textContent = icon || '⚠️';
+      $('#confirmIconCircle').style.background = iconBgColor || 'rgba(239,68,68,0.15)';
       $('#confirmTitle').textContent = title;
       $('#confirmText').textContent = text;
-      $('#confirmYes').textContent = btnText || 'Confirmar';
-      $('#confirmYes').style.background = btnColor || '#FF7A18';
+      $('#confirmYes').style.background = btnColor || '#ef4444';
       pendingConfirmAction = onConfirm;
       $('#confirmModal').classList.add('is-visible');
     }
@@ -473,8 +481,8 @@
       showConfirm(
         'Activar todas',
         '¿Activar todas las tecnologías para que sean visibles en la página pública?',
-        '🔄',
-        'Activar',
+        '⚡',
+        'rgba(34,197,94,0.15)',
         '#22c55e',
         async () => {
           const res = await api('./api/technologies/activate-all', { method: 'POST' });
@@ -495,9 +503,9 @@
 
       showConfirm(
         'Eliminar tecnología',
-        `¿Seguro que deseas eliminar "${tech.name}"?`,
-        '🗑️',
-        'Eliminar',
+        `¿Seguro que deseas eliminar "${tech.name}"? Esta acción no se puede deshacer.`,
+        '⚠️',
+        'rgba(239,68,68,0.15)',
         '#ef4444',
         async () => {
           const res = await api(`./api/technologies/${id}/delete`, { method: 'POST' });
@@ -507,7 +515,7 @@
               'Tecnología en uso',
               `Esta tecnología se usa en ${res.projectCount} proyecto(s). ¿Eliminar de todas formas?`,
               '⚠️',
-              'Eliminar igualmente',
+              'rgba(239,68,68,0.15)',
               '#ef4444',
               async () => {
                 await api(`./api/technologies/${id}/delete`, {

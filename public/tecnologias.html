@@ -137,13 +137,29 @@
       backend: "Backend",
       database: "Base de Datos",
       tools: "Herramientas",
-      devops: "DevOps / Infraestructura"
+      devops: "DevOps / Infraestructura",
+      other: "Otras Tecnologías"
     };
 
-    const categoryOrder = ["frontend", "backend", "database", "devops", "tools"];
+    const categoryOrder = ["frontend", "backend", "database", "devops", "tools", "other"];
 
     function esc(s) {
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    // Normalize category to match our keys
+    function normalizeCategory(cat) {
+      if (!cat || cat.trim() === "") return "other";
+      const lower = String(cat).toLowerCase().trim();
+      // Handle Spanish and variations
+      if (lower.includes("front") || lower === "html" || lower === "css" || lower === "javascript" || lower === "js") return "frontend";
+      if (lower.includes("back") || lower === "node" || lower === "express" || lower === "api") return "backend";
+      if (lower.includes("data") || lower.includes("base") || lower.includes("sql") || lower === "mysql" || lower === "sqlite") return "database";
+      if (lower.includes("devops") || lower.includes("infra") || lower.includes("server") || lower.includes("deploy")) return "devops";
+      if (lower.includes("tool") || lower.includes("herramienta") || lower === "git") return "tools";
+      // Check if it's already a valid key
+      if (categoryOrder.includes(lower)) return lower;
+      return "other";
     }
 
     fetch("/api/technologies")
@@ -152,20 +168,26 @@
         return r.json();
       })
       .then(data => {
-        console.log("[TECH API]", data);
+        console.log("[TECH API] Response:", data);
 
         if (!data.ok || !data.technologies || data.technologies.length === 0) {
           container.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:60px 20px;">No hay tecnologías disponibles.</div>';
           return;
         }
 
-        // Group by category
+        // Debug: show all unique categories in the data
+        const uniqueCats = [...new Set(data.technologies.map(t => t.category))];
+        console.log("[TECH API] Categories found:", uniqueCats);
+
+        // Group by normalized category
         const grouped = {};
         data.technologies.forEach(t => {
-          const cat = t.category || "tools";
+          const cat = normalizeCategory(t.category);
           if (!grouped[cat]) grouped[cat] = [];
           grouped[cat].push(t);
         });
+
+        console.log("[TECH API] Grouped:", grouped);
 
         // Render by category in order
         let html = "";
