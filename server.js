@@ -1,9 +1,12 @@
 require("dotenv").config();
 const express = require("express");
+const http = require("http");
 const path = require("path");
 const session = require("express-session");
+const { Server } = require("socket.io");
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 4000;
 
 app.set("trust proxy", 1);
@@ -11,7 +14,8 @@ app.disable("x-powered-by");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(session({
+// Session middleware (shared with Socket.IO)
+const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || "fallback-dev-secret",
   resave: false,
   saveUninitialized: false,
@@ -19,7 +23,42 @@ app.use(session({
     httpOnly: true,
     sameSite: "lax"
   }
-}));
+});
+app.use(sessionMiddleware);
+
+// Socket.IO setup
+const ADMIN_PATH = process.env.ADMIN_PATH;
+const io = new Server(server, {
+  path: (ADMIN_PATH || "") + "/socket.io/",
+  cors: { origin: false }
+});
+
+// Share session with Socket.IO
+io.engine.use(sessionMiddleware);
+
+// Socket.IO authentication and events
+io.on("connection", (socket) => {
+  const session = socket.request.session;
+  if (!session || !session.user) {
+    socket.disconnect();
+    return;
+  }
+
+  const user = session.user;
+
+  // Join ticket room
+  socket.on("join-ticket", (ticketId) => {
+    socket.join(`ticket-${ticketId}`);
+  });
+
+  // Leave ticket room
+  socket.on("leave-ticket", (ticketId) => {
+    socket.leave(`ticket-${ticketId}`);
+  });
+});
+
+// Make io available to routes
+app.set("io", io);
 
 // Static files: public site + uploaded content
 app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"] }));
@@ -47,7 +86,6 @@ app.get("/api/technologies", async (req, res) => {
 });
 
 // Admin panel (only if ADMIN_PATH is configured)
-const ADMIN_PATH = process.env.ADMIN_PATH;
 if (ADMIN_PATH) {
   app.get(ADMIN_PATH, (req, res) => {
     return res.redirect(ADMIN_PATH + "/");
@@ -94,7 +132,7 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running: http://localhost:${PORT}`);
   if (ADMIN_PATH) {
     console.log(`Admin panel: http://localhost:${PORT}${ADMIN_PATH}/login`);

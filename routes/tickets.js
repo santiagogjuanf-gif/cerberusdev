@@ -42,16 +42,14 @@ router.get("/api/client/services", requireAuth, async (req, res) => {
 
     let query, params;
     if (role === 'admin' || role === 'support') {
-      // Admin/support can see all services
       query = `
-        SELECT cs.*, u.username, u.full_name, u.company
+        SELECT cs.*, u.username, COALESCE(u.full_name, u.name, u.username) as client_name, u.company
         FROM client_services cs
         LEFT JOIN admin_users u ON cs.client_id = u.id
         ORDER BY cs.created_at DESC
       `;
       params = [];
     } else {
-      // Clients see only their services
       query = `SELECT * FROM client_services WHERE client_id = ? ORDER BY created_at DESC`;
       params = [userId];
     }
@@ -125,12 +123,12 @@ router.get("/api/tickets", requireAuth, async (req, res) => {
 
     let query, params = [];
 
-    if (role === 'admin' || role === 'support') {
-      // Admin/support see all tickets
+    if (role === 'admin') {
+      // Admin sees ALL tickets
       query = `
         SELECT t.*,
-          u.username as client_username, u.full_name as client_name, u.company as client_company,
-          a.username as assigned_username, a.full_name as assigned_name,
+          u.username as client_username, COALESCE(u.full_name, u.name, u.username) as client_name, u.company as client_company,
+          COALESCE(a.full_name, a.name, a.username) as assigned_name,
           cs.service_name, cs.domain,
           (SELECT COUNT(*) FROM ticket_messages WHERE ticket_id = t.id) as message_count
         FROM tickets t
@@ -152,19 +150,40 @@ router.get("/api/tickets", requireAuth, async (req, res) => {
       if (conditions.length > 0) {
         query += " WHERE " + conditions.join(" AND ");
       }
-      query += " ORDER BY t.created_at DESC";
+      query += " ORDER BY FIELD(t.priority, 'urgent', 'high', 'medium', 'low'), t.created_at DESC";
+    } else if (role === 'support') {
+      // Support sees: unassigned tickets + tickets assigned to them
+      query = `
+        SELECT t.*,
+          u.username as client_username, COALESCE(u.full_name, u.name, u.username) as client_name, u.company as client_company,
+          COALESCE(a.full_name, a.name, a.username) as assigned_name,
+          cs.service_name, cs.domain,
+          (SELECT COUNT(*) FROM ticket_messages WHERE ticket_id = t.id) as message_count
+        FROM tickets t
+        LEFT JOIN admin_users u ON t.client_id = u.id
+        LEFT JOIN admin_users a ON t.assigned_to = a.id
+        LEFT JOIN client_services cs ON t.service_id = cs.id
+        WHERE (t.assigned_to IS NULL OR t.assigned_to = ?)
+      `;
+      params = [userId];
+
+      if (status && status !== 'all') {
+        query += " AND t.status = ?";
+        params.push(status);
+      }
+      query += " ORDER BY FIELD(t.priority, 'urgent', 'high', 'medium', 'low'), t.created_at DESC";
     } else {
-      // Clients see only their tickets (hide closed after 1 week)
+      // Clients see only their tickets
       query = `
         SELECT t.*,
           cs.service_name, cs.domain,
-          a.full_name as assigned_name,
+          COALESCE(a.full_name, a.name, a.username) as assigned_name,
           (SELECT COUNT(*) FROM ticket_messages WHERE ticket_id = t.id) as message_count
         FROM tickets t
         LEFT JOIN client_services cs ON t.service_id = cs.id
         LEFT JOIN admin_users a ON t.assigned_to = a.id
         WHERE t.client_id = ?
-        AND (t.status != 'closed' OR t.closed_at > DATE_SUB(NOW(), INTERVAL 7 DAY))
+        AND (t.status != 'closed' OR t.closed_at > DATE_SUB(NOW(), INTERVAL 7 DAY) OR t.closed_at IS NULL)
         ORDER BY t.created_at DESC
       `;
       params = [userId];
@@ -189,6 +208,9 @@ router.get("/api/tickets/stats", requireAuth, async (req, res) => {
 
     if (role === 'client') {
       whereClause = "WHERE client_id = ?";
+      params = [userId];
+    } else if (role === 'support') {
+      whereClause = "WHERE (assigned_to IS NULL OR assigned_to = ?)";
       params = [userId];
     }
 
@@ -216,6 +238,27 @@ router.get("/api/tickets/stats", requireAuth, async (req, res) => {
   }
 });
 
+// Auto-assign ticket to support agent
+router.post("/api/tickets/:id/assign-me", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.session.user.id;
+
+    const [[ticket]] = await db.execute("SELECT * FROM tickets WHERE id = ?", [id]);
+    if (!ticket) return res.status(404).json({ ok: false, error: "Ticket not found" });
+
+    if (ticket.assigned_to && ticket.assigned_to !== userId) {
+      return res.status(409).json({ ok: false, error: "already_assigned", assigned_to: ticket.assigned_to });
+    }
+
+    await db.execute("UPDATE tickets SET assigned_to = ?, status = CASE WHEN status = 'new' THEN 'in_progress' ELSE status END WHERE id = ?", [userId, id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[TICKETS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // Get single ticket with messages
 router.get("/api/tickets/:id", requireAuth, async (req, res) => {
   try {
@@ -226,8 +269,8 @@ router.get("/api/tickets/:id", requireAuth, async (req, res) => {
     // Get ticket
     const [[ticket]] = await db.execute(`
       SELECT t.*,
-        u.username as client_username, u.full_name as client_name, u.email as client_email, u.company as client_company,
-        a.username as assigned_username, a.full_name as assigned_name,
+        u.username as client_username, COALESCE(u.full_name, u.name, u.username) as client_name, u.email as client_email, u.company as client_company,
+        COALESCE(a.full_name, a.name, a.username) as assigned_name,
         cs.service_name, cs.domain
       FROM tickets t
       LEFT JOIN admin_users u ON t.client_id = u.id
@@ -247,7 +290,7 @@ router.get("/api/tickets/:id", requireAuth, async (req, res) => {
 
     // Get messages (hide internal notes from clients)
     let messagesQuery = `
-      SELECT m.*, u.username, u.full_name, u.role
+      SELECT m.*, u.username, COALESCE(u.full_name, u.name, u.username) as display_name, u.role
       FROM ticket_messages m
       LEFT JOIN admin_users u ON m.user_id = u.id
       WHERE m.ticket_id = ?
@@ -261,7 +304,7 @@ router.get("/api/tickets/:id", requireAuth, async (req, res) => {
 
     // Get attachments
     const [attachments] = await db.execute(`
-      SELECT a.*, u.username, u.full_name
+      SELECT a.*, u.username, COALESCE(u.full_name, u.name, u.username) as display_name
       FROM ticket_attachments a
       LEFT JOIN admin_users u ON a.uploaded_by = u.id
       WHERE a.ticket_id = ?
@@ -329,7 +372,7 @@ router.post("/api/tickets/:id/messages", requireAuth, async (req, res) => {
 
     // Add message
     const isInternalNote = (role === 'admin' || role === 'support') && is_internal ? 1 : 0;
-    await db.execute(`
+    const [msgResult] = await db.execute(`
       INSERT INTO ticket_messages (ticket_id, user_id, message, is_internal)
       VALUES (?, ?, ?, ?)
     `, [id, userId, message, isInternalNote]);
@@ -353,15 +396,38 @@ router.post("/api/tickets/:id/messages", requireAuth, async (req, res) => {
       await db.execute("UPDATE tickets SET assigned_to = ? WHERE id = ?", [userId, id]);
     }
 
-    res.json({ ok: true });
+    // Get the user info for the socket emit
+    const [[senderInfo]] = await db.execute(
+      "SELECT username, COALESCE(full_name, name, username) as display_name, role FROM admin_users WHERE id = ?",
+      [userId]
+    );
+
+    // Emit via Socket.IO
+    const io = req.app.get("io");
+    if (io) {
+      const msgData = {
+        id: msgResult.insertId,
+        ticket_id: Number(id),
+        user_id: userId,
+        message,
+        is_internal: isInternalNote,
+        created_at: new Date().toISOString(),
+        username: senderInfo?.username || '',
+        display_name: senderInfo?.display_name || '',
+        role: senderInfo?.role || role
+      };
+      io.to(`ticket-${id}`).emit("new-message", msgData);
+    }
+
+    res.json({ ok: true, messageId: msgResult.insertId });
   } catch (err) {
     console.error("[TICKETS]", err);
     res.status(500).json({ ok: false, error: err.message });
   }
 });
 
-// Update ticket (status, priority, assignment)
-router.put("/api/tickets/:id", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+// Update ticket (status, priority, assignment) - admin only for full control
+router.put("/api/tickets/:id", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
     const { id } = req.params;
     const { status, priority, assigned_to } = req.body;
@@ -397,6 +463,18 @@ router.put("/api/tickets/:id", requireAuth, requireRole(['admin', 'support']), a
   }
 });
 
+// Close ticket (admin and support)
+router.post("/api/tickets/:id/close", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.execute("UPDATE tickets SET status = 'closed', closed_at = NOW() WHERE id = ?", [id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[TICKETS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // Delete ticket (admin only)
 router.delete("/api/tickets/:id", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
@@ -417,22 +495,16 @@ router.post("/api/tickets/:id/attachments", requireAuth, uploadAttachment.single
     const role = req.session.user.role;
     const { message_id } = req.body;
 
-    // Check ticket exists and permission
     const [[ticket]] = await db.execute("SELECT * FROM tickets WHERE id = ?", [id]);
-    if (!ticket) {
-      return res.status(404).json({ ok: false, error: "Ticket not found" });
-    }
+    if (!ticket) return res.status(404).json({ ok: false, error: "Ticket not found" });
 
     if (role === 'client' && ticket.client_id !== userId) {
       return res.status(403).json({ ok: false, error: "Access denied" });
     }
 
-    if (!req.file) {
-      return res.status(400).json({ ok: false, error: "No file uploaded" });
-    }
+    if (!req.file) return res.status(400).json({ ok: false, error: "No file uploaded" });
 
     const filePath = `/uploads/tickets/${req.file.filename}`;
-
     await db.execute(`
       INSERT INTO ticket_attachments (ticket_id, message_id, filename, original_name, file_path, file_size, mime_type, uploaded_by)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -449,10 +521,10 @@ router.post("/api/tickets/:id/attachments", requireAuth, uploadAttachment.single
 router.get("/api/support-staff", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
   try {
     const [staff] = await db.execute(`
-      SELECT id, username, full_name, email
+      SELECT id, username, COALESCE(full_name, name, username) as display_name, email
       FROM admin_users
       WHERE role IN ('admin', 'support') AND is_active = 1
-      ORDER BY full_name ASC
+      ORDER BY display_name ASC
     `);
     res.json({ ok: true, staff });
   } catch (err) {
@@ -465,10 +537,10 @@ router.get("/api/support-staff", requireAuth, requireRole(['admin', 'support']),
 router.get("/api/clients", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
   try {
     const [clients] = await db.execute(`
-      SELECT id, username, full_name, email, company
+      SELECT id, username, COALESCE(full_name, name, username) as display_name, email, company
       FROM admin_users
       WHERE role = 'client' AND is_active = 1
-      ORDER BY full_name ASC
+      ORDER BY display_name ASC
     `);
     res.json({ ok: true, clients });
   } catch (err) {
