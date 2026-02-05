@@ -151,30 +151,56 @@
     /* Services section */
     .services-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 16px;
       margin-bottom: 30px;
     }
     .service-card {
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      padding: 20px;
+      border-radius: 16px;
+      padding: 22px;
+      transition: border-color 0.3s;
     }
-    .service-name { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 8px; }
-    .service-domain { font-size: 13px; color: rgba(255,122,24,0.8); margin-bottom: 12px; }
-    .service-meta { display: flex; gap: 12px; font-size: 12px; color: rgba(255,255,255,0.4); }
+    .service-card:hover { border-color: rgba(255,122,24,0.25); }
+    .service-card.expiring-soon { border-color: rgba(234,179,8,0.4); }
+    .service-card.expired { border-color: rgba(239,68,68,0.4); }
+    .service-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .service-name { font-size: 16px; font-weight: 600; color: #fff; }
+    .service-domain { font-size: 13px; color: rgba(255,122,24,0.8); margin-bottom: 14px; }
     .service-status {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
+      display: inline-block; padding: 3px 10px; border-radius: 10px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
     }
     .service-status.active { background: rgba(34,197,94,0.2); color: #4ade80; }
     .service-status.suspended { background: rgba(234,179,8,0.2); color: #facc15; }
     .service-status.cancelled { background: rgba(239,68,68,0.2); color: #f87171; }
+    .service-type-badge {
+      font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase;
+      background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 8px;
+    }
+
+    /* Storage bar */
+    .storage-section { margin: 14px 0; }
+    .storage-label { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+    .storage-bar { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+    .storage-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+    .storage-fill.low { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .storage-fill.medium { background: linear-gradient(90deg, #eab308, #facc15); }
+    .storage-fill.high { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+    /* Dates section */
+    .service-dates { display: flex; gap: 16px; margin-top: 14px; flex-wrap: wrap; }
+    .service-date-item { font-size: 11px; color: rgba(255,255,255,0.45); display: flex; align-items: center; gap: 5px; }
+    .service-date-item span { color: rgba(255,255,255,0.7); font-weight: 500; }
+
+    /* Expiration alert */
+    .expiration-alert {
+      margin-top: 12px; padding: 8px 12px; border-radius: 8px;
+      font-size: 11px; font-weight: 500; display: flex; align-items: center; gap: 6px;
+    }
+    .expiration-alert.warn { background: rgba(234,179,8,0.12); color: #facc15; border: 1px solid rgba(234,179,8,0.25); }
+    .expiration-alert.danger { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
 
     /* Tickets section */
     .section-header {
@@ -455,6 +481,18 @@
           <div class="admin-sub">Centro de soporte</div>
         </div>
         <div class="header-right">
+          <div class="notif-wrapper">
+            <button class="notif-btn" id="notifBtn" title="Notificaciones">&#x1F514;<span class="notif-badge" id="notifBadge" style="display:none;">0</span></button>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-dropdown-header">
+                <span class="notif-dropdown-title">Notificaciones</span>
+                <button class="notif-clear-btn" id="markAllRead" title="Marcar todo leido">&#x2713; Leido</button>
+              </div>
+              <div class="notif-dropdown-list" id="notifList">
+                <div class="notif-empty">Sin notificaciones</div>
+              </div>
+            </div>
+          </div>
           <a class="btn btn--ghost" href="./change-password">&#x1F512; Cambiar contrasena</a>
           <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
         </div>
@@ -644,16 +682,59 @@
 
           // Render services grid
           const grid = document.getElementById('servicesGrid');
-          grid.innerHTML = services.map(s => `
-            <div class="service-card">
-              <div class="service-name">${escapeHtml(s.service_name)}</div>
-              ${s.domain ? `<div class="service-domain">${escapeHtml(s.domain)}</div>` : ''}
-              <div class="service-meta">
-                <span class="service-status ${s.status}">${s.status === 'active' ? 'Activo' : s.status === 'suspended' ? 'Suspendido' : 'Cancelado'}</span>
-                <span>${s.service_type || 'web'}</span>
+          grid.innerHTML = services.map(s => {
+            const used = Number(s.storage_used_mb) || 0;
+            const limit = Number(s.storage_limit_mb) || 1;
+            const pct = Math.min(100, Math.round((used / limit) * 100));
+            const barClass = pct >= 85 ? 'high' : pct >= 60 ? 'medium' : 'low';
+
+            const statusLabel = s.status === 'active' ? 'Activo' : s.status === 'suspended' ? 'Suspendido' : 'Cancelado';
+            const startStr = s.start_date ? new Date(s.start_date).toLocaleDateString('es-MX') : null;
+            const endStr = s.end_date ? new Date(s.end_date).toLocaleDateString('es-MX') : null;
+
+            // Expiration check
+            let expirationHtml = '';
+            let cardClass = '';
+            if (s.end_date) {
+              const now = new Date();
+              const end = new Date(s.end_date);
+              const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+              if (daysLeft < 0) {
+                expirationHtml = '<div class="expiration-alert danger">&#x26A0; Servicio vencido - Requiere renovacion</div>';
+                cardClass = 'expired';
+              } else if (daysLeft <= 30) {
+                expirationHtml = `<div class="expiration-alert warn">&#x23F0; Vence en ${daysLeft} dia${daysLeft !== 1 ? 's' : ''} - Renovar pronto</div>`;
+                cardClass = 'expiring-soon';
+              }
+            }
+
+            return `
+              <div class="service-card ${cardClass}">
+                <div class="service-card-top">
+                  <div class="service-name">${escapeHtml(s.service_name)}</div>
+                  <span class="service-status ${s.status}">${statusLabel}</span>
+                </div>
+                ${s.domain ? `<div class="service-domain">&#x1F310; ${escapeHtml(s.domain)}</div>` : ''}
+                <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+                  <span class="service-type-badge">${s.service_type || 'web'}</span>
+                </div>
+                <div class="storage-section">
+                  <div class="storage-label">
+                    <span>Almacenamiento</span>
+                    <span>${used} MB / ${s.storage_limit_mb || 0} MB (${pct}%)</span>
+                  </div>
+                  <div class="storage-bar">
+                    <div class="storage-fill ${barClass}" style="width:${pct}%"></div>
+                  </div>
+                </div>
+                <div class="service-dates">
+                  ${startStr ? `<div class="service-date-item">&#x1F4C5; Inicio: <span>${startStr}</span></div>` : ''}
+                  ${endStr ? `<div class="service-date-item">&#x1F4C6; Vence: <span>${endStr}</span></div>` : ''}
+                </div>
+                ${expirationHtml}
               </div>
-            </div>
-          `).join('');
+            `;
+          }).join('');
 
           // Populate service select in new ticket form
           const select = document.getElementById('ticketService');
@@ -937,11 +1018,87 @@
       document.head.appendChild(script);
     }
 
+    // ===== Notifications =====
+    function fmtTimeAgo(dateStr) {
+      const d = new Date(dateStr);
+      const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+      if (diff < 60) return 'Ahora';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+      return Math.floor(diff / 86400) + 'd';
+    }
+
+    const notifIcons = { lead: '&#x1F4E9;', comment: '&#x1F4AC;', ticket: '&#x1F3AB;', ticket_reply: '&#x1F4AC;', ticket_internal: '&#x1F4E8;' };
+
+    async function loadNotifications() {
+      try {
+        const res = await fetch('./api/notifications');
+        const data = await res.json();
+        const notifs = data.notifications || [];
+        const unread = notifs.filter(n => !Number(n.is_read));
+
+        const bdg = document.getElementById('notifBadge');
+        if (unread.length > 0) {
+          bdg.style.display = '';
+          bdg.textContent = unread.length > 99 ? '99+' : unread.length;
+        } else {
+          bdg.style.display = 'none';
+        }
+
+        const list = document.getElementById('notifList');
+        if (notifs.length === 0) {
+          list.innerHTML = '<div class="notif-empty">Sin notificaciones</div>';
+        } else {
+          list.innerHTML = notifs.slice(0, 20).map(n => `
+            <div class="notif-item ${Number(n.is_read) ? '' : 'is-unread'}">
+              <div class="notif-item-icon">${notifIcons[n.type] || '&#x1F514;'}</div>
+              <div class="notif-item-body">
+                <div class="notif-item-title">${escapeHtml(n.title)}</div>
+                <div class="notif-item-text">${escapeHtml(n.body || '')}</div>
+                <div class="notif-item-time">${fmtTimeAgo(n.created_at)}</div>
+              </div>
+              <button class="notif-item-delete" onclick="event.stopPropagation();deleteNotif(${n.id})" title="Eliminar">&#x2715;</button>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.warn('Notifications error:', err);
+      }
+    }
+
+    async function deleteNotif(id) {
+      try {
+        await fetch(`./api/notifications/${id}/delete`, { method: 'POST' });
+        loadNotifications();
+      } catch (err) {}
+    }
+
+    document.getElementById('notifBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('notifDropdown').classList.toggle('is-open');
+    });
+    document.addEventListener('click', (e) => {
+      const dd = document.getElementById('notifDropdown');
+      if (!dd.contains(e.target) && !document.getElementById('notifBtn').contains(e.target)) {
+        dd.classList.remove('is-open');
+      }
+    });
+    document.getElementById('markAllRead').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try {
+        await fetch('./api/notifications/read-all', { method: 'POST' });
+        loadNotifications();
+      } catch (err) {}
+    });
+
     // Init
     loadSession();
     loadStats();
     loadServices();
     loadTickets();
+    loadNotifications();
+    // Refresh notifications periodically
+    setInterval(loadNotifications, 30000);
     initSocket();
   </script>
 </body>

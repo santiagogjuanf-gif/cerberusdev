@@ -70,7 +70,8 @@ router.post("/login", rateLimit, async (req, res) => {
     name: user.name || user.username,
     email: user.email,
     role: user.role || 'client',
-    must_change_password: user.must_change_password || 0
+    must_change_password: user.must_change_password || 0,
+    pm2_access: user.pm2_access || 0
   };
   console.log("[LOGIN OK]", username, "name:", user.name || username, "role:", user.role || 'client');
 
@@ -241,8 +242,10 @@ router.post("/api/blog/categories/:id/delete", requireAuth, requireRole(['admin'
 
 router.get("/api/notifications", requireAuth, async (req, res) => {
   try {
+    const userId = req.session.user.id;
     const [rows] = await db.execute(
-      "SELECT * FROM admin_notifications ORDER BY created_at DESC LIMIT 50"
+      "SELECT * FROM admin_notifications WHERE user_id IS NULL OR user_id = ? ORDER BY created_at DESC LIMIT 50",
+      [userId]
     );
     res.json({ ok: true, notifications: rows });
   } catch (err) {
@@ -253,7 +256,8 @@ router.get("/api/notifications", requireAuth, async (req, res) => {
 
 router.post("/api/notifications/read-all", requireAuth, async (req, res) => {
   try {
-    await db.execute("UPDATE admin_notifications SET is_read = 1 WHERE is_read = 0");
+    const userId = req.session.user.id;
+    await db.execute("UPDATE admin_notifications SET is_read = 1 WHERE is_read = 0 AND (user_id IS NULL OR user_id = ?)", [userId]);
     res.json({ ok: true });
   } catch (err) {
     res.json({ ok: true });
@@ -557,7 +561,7 @@ router.get("/users", requireAuth, requireRole(['admin']), (req, res) => {
 router.get("/api/users", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
     const [rows] = await db.execute(`
-      SELECT id, username, name, full_name, email, role, must_change_password, company, phone, created_at, updated_at
+      SELECT id, username, name, full_name, email, role, must_change_password, company, phone, pm2_access, created_at, updated_at
       FROM admin_users
       ORDER BY created_at DESC
     `);
@@ -586,7 +590,7 @@ router.get("/api/users/:id", requireAuth, requireRole(['admin']), async (req, re
 // Create user
 router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
-    const { username, name, email, password, role, must_change_password, company, phone } = req.body;
+    const { username, name, email, password, role, must_change_password, company, phone, pm2_access } = req.body;
 
     if (!username || !password) {
       return res.status(400).json({ ok: false, error: 'username and password required' });
@@ -603,9 +607,9 @@ router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) 
 
     const password_hash = await bcrypt.hash(password, 10);
     const [result] = await db.execute(`
-      INSERT INTO admin_users (username, name, full_name, email, password_hash, role, must_change_password, company, phone)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [username, name || null, name || null, email || null, password_hash, role || 'client', must_change_password ? 1 : 0, company || null, phone || null]);
+      INSERT INTO admin_users (username, name, full_name, email, password_hash, role, must_change_password, company, phone, pm2_access)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [username, name || null, name || null, email || null, password_hash, role || 'client', must_change_password ? 1 : 0, company || null, phone || null, (role === 'support' && pm2_access) ? 1 : 0]);
 
     res.json({ ok: true, userId: result.insertId });
   } catch (err) {
@@ -617,8 +621,9 @@ router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) 
 // Update user
 router.post("/api/users/:id", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
-    const { username, name, email, password, role, must_change_password, company, phone } = req.body;
+    const { username, name, email, password, role, must_change_password, company, phone, pm2_access } = req.body;
     const userId = req.params.id;
+    const pm2Val = (role === 'support' && pm2_access) ? 1 : 0;
 
     // Check if username/email exists for another user
     const [[existing]] = await db.execute(
@@ -632,14 +637,14 @@ router.post("/api/users/:id", requireAuth, requireRole(['admin']), async (req, r
     if (password) {
       const password_hash = await bcrypt.hash(password, 10);
       await db.execute(`
-        UPDATE admin_users SET username = ?, name = ?, full_name = ?, email = ?, password_hash = ?, role = ?, must_change_password = ?, company = ?, phone = ?
+        UPDATE admin_users SET username = ?, name = ?, full_name = ?, email = ?, password_hash = ?, role = ?, must_change_password = ?, company = ?, phone = ?, pm2_access = ?
         WHERE id = ?
-      `, [username, name || null, name || null, email || null, password_hash, role || 'client', must_change_password ? 1 : 0, company || null, phone || null, userId]);
+      `, [username, name || null, name || null, email || null, password_hash, role || 'client', must_change_password ? 1 : 0, company || null, phone || null, pm2Val, userId]);
     } else {
       await db.execute(`
-        UPDATE admin_users SET username = ?, name = ?, full_name = ?, email = ?, role = ?, must_change_password = ?, company = ?, phone = ?
+        UPDATE admin_users SET username = ?, name = ?, full_name = ?, email = ?, role = ?, must_change_password = ?, company = ?, phone = ?, pm2_access = ?
         WHERE id = ?
-      `, [username, name || null, name || null, email || null, role || 'client', must_change_password ? 1 : 0, company || null, phone || null, userId]);
+      `, [username, name || null, name || null, email || null, role || 'client', must_change_password ? 1 : 0, company || null, phone || null, pm2Val, userId]);
     }
 
     res.json({ ok: true });
@@ -669,13 +674,19 @@ router.post("/api/users/:id/delete", requireAuth, requireRole(['admin']), async 
 
 // ── Services Management API (Admin/Support) ──
 
-// Services admin page
+// Services admin page (support needs pm2_access)
 router.get("/services", requireAuth, requireRole(['admin', 'support']), (req, res) => {
+  if (req.session.user.role === 'support' && !req.session.user.pm2_access) {
+    return res.redirect(process.env.ADMIN_PATH + "/dashboard");
+  }
   res.sendFile(path.join(__dirname, "..", "views", "admin", "services.html"));
 });
 
-// List all services (with real-time PM2 status)
+// List all services (with real-time PM2 status) - support needs pm2_access
 router.get("/api/services", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  if (req.session.user.role === 'support' && !req.session.user.pm2_access) {
+    return res.status(403).json({ ok: false, error: 'No PM2 access' });
+  }
   try {
     const [rows] = await db.execute(`
       SELECT s.*, u.username as owner_name
@@ -770,8 +781,11 @@ router.post("/api/services/:id/delete", requireAuth, requireRole(['admin']), asy
   }
 });
 
-// PM2 control endpoints
+// PM2 control endpoints (support needs pm2_access for restart/start)
 router.post("/api/services/:id/restart", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  if (req.session.user.role === 'support' && !req.session.user.pm2_access) {
+    return res.status(403).json({ ok: false, error: 'No PM2 access' });
+  }
   try {
     const [[service]] = await db.execute("SELECT pm2_name FROM services WHERE id = ?", [req.params.id]);
     if (!service) return res.status(404).json({ ok: false, error: 'not_found' });
@@ -810,6 +824,9 @@ router.post("/api/services/:id/stop", requireAuth, requireRole(['admin']), async
 });
 
 router.post("/api/services/:id/start", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  if (req.session.user.role === 'support' && !req.session.user.pm2_access) {
+    return res.status(403).json({ ok: false, error: 'No PM2 access' });
+  }
   try {
     const [[service]] = await db.execute("SELECT pm2_name FROM services WHERE id = ?", [req.params.id]);
     if (!service) return res.status(404).json({ ok: false, error: 'not_found' });
@@ -828,8 +845,11 @@ router.post("/api/services/:id/start", requireAuth, requireRole(['admin', 'suppo
   }
 });
 
-// Get PM2 logs for a service
+// Get PM2 logs for a service (support needs pm2_access)
 router.get("/api/services/:id/logs", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  if (req.session.user.role === 'support' && !req.session.user.pm2_access) {
+    return res.status(403).json({ ok: false, error: 'No PM2 access' });
+  }
   try {
     const [[service]] = await db.execute("SELECT pm2_name FROM services WHERE id = ?", [req.params.id]);
     if (!service) return res.status(404).json({ ok: false, error: 'not_found' });
@@ -1212,7 +1232,8 @@ router.get("/api/session", requireAuth, (req, res) => {
       name: req.session.user.name || req.session.user.username,
       email: req.session.user.email,
       role: req.session.user.role,
-      must_change_password: req.session.user.must_change_password || 0
+      must_change_password: req.session.user.must_change_password || 0,
+      pm2_access: req.session.user.pm2_access || 0
     }
   });
 });

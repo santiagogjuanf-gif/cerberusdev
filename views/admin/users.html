@@ -329,6 +329,72 @@
     .confirm-text { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 24px; line-height: 1.5; }
     .confirm-actions { display: flex; gap: 12px; justify-content: center; }
     .confirm-actions .btn { min-width: 100px; }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 16px; padding: 0 24px;
+      flex-wrap: wrap;
+    }
+    .filter-chips { display: flex; gap: 6px; }
+    .filter-chip {
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 12px; font-weight: 500; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      color: rgba(255,255,255,0.6);
+      transition: all 0.2s;
+    }
+    .filter-chip:hover { border-color: rgba(255,122,24,0.3); color: #fff; }
+    .filter-chip.active { background: rgba(255,122,24,0.15); border-color: rgba(255,122,24,0.4); color: #FF7A18; }
+    .search-box {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 6px 14px;
+      margin-left: auto; min-width: 200px;
+      transition: border-color 0.3s;
+    }
+    .search-box:focus-within { border-color: rgba(255,122,24,0.5); }
+    .search-icon { font-size: 14px; opacity: 0.5; flex-shrink: 0; }
+    .search-input {
+      background: none; border: none; color: #fff;
+      font-size: 13px; outline: none; width: 100%;
+    }
+    .search-input::placeholder { color: rgba(255,255,255,0.35); }
+
+    /* Client services modal */
+    .services-modal .modal-content { max-width: 700px; max-height: 85vh; overflow-y: auto; }
+    .svc-list { margin-bottom: 20px; }
+    .svc-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 16px;
+      flex-wrap: wrap;
+    }
+    .svc-item-info { flex: 1; min-width: 200px; }
+    .svc-item-name { font-weight: 600; color: #fff; font-size: 14px; }
+    .svc-item-domain { font-size: 12px; color: rgba(255,122,24,0.7); }
+    .svc-item-meta { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+    .svc-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .svc-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+    }
+    .svc-badge.active { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .svc-badge.suspended { background: rgba(234,179,8,0.2); color: #facc15; }
+    .svc-badge.cancelled { background: rgba(239,68,68,0.2); color: #f87171; }
+
+    /* Service form inside modal */
+    .svc-form { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; }
+    .svc-form-title { font-size: 14px; font-weight: 600; color: #FF7A18; margin-bottom: 14px; }
+    .svc-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .svc-form-grid .form-group { margin-bottom: 0; }
+    .svc-form-full { grid-column: 1 / -1; }
+    @media (max-width: 600px) { .svc-form-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -385,6 +451,19 @@
           <div class="admin-card-sub">Gestiona los usuarios y sus roles</div>
         </div>
         <button class="btn btn--primary" onclick="openModal()">&#x2795; Nuevo Usuario</button>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-chips">
+          <button class="filter-chip active" data-role="all">Todos</button>
+          <button class="filter-chip" data-role="admin">Admin</button>
+          <button class="filter-chip" data-role="support">Soporte</button>
+          <button class="filter-chip" data-role="client">Clientes</button>
+        </div>
+        <div class="search-box">
+          <span class="search-icon">&#x1F50D;</span>
+          <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre...">
+        </div>
       </div>
 
       <div class="table-wrap">
@@ -446,6 +525,14 @@
             <input type="tel" class="form-input" id="phone" placeholder="+52 123 456 7890">
           </div>
         </div>
+        <div id="supportFields" style="display:none;">
+          <div class="form-group">
+            <label class="form-checkbox">
+              <input type="checkbox" id="pm2Access">
+              <span>Permitir control de servicios PM2 (iniciar/reiniciar)</span>
+            </label>
+          </div>
+        </div>
         <div class="form-group">
           <label class="form-checkbox">
             <input type="checkbox" id="mustChangePassword">
@@ -473,14 +560,83 @@
     </div>
   </div>
 
+  <!-- Client Services Modal -->
+  <div class="modal-overlay services-modal" id="servicesModal">
+    <div class="modal-content">
+      <div class="modal-title" id="svcModalTitle">Servicios del Cliente</div>
+      <div class="svc-list" id="svcList"><div style="color:rgba(255,255,255,0.4);text-align:center;padding:20px;">Cargando...</div></div>
+      <div class="svc-form" id="svcForm">
+        <div class="svc-form-title" id="svcFormTitle">Agregar Servicio</div>
+        <input type="hidden" id="svcId">
+        <div class="svc-form-grid">
+          <div class="form-group">
+            <label class="form-label">Nombre del servicio *</label>
+            <input type="text" class="form-input" id="svcName" placeholder="Pagina web empresa">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dominio</label>
+            <input type="text" class="form-input" id="svcDomain" placeholder="empresa.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select class="form-select" id="svcType">
+              <option value="web">Web</option>
+              <option value="hosting">Hosting</option>
+              <option value="api">API</option>
+              <option value="system">Sistema</option>
+              <option value="maintenance">Mantenimiento</option>
+              <option value="other">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-select" id="svcStatus">
+              <option value="active">Activo</option>
+              <option value="suspended">Suspendido</option>
+              <option value="cancelled">Cancelado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Almacenamiento usado (MB)</label>
+            <input type="number" class="form-input" id="svcStorageUsed" value="0" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Limite almacenamiento (MB)</label>
+            <input type="number" class="form-input" id="svcStorageLimit" value="5000" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha inicio</label>
+            <input type="date" class="form-input" id="svcStartDate">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha vencimiento</label>
+            <input type="date" class="form-input" id="svcEndDate">
+          </div>
+          <div class="form-group svc-form-full">
+            <label class="form-label">Descripcion</label>
+            <input type="text" class="form-input" id="svcDescription" placeholder="Descripcion del servicio">
+          </div>
+        </div>
+        <div class="modal-actions" style="margin-top:16px;">
+          <button type="button" class="btn btn--ghost" onclick="closeServicesModal()">Cerrar</button>
+          <button type="button" class="btn btn--ghost" id="svcCancelEditBtn" style="display:none;" onclick="cancelSvcEdit()">Cancelar edicion</button>
+          <button type="button" class="btn btn--primary" onclick="saveService()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API = './api/users';
     let users = [];
     let confirmCallback = null;
+    let currentRoleFilter = 'all';
+    let searchQuery = '';
 
     function toggleClientFields() {
       const role = document.getElementById('role').value;
       document.getElementById('clientFields').style.display = role === 'client' ? 'block' : 'none';
+      document.getElementById('supportFields').style.display = role === 'support' ? 'block' : 'none';
     }
     toggleClientFields();
 
@@ -499,16 +655,41 @@
 
     function renderUsers() {
       const tbody = document.getElementById('usersTable');
-      tbody.innerHTML = users.map(u => `
+      let filtered = users;
+
+      // Role filter
+      if (currentRoleFilter !== 'all') {
+        filtered = filtered.filter(u => u.role === currentRoleFilter);
+      }
+
+      // Search filter (after 3 characters)
+      if (searchQuery.length >= 3) {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(u =>
+          (u.username && u.username.toLowerCase().includes(q)) ||
+          (u.name && u.name.toLowerCase().includes(q)) ||
+          (u.full_name && u.full_name.toLowerCase().includes(q)) ||
+          (u.email && u.email.toLowerCase().includes(q)) ||
+          (u.company && u.company.toLowerCase().includes(q))
+        );
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:rgba(255,255,255,0.4);padding:40px;">No se encontraron usuarios</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(u => `
         <tr>
           <td>${u.id}</td>
           <td><strong>${u.username}</strong></td>
           <td>${u.name || '-'}</td>
           <td>${u.email || '-'}</td>
-          <td><span class="role-badge ${u.role}">${u.role}</span></td>
+          <td><span class="role-badge ${u.role}">${u.role}</span>${u.role === 'support' && u.pm2_access ? ' <span title="PM2 access" style="font-size:11px;">&#x2699;</span>' : ''}</td>
           <td>${new Date(u.created_at).toLocaleDateString('es-MX')}</td>
           <td>
             <button class="btn btn--sm btn--ghost" onclick="editUser(${u.id})">&#x270F; Editar</button>
+            ${u.role === 'client' ? `<button class="btn btn--sm btn--ghost" onclick="openServicesModal(${u.id}, '${(u.name || u.username).replace(/'/g, "\\'")}')">&#x2699; Servicios</button>` : ''}
             <button class="btn btn--sm btn--ghost" onclick="deleteUser(${u.id}, '${u.username}')">&#x1F5D1; Eliminar</button>
           </td>
         </tr>
@@ -528,11 +709,13 @@
         document.getElementById('role').value = user.role;
         document.getElementById('company').value = user.company || '';
         document.getElementById('phone').value = user.phone || '';
+        document.getElementById('pm2Access').checked = !!user.pm2_access;
         document.getElementById('mustChangePassword').checked = user.must_change_password;
         document.getElementById('pwdHint').textContent = '(dejar vacio para mantener)';
       } else {
         document.getElementById('modalTitle').textContent = 'Nuevo Usuario';
         document.getElementById('userId').value = '';
+        document.getElementById('pm2Access').checked = false;
         document.getElementById('pwdHint').textContent = '(requerida)';
       }
       toggleClientFields();
@@ -596,7 +779,8 @@
         role: role,
         must_change_password: document.getElementById('mustChangePassword').checked,
         company: role === 'client' ? (document.getElementById('company').value || null) : null,
-        phone: role === 'client' ? (document.getElementById('phone').value || null) : null
+        phone: role === 'client' ? (document.getElementById('phone').value || null) : null,
+        pm2_access: role === 'support' ? document.getElementById('pm2Access').checked : false
       };
 
       if (!id && !body.password) {
@@ -629,6 +813,174 @@
     };
 
     loadUsers();
+
+    // Filter chips
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentRoleFilter = chip.dataset.role;
+        renderUsers();
+      });
+    });
+
+    // Search input
+    document.getElementById('searchInput').addEventListener('input', function() {
+      searchQuery = this.value.trim();
+      renderUsers();
+    });
+
+    // ── Client Services Management ──
+    let currentSvcClientId = null;
+    let clientServices = [];
+
+    async function openServicesModal(clientId, clientName) {
+      currentSvcClientId = clientId;
+      document.getElementById('svcModalTitle').textContent = `Servicios de ${clientName}`;
+      document.getElementById('servicesModal').classList.add('is-visible');
+      cancelSvcEdit();
+      await loadClientServices();
+    }
+
+    function closeServicesModal() {
+      document.getElementById('servicesModal').classList.remove('is-visible');
+      currentSvcClientId = null;
+    }
+
+    document.getElementById('servicesModal').onclick = (e) => {
+      if (e.target === e.currentTarget) closeServicesModal();
+    };
+
+    async function loadClientServices() {
+      const list = document.getElementById('svcList');
+      list.innerHTML = '<div style="color:rgba(255,255,255,0.4);text-align:center;padding:20px;">Cargando...</div>';
+
+      try {
+        const res = await fetch('./api/client/services');
+        const data = await res.json();
+        if (data.ok) {
+          clientServices = data.services.filter(s => s.client_id === currentSvcClientId);
+          renderClientServices();
+        }
+      } catch (err) {
+        list.innerHTML = '<div style="color:#f87171;text-align:center;padding:20px;">Error al cargar</div>';
+      }
+    }
+
+    function renderClientServices() {
+      const list = document.getElementById('svcList');
+      if (clientServices.length === 0) {
+        list.innerHTML = '<div style="color:rgba(255,255,255,0.4);text-align:center;padding:20px;">Sin servicios asignados</div>';
+        return;
+      }
+      list.innerHTML = clientServices.map(s => {
+        const pct = s.storage_limit_mb > 0 ? Math.round((s.storage_used_mb / s.storage_limit_mb) * 100) : 0;
+        const endStr = s.end_date ? new Date(s.end_date).toLocaleDateString('es-MX') : 'N/A';
+        return `
+          <div class="svc-item">
+            <div class="svc-item-info">
+              <div class="svc-item-name">${s.service_name} <span class="svc-badge ${s.status}">${s.status}</span></div>
+              ${s.domain ? `<div class="svc-item-domain">${s.domain}</div>` : ''}
+              <div class="svc-item-meta">${s.service_type} | ${s.storage_used_mb || 0} / ${s.storage_limit_mb || 0} MB (${pct}%) | Vence: ${endStr}</div>
+            </div>
+            <div class="svc-item-actions">
+              <button class="btn btn--sm btn--ghost" onclick="editService(${s.id})">&#x270F;</button>
+              <button class="btn btn--sm btn--ghost" onclick="deleteService(${s.id})">&#x1F5D1;</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function editService(id) {
+      const s = clientServices.find(x => x.id === id);
+      if (!s) return;
+      document.getElementById('svcId').value = s.id;
+      document.getElementById('svcName').value = s.service_name || '';
+      document.getElementById('svcDomain').value = s.domain || '';
+      document.getElementById('svcType').value = s.service_type || 'web';
+      document.getElementById('svcStatus').value = s.status || 'active';
+      document.getElementById('svcStorageUsed').value = s.storage_used_mb || 0;
+      document.getElementById('svcStorageLimit').value = s.storage_limit_mb || 5000;
+      document.getElementById('svcStartDate').value = s.start_date ? s.start_date.substring(0, 10) : '';
+      document.getElementById('svcEndDate').value = s.end_date ? s.end_date.substring(0, 10) : '';
+      document.getElementById('svcDescription').value = s.description || '';
+      document.getElementById('svcFormTitle').textContent = 'Editar Servicio';
+      document.getElementById('svcCancelEditBtn').style.display = '';
+    }
+
+    function cancelSvcEdit() {
+      document.getElementById('svcId').value = '';
+      document.getElementById('svcName').value = '';
+      document.getElementById('svcDomain').value = '';
+      document.getElementById('svcType').value = 'web';
+      document.getElementById('svcStatus').value = 'active';
+      document.getElementById('svcStorageUsed').value = 0;
+      document.getElementById('svcStorageLimit').value = 5000;
+      document.getElementById('svcStartDate').value = '';
+      document.getElementById('svcEndDate').value = '';
+      document.getElementById('svcDescription').value = '';
+      document.getElementById('svcFormTitle').textContent = 'Agregar Servicio';
+      document.getElementById('svcCancelEditBtn').style.display = 'none';
+    }
+
+    async function saveService() {
+      const svcId = document.getElementById('svcId').value;
+      const name = document.getElementById('svcName').value.trim();
+      if (!name) return alert('El nombre del servicio es requerido');
+
+      const body = {
+        client_id: currentSvcClientId,
+        service_name: name,
+        domain: document.getElementById('svcDomain').value || null,
+        description: document.getElementById('svcDescription').value || null,
+        service_type: document.getElementById('svcType').value,
+        status: document.getElementById('svcStatus').value,
+        storage_used_mb: Number(document.getElementById('svcStorageUsed').value) || 0,
+        storage_limit_mb: Number(document.getElementById('svcStorageLimit').value) || 5000,
+        start_date: document.getElementById('svcStartDate').value || null,
+        end_date: document.getElementById('svcEndDate').value || null
+      };
+
+      try {
+        let res;
+        if (svcId) {
+          res = await fetch(`./api/client/services/${svcId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        } else {
+          res = await fetch('./api/client/services', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        }
+        const data = await res.json();
+        if (data.ok) {
+          cancelSvcEdit();
+          loadClientServices();
+        } else {
+          alert(data.error || 'Error al guardar');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+      }
+    }
+
+    function deleteService(id) {
+      showConfirm('Eliminar Servicio', 'Estas seguro que deseas eliminar este servicio?', async () => {
+        try {
+          const res = await fetch(`./api/client/services/${id}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (data.ok) loadClientServices();
+          else alert(data.error || 'Error al eliminar');
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      });
+    }
 
     // Mobile menu toggle
     (function() {

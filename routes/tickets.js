@@ -83,13 +83,13 @@ router.post("/api/client/services", requireAuth, requireRole(['admin']), async (
 router.put("/api/client/services/:id", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
     const { id } = req.params;
-    const { service_name, domain, description, service_type, status, storage_limit_mb, start_date, end_date } = req.body;
+    const { service_name, domain, description, service_type, status, storage_used_mb, storage_limit_mb, start_date, end_date } = req.body;
 
     await db.execute(`
       UPDATE client_services
-      SET service_name = ?, domain = ?, description = ?, service_type = ?, status = ?, storage_limit_mb = ?, start_date = ?, end_date = ?
+      SET service_name = ?, domain = ?, description = ?, service_type = ?, status = ?, storage_used_mb = ?, storage_limit_mb = ?, start_date = ?, end_date = ?
       WHERE id = ?
-    `, [service_name, domain || null, description || null, service_type || 'web', status || 'active', storage_limit_mb || 5000, start_date || null, end_date || null, id]);
+    `, [service_name, domain || null, description || null, service_type || 'web', status || 'active', storage_used_mb || 0, storage_limit_mb || 5000, start_date || null, end_date || null, id]);
 
     res.json({ ok: true });
   } catch (err) {
@@ -145,6 +145,10 @@ router.get("/api/tickets", requireAuth, async (req, res) => {
       if (client_id) {
         conditions.push("t.client_id = ?");
         params.push(client_id);
+      }
+      if (req.query.ticket_type) {
+        conditions.push("t.ticket_type = ?");
+        params.push(req.query.ticket_type);
       }
 
       if (conditions.length > 0) {
@@ -323,7 +327,7 @@ router.post("/api/tickets", requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
     const role = req.session.user.role;
-    const { subject, message, service_id, priority, client_id } = req.body;
+    const { subject, message, service_id, priority, client_id, ticket_type } = req.body;
 
     // Determine the client_id
     let ticketClientId = userId;
@@ -331,11 +335,14 @@ router.post("/api/tickets", requireAuth, async (req, res) => {
       ticketClientId = client_id;
     }
 
+    // ticket_type: 'internal' only for staff
+    const type = (role === 'admin' || role === 'support') && ticket_type === 'internal' ? 'internal' : 'client';
+
     // Create ticket
     const [result] = await db.execute(`
-      INSERT INTO tickets (client_id, subject, status, priority, service_id)
-      VALUES (?, ?, 'new', ?, ?)
-    `, [ticketClientId, subject, priority || 'medium', service_id || null]);
+      INSERT INTO tickets (client_id, subject, status, priority, service_id, ticket_type)
+      VALUES (?, ?, 'new', ?, ?, ?)
+    `, [ticketClientId, subject, priority || 'medium', service_id || null, type]);
 
     const ticketId = result.insertId;
 
@@ -344,6 +351,31 @@ router.post("/api/tickets", requireAuth, async (req, res) => {
       INSERT INTO ticket_messages (ticket_id, user_id, message, is_internal)
       VALUES (?, ?, ?, 0)
     `, [ticketId, userId, message]);
+
+    // Create notifications
+    try {
+      if (type === 'internal') {
+        // Internal request: notify all admins
+        const [admins] = await db.execute("SELECT id FROM admin_users WHERE role = 'admin'");
+        for (const admin of admins) {
+          await db.execute(
+            "INSERT INTO admin_notifications (type, user_id, ref_id, title, body) VALUES ('ticket_internal', ?, ?, ?, ?)",
+            [admin.id, ticketId, `Solicitud interna #${ticketId}`, subject]
+          );
+        }
+      } else if (role === 'client') {
+        // Client created ticket: notify all admins and support
+        const [staff] = await db.execute("SELECT id FROM admin_users WHERE role IN ('admin', 'support') AND is_active = 1");
+        for (const s of staff) {
+          await db.execute(
+            "INSERT INTO admin_notifications (type, user_id, ref_id, title, body) VALUES ('ticket', ?, ?, ?, ?)",
+            [s.id, ticketId, `Nuevo ticket #${ticketId}`, subject]
+          );
+        }
+      }
+    } catch (notifErr) {
+      console.error("[NOTIF]", notifErr);
+    }
 
     res.json({ ok: true, ticketId });
   } catch (err) {
@@ -417,6 +449,37 @@ router.post("/api/tickets/:id/messages", requireAuth, async (req, res) => {
         role: senderInfo?.role || role
       };
       io.to(`ticket-${id}`).emit("new-message", msgData);
+    }
+
+    // Create notifications for replies
+    try {
+      const senderName = senderInfo?.display_name || senderInfo?.username || 'Usuario';
+      if (role === 'client') {
+        // Client replied: notify assigned support agent
+        if (ticket.assigned_to) {
+          await db.execute(
+            "INSERT INTO admin_notifications (type, user_id, ref_id, title, body) VALUES ('ticket_reply', ?, ?, ?, ?)",
+            [ticket.assigned_to, Number(id), `Respuesta en ticket #${id}`, `${senderName} respondio en: ${ticket.subject || 'Ticket #' + id}`]
+          );
+        } else {
+          // No assigned agent: notify all admin/support
+          const [staff] = await db.execute("SELECT id FROM admin_users WHERE role IN ('admin', 'support') AND is_active = 1");
+          for (const s of staff) {
+            await db.execute(
+              "INSERT INTO admin_notifications (type, user_id, ref_id, title, body) VALUES ('ticket_reply', ?, ?, ?, ?)",
+              [s.id, Number(id), `Respuesta en ticket #${id}`, `${senderName} respondio en: ${ticket.subject || 'Ticket #' + id}`]
+            );
+          }
+        }
+      } else if (!isInternalNote) {
+        // Staff replied (non-internal): notify client
+        await db.execute(
+          "INSERT INTO admin_notifications (type, user_id, ref_id, title, body) VALUES ('ticket_reply', ?, ?, ?, ?)",
+          [ticket.client_id, Number(id), `Respuesta en ticket #${id}`, `${senderName} respondio a tu ticket: ${ticket.subject || 'Ticket #' + id}`]
+        );
+      }
+    } catch (notifErr) {
+      console.error("[NOTIF]", notifErr);
     }
 
     res.json({ ok: true, messageId: msgResult.insertId });
