@@ -188,6 +188,7 @@
       </div>
       <div class="admin-actions">
         <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
+        <a class="btn btn--ghost" href="./support" id="navSupport" style="display:none;">&#x1F3AB; Soporte</a>
         <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
       </div>
     </header>
@@ -386,6 +387,20 @@
     el("btnImportant").addEventListener("click", toggleImportant);
     el("btnSaveNotes").addEventListener("click", saveNotes);
     el("btnDelete").addEventListener("click", del);
+
+    // Role-based nav visibility
+    (async function() {
+      try {
+        const res = await fetch('./api/session');
+        const data = await res.json();
+        if (data.ok) {
+          const role = data.user.role;
+          if (role === 'admin' || role === 'support') {
+            document.getElementById('navSupport').style.display = '';
+          }
+        }
+      } catch (e) {}
+    })();
 
     load().catch(err => {
       console.error(err);

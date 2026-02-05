@@ -557,7 +557,7 @@ router.get("/users", requireAuth, requireRole(['admin']), (req, res) => {
 router.get("/api/users", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
     const [rows] = await db.execute(`
-      SELECT id, username, name, email, role, must_change_password, created_at, updated_at
+      SELECT id, username, name, full_name, email, role, must_change_password, company, phone, created_at, updated_at
       FROM admin_users
       ORDER BY created_at DESC
     `);
@@ -586,7 +586,7 @@ router.get("/api/users/:id", requireAuth, requireRole(['admin']), async (req, re
 // Create user
 router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
-    const { username, name, email, password, role, must_change_password } = req.body;
+    const { username, name, email, password, role, must_change_password, company, phone } = req.body;
 
     if (!username || !password) {
       return res.status(400).json({ ok: false, error: 'username and password required' });
@@ -603,9 +603,9 @@ router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) 
 
     const password_hash = await bcrypt.hash(password, 10);
     const [result] = await db.execute(`
-      INSERT INTO admin_users (username, name, email, password_hash, role, must_change_password)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `, [username, name || null, email || null, password_hash, role || 'client', must_change_password ? 1 : 0]);
+      INSERT INTO admin_users (username, name, full_name, email, password_hash, role, must_change_password, company, phone)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [username, name || null, name || null, email || null, password_hash, role || 'client', must_change_password ? 1 : 0, company || null, phone || null]);
 
     res.json({ ok: true, userId: result.insertId });
   } catch (err) {
@@ -617,7 +617,7 @@ router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) 
 // Update user
 router.post("/api/users/:id", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
-    const { username, name, email, password, role, must_change_password } = req.body;
+    const { username, name, email, password, role, must_change_password, company, phone } = req.body;
     const userId = req.params.id;
 
     // Check if username/email exists for another user
@@ -630,18 +630,16 @@ router.post("/api/users/:id", requireAuth, requireRole(['admin']), async (req, r
     }
 
     if (password) {
-      // Update with new password
       const password_hash = await bcrypt.hash(password, 10);
       await db.execute(`
-        UPDATE admin_users SET username = ?, name = ?, email = ?, password_hash = ?, role = ?, must_change_password = ?
+        UPDATE admin_users SET username = ?, name = ?, full_name = ?, email = ?, password_hash = ?, role = ?, must_change_password = ?, company = ?, phone = ?
         WHERE id = ?
-      `, [username, name || null, email || null, password_hash, role || 'client', must_change_password ? 1 : 0, userId]);
+      `, [username, name || null, name || null, email || null, password_hash, role || 'client', must_change_password ? 1 : 0, company || null, phone || null, userId]);
     } else {
-      // Update without changing password
       await db.execute(`
-        UPDATE admin_users SET username = ?, name = ?, email = ?, role = ?, must_change_password = ?
+        UPDATE admin_users SET username = ?, name = ?, full_name = ?, email = ?, role = ?, must_change_password = ?, company = ?, phone = ?
         WHERE id = ?
-      `, [username, name || null, email || null, role || 'client', must_change_password ? 1 : 0, userId]);
+      `, [username, name || null, name || null, email || null, role || 'client', must_change_password ? 1 : 0, company || null, phone || null, userId]);
     }
 
     res.json({ ok: true });

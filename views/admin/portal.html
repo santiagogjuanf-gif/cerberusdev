@@ -334,72 +334,95 @@
     .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
     .modal-actions .btn { flex: 1; padding: 12px 20px; }
 
-    /* Ticket detail modal */
-    .ticket-detail-header {
-      margin-bottom: 24px; padding-bottom: 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+    /* Chat-style ticket detail modal */
+    .chat-overlay {
+      position: fixed; inset: 0; z-index: 10001;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
     }
-    .ticket-detail-subject { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 12px; }
-    .ticket-detail-meta {
-      display: flex; gap: 16px; flex-wrap: wrap;
-      font-size: 13px; color: rgba(255,255,255,0.5);
-      align-items: center;
+    .chat-overlay.is-visible { opacity: 1; visibility: visible; }
+    .chat-modal {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 20px;
+      width: 90%; max-width: 650px;
+      height: min(80vh, 600px);
+      display: flex; flex-direction: column;
+      transform: translateY(20px); transition: transform 0.3s ease;
+      overflow: hidden;
     }
-    .ticket-detail-service {
-      font-size: 12px;
-      color: rgba(255,122,24,0.7);
-      margin-top: 8px;
+    .chat-overlay.is-visible .chat-modal { transform: translateY(0); }
+
+    .chat-header {
+      padding: 18px 24px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+    .chat-subject {
+      font-size: 17px; font-weight: 700; color: #fff;
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 6px;
+    }
+    .chat-subject::before {
+      content: ''; width: 4px; height: 18px;
+      background: linear-gradient(180deg, #FF7A18, #FF9A45);
+      border-radius: 2px; flex-shrink: 0;
+    }
+    .chat-meta {
+      font-size: 12px; color: rgba(255,255,255,0.4);
+      display: flex; gap: 12px; flex-wrap: wrap; padding-left: 14px;
     }
 
-    .ticket-message {
-      background: rgba(255,255,255,0.03);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 14px 24px;
+      display: flex; flex-direction: column; gap: 10px;
     }
-    .ticket-message.staff {
-      background: rgba(255,122,24,0.1);
+    .chat-messages::-webkit-scrollbar { width: 6px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,122,24,0.3); border-radius: 3px; }
+
+    .chat-msg {
+      background: rgba(255,255,255,0.03); border-radius: 12px;
+      padding: 12px 16px;
+    }
+    .chat-msg.staff {
+      background: rgba(255,122,24,0.08);
       border-left: 3px solid #FF7A18;
     }
-    .ticket-message-header {
-      display: flex; align-items: center;
-      justify-content: space-between; margin-bottom: 10px;
+    .chat-msg-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px;
     }
-    .ticket-message-author { font-weight: 600; color: #fff; font-size: 14px; }
-    .ticket-message-time { font-size: 12px; color: rgba(255,255,255,0.4); }
-    .ticket-message-body {
-      font-size: 14px; color: rgba(255,255,255,0.7);
+    .chat-msg-author { font-weight: 600; color: #fff; font-size: 13px; }
+    .chat-msg-time { font-size: 11px; color: rgba(255,255,255,0.35); }
+    .chat-msg-body {
+      font-size: 13px; color: rgba(255,255,255,0.75);
       line-height: 1.6; white-space: pre-wrap;
     }
 
-    /* Attachments */
-    .ticket-attachments {
-      margin-top: 12px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+    .chat-input {
+      flex-shrink: 0;
+      padding: 12px 24px 18px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.2);
     }
-    .ticket-attachment {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
+    .chat-textarea {
+      width: 100%; padding: 10px 14px;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      font-size: 12px;
-      color: rgba(255,255,255,0.6);
-      text-decoration: none;
-      transition: all 0.2s;
+      border-radius: 10px; color: #fff; font-size: 13px;
+      font-family: inherit; resize: none;
+      min-height: 42px; max-height: 100px;
+      transition: border-color 0.3s;
     }
-    .ticket-attachment:hover {
-      border-color: rgba(255,122,24,0.3);
-      color: #FF7A18;
+    .chat-textarea:focus {
+      outline: none; border-color: rgba(255,122,24,0.5);
+      box-shadow: 0 0 15px rgba(255,122,24,0.08);
     }
-
-    .reply-form {
-      margin-top: 20px; padding-top: 20px;
-      border-top: 1px solid rgba(255,255,255,0.1);
+    .chat-bottom-row {
+      display: flex; align-items: center; justify-content: flex-end;
+      margin-top: 10px; gap: 8px;
     }
 
     /* Mobile responsive */
@@ -407,6 +430,10 @@
       .portal-stats { grid-template-columns: repeat(2, 1fr); }
       .welcome-banner { flex-direction: column; text-align: center; padding: 20px; }
       .welcome-icon { font-size: 36px; }
+      .chat-modal { width: 96%; height: 90vh; }
+      .chat-header { padding: 14px 16px 12px; }
+      .chat-messages { padding: 12px 16px; }
+      .chat-input { padding: 10px 16px 16px; }
     }
     @media (max-width: 480px) {
       .portal-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -531,29 +558,21 @@
     </div>
   </div>
 
-  <!-- Ticket Detail Modal -->
-  <div class="modal-overlay" id="ticketDetailModal">
-    <div class="modal-content" style="max-width:700px;">
-      <div class="ticket-detail-header">
-        <div class="ticket-detail-subject" id="detailSubject">Cargando...</div>
-        <div class="ticket-detail-meta">
-          <span id="detailStatus"></span>
-          <span id="detailPriority"></span>
-          <span id="detailDate"></span>
-          <span id="detailAssigned"></span>
-        </div>
-        <div class="ticket-detail-service" id="detailService"></div>
+  <!-- Chat-style Ticket Detail Modal -->
+  <div class="chat-overlay" id="chatOverlay">
+    <div class="chat-modal">
+      <div class="chat-header">
+        <div class="chat-subject" id="chatSubject">Cargando...</div>
+        <div class="chat-meta" id="chatMeta"></div>
       </div>
-      <div id="ticketMessages"></div>
-      <div id="ticketAttachments"></div>
-      <div class="reply-form" id="replyForm">
-        <div class="form-group">
-          <label class="form-label">Responder</label>
-          <textarea class="form-textarea" id="replyMessage" placeholder="Escribe tu respuesta..."></textarea>
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn btn--ghost" onclick="closeTicketDetail()">Cerrar</button>
-          <button type="button" class="btn btn--primary" onclick="sendReply()">Enviar Respuesta</button>
+      <div class="chat-messages" id="chatMessages">
+        <div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">Cargando...</div>
+      </div>
+      <div class="chat-input" id="chatInput">
+        <textarea class="chat-textarea" id="chatTextarea" placeholder="Escribe tu respuesta..." rows="1"></textarea>
+        <div class="chat-bottom-row">
+          <button class="btn btn--ghost btn--sm" onclick="closeTicketDetail()">Cerrar</button>
+          <button class="btn btn--primary btn--sm" onclick="sendReply()">Enviar</button>
         </div>
       </div>
     </div>
@@ -565,6 +584,7 @@
     let currentTicketId = null;
     let currentUser = null;
     let currentFilter = 'all';
+    let socket = null;
 
     const statusLabels = {
       new: 'Nuevo',
@@ -714,73 +734,99 @@
 
     async function openTicketDetail(id) {
       currentTicketId = id;
-      document.getElementById('ticketDetailModal').classList.add('is-visible');
-      document.getElementById('ticketMessages').innerHTML = '<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.5);">Cargando...</div>';
+      document.getElementById('chatOverlay').classList.add('is-visible');
+      document.getElementById('chatMessages').innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">Cargando...</div>';
+      document.getElementById('chatTextarea').value = '';
+
+      // Join socket room
+      if (socket) socket.emit('join-ticket', id);
 
       try {
         const res = await fetch(`./api/tickets/${id}`);
         const data = await res.json();
 
-        if (data.ok) {
-          const ticket = data.ticket;
-          document.getElementById('detailSubject').textContent = ticket.subject;
-          document.getElementById('detailStatus').innerHTML = `<span class="ticket-status ${ticket.status}">${statusLabels[ticket.status] || ticket.status}</span>`;
-          document.getElementById('detailPriority').innerHTML = `<span class="priority-badge ${ticket.priority}">${priorityLabels[ticket.priority] || ticket.priority}</span>`;
-          document.getElementById('detailDate').textContent = new Date(ticket.created_at).toLocaleString('es-MX');
-          document.getElementById('detailAssigned').textContent = ticket.assigned_name ? 'Agente: ' + ticket.assigned_name : '';
-          document.getElementById('detailService').textContent = ticket.service_name ? 'Servicio: ' + ticket.service_name + (ticket.domain ? ' (' + ticket.domain + ')' : '') : '';
+        if (!data.ok) return;
+        const t = data.ticket;
 
-          // Hide reply form if ticket is closed
-          document.getElementById('replyForm').style.display = ticket.status === 'closed' ? 'none' : '';
+        document.getElementById('chatSubject').innerHTML = `<span style="width:4px;height:18px;background:linear-gradient(180deg,#FF7A18,#FF9A45);border-radius:2px;flex-shrink:0;"></span>${escapeHtml(t.subject)}`;
+        document.getElementById('chatMeta').innerHTML = `
+          <span class="ticket-status ${t.status}" style="font-size:10px;">${statusLabels[t.status]}</span>
+          <span class="priority-badge ${t.priority}" style="font-size:9px;">${priorityLabels[t.priority]}</span>
+          ${t.service_name ? `<span>Servicio: ${escapeHtml(t.service_name)}</span>` : ''}
+          ${t.assigned_name ? `<span>Agente: ${escapeHtml(t.assigned_name)}</span>` : ''}
+          <span>${new Date(t.created_at).toLocaleString('es-MX')}</span>
+        `;
 
-          // Build messages from ticket_messages
-          let html = '';
-          if (data.messages && data.messages.length > 0) {
-            for (const m of data.messages) {
-              const isStaff = m.role === 'admin' || m.role === 'support';
-              html += `
-                <div class="ticket-message ${isStaff ? 'staff' : ''}">
-                  <div class="ticket-message-header">
-                    <span class="ticket-message-author">${escapeHtml(m.full_name || m.username)}${isStaff ? ' (Soporte)' : ''}</span>
-                    <span class="ticket-message-time">${new Date(m.created_at).toLocaleString('es-MX')}</span>
-                  </div>
-                  <div class="ticket-message-body">${escapeHtml(m.message)}</div>
-                </div>
-              `;
-            }
-          } else {
-            html = '<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);">Sin mensajes</div>';
-          }
+        // Render messages
+        renderChatMessages(data.messages || []);
 
-          document.getElementById('ticketMessages').innerHTML = html;
+        // Hide input if closed
+        document.getElementById('chatInput').style.display = t.status === 'closed' ? 'none' : '';
 
-          // Show attachments
-          if (data.attachments && data.attachments.length > 0) {
-            document.getElementById('ticketAttachments').innerHTML = `
-              <div style="margin-top:12px;">
-                <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:8px;">Archivos adjuntos:</div>
-                <div class="ticket-attachments">
-                  ${data.attachments.map(a => `<a href="${a.file_path}" target="_blank" class="ticket-attachment">&#x1F4CE; ${escapeHtml(a.original_name)}</a>`).join('')}
-                </div>
-              </div>
-            `;
-          } else {
-            document.getElementById('ticketAttachments').innerHTML = '';
-          }
-        }
       } catch (err) {
         console.error('Error loading ticket:', err);
       }
     }
 
+    function renderChatMessages(messages) {
+      const container = document.getElementById('chatMessages');
+      if (!messages || messages.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.35);">Sin mensajes</div>';
+        return;
+      }
+
+      container.innerHTML = messages.map(m => {
+        const isStaff = m.role === 'admin' || m.role === 'support';
+        return `
+          <div class="chat-msg ${isStaff ? 'staff' : ''}">
+            <div class="chat-msg-head">
+              <span class="chat-msg-author">${escapeHtml(m.display_name || m.username)}${isStaff ? ' (Soporte)' : ''}</span>
+              <span class="chat-msg-time">${new Date(m.created_at).toLocaleString('es-MX')}</span>
+            </div>
+            <div class="chat-msg-body">${escapeHtml(m.message)}</div>
+          </div>
+        `;
+      }).join('');
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function appendChatMessage(m) {
+      const container = document.getElementById('chatMessages');
+      if (container.querySelector(`[data-msg-id="${m.id}"]`)) return;
+      if (m.is_internal) return; // clients don't see internal notes
+
+      const isStaff = m.role === 'admin' || m.role === 'support';
+      const div = document.createElement('div');
+      div.className = `chat-msg ${isStaff ? 'staff' : ''}`;
+      div.setAttribute('data-msg-id', m.id);
+      div.innerHTML = `
+        <div class="chat-msg-head">
+          <span class="chat-msg-author">${escapeHtml(m.display_name || m.username)}${isStaff ? ' (Soporte)' : ''}</span>
+          <span class="chat-msg-time">${new Date(m.created_at).toLocaleString('es-MX')}</span>
+        </div>
+        <div class="chat-msg-body">${escapeHtml(m.message)}</div>
+      `;
+
+      const empty = container.querySelector('div[style*="text-align:center"]');
+      if (empty) empty.remove();
+
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
     function closeTicketDetail() {
-      document.getElementById('ticketDetailModal').classList.remove('is-visible');
+      document.getElementById('chatOverlay').classList.remove('is-visible');
+      if (socket && currentTicketId) {
+        socket.emit('leave-ticket', currentTicketId);
+      }
       currentTicketId = null;
     }
 
     async function sendReply() {
-      const message = document.getElementById('replyMessage').value.trim();
-      if (!message) return alert('Escribe un mensaje');
+      const textarea = document.getElementById('chatTextarea');
+      const message = textarea.value.trim();
+      if (!message || !currentTicketId) return;
 
       try {
         const res = await fetch(`./api/tickets/${currentTicketId}/messages`, {
@@ -791,8 +837,7 @@
         const data = await res.json();
 
         if (data.ok) {
-          document.getElementById('replyMessage').value = '';
-          openTicketDetail(currentTicketId);
+          textarea.value = '';
           loadTickets();
           loadStats();
         } else {
@@ -837,15 +882,67 @@
     document.getElementById('newTicketModal').onclick = (e) => {
       if (e.target === e.currentTarget) closeNewTicket();
     };
-    document.getElementById('ticketDetailModal').onclick = (e) => {
+    document.getElementById('chatOverlay').onclick = (e) => {
       if (e.target === e.currentTarget) closeTicketDetail();
     };
+
+    // Textarea auto-resize
+    document.getElementById('chatTextarea').addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+
+    // Enter to send (Shift+Enter for new line)
+    document.getElementById('chatTextarea').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendReply();
+      }
+    });
+
+    // Escape key to close modals
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (document.getElementById('chatOverlay').classList.contains('is-visible')) {
+          closeTicketDetail();
+        } else if (document.getElementById('newTicketModal').classList.contains('is-visible')) {
+          closeNewTicket();
+        }
+      }
+    });
+
+    // Socket.IO
+    function initSocket() {
+      const adminBase = new URL('./', window.location.href).pathname;
+      const script = document.createElement('script');
+      script.src = adminBase + 'socket.io/socket.io.js';
+      script.onload = () => {
+        socket = io({ path: adminBase + 'socket.io/' });
+
+        socket.on('connect', () => {
+          if (currentTicketId) socket.emit('join-ticket', currentTicketId);
+        });
+
+        socket.on('new-message', (msg) => {
+          if (currentTicketId === msg.ticket_id) {
+            appendChatMessage(msg);
+          }
+          loadStats();
+          loadTickets();
+        });
+      };
+      script.onerror = () => {
+        console.warn('Socket.IO not available');
+      };
+      document.head.appendChild(script);
+    }
 
     // Init
     loadSession();
     loadStats();
     loadServices();
     loadTickets();
+    initSocket();
   </script>
 </body>
 </html>

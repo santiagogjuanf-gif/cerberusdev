@@ -278,6 +278,7 @@
         <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
         <a class="btn btn--ghost is-active" href="./leads">&#x1F4E9; Leads</a>
         <a class="btn btn--ghost" href="./tech-admin" id="navTech" style="display:none;">&#x1F527; Tecnologias</a>
+        <a class="btn btn--ghost" href="./support" id="navSupport" style="display:none;">&#x1F3AB; Soporte</a>
       </div>
     </header>
 
@@ -292,6 +293,7 @@
       <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
       <a class="btn btn--ghost is-active" href="./leads">&#x1F4E9; Leads</a>
       <a class="btn btn--ghost" href="./tech-admin" id="navTechMobile" style="display:none;">&#x1F527; Tecnologias</a>
+      <a class="btn btn--ghost" href="./support" id="navSupportMobile" style="display:none;">&#x1F3AB; Soporte</a>
       <a class="btn btn--ghost" href="./logout" style="margin-top: auto;">Cerrar sesion</a>
     </div>
 
@@ -498,7 +500,7 @@
           const role = data.user.role;
           // Show admin/support only buttons
           if (role === 'admin' || role === 'support') {
-            document.querySelectorAll('#navUsers, #navUsersMobile, #navServices, #navServicesMobile, #navMonitor, #navMonitorMobile').forEach(el => {
+            document.querySelectorAll('#navUsers, #navUsersMobile, #navServices, #navServicesMobile, #navMonitor, #navMonitorMobile, #navSupport, #navSupportMobile').forEach(el => {
               el.style.display = '';
             });
           }

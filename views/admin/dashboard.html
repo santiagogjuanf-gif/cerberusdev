@@ -906,6 +906,11 @@
         <div class="kpi-label">Tecnologias</div>
         <div class="kpi-value" id="kpiTech">0</div>
       </a>
+      <a href="./support" class="kpi kpi-link" id="kpiTicketsWrap" style="display:none;">
+        <div class="kpi-icon">&#x1F3AB;</div>
+        <div class="kpi-label">Tickets nuevos</div>
+        <div class="kpi-value" id="kpiTickets">0</div>
+      </a>
     </section>
   </main>
 
@@ -970,6 +975,23 @@
               link: './blog-admin',
               action: 'Ver blog'
             });
+          }
+        } catch (e) {}
+
+        // Load ticket stats (for admin/support)
+        try {
+          const ticketRes = await fetch('./api/tickets/stats').then(r => r.json());
+          if (ticketRes.ok && ticketRes.stats) {
+            const newTickets = ticketRes.stats.new || 0;
+            $('#kpiTickets').textContent = newTickets;
+            if (newTickets > 0) {
+              alerts.push({
+                icon: '&#x1F3AB;',
+                text: `${newTickets} ticket${newTickets > 1 ? 's' : ''} nuevo${newTickets > 1 ? 's' : ''} sin atender`,
+                link: './support',
+                action: 'Ver tickets'
+              });
+            }
           }
         } catch (e) {}
 
@@ -1112,6 +1134,7 @@
             document.getElementById('navTech').style.display = '';
             document.getElementById('navSupport').style.display = '';
             document.getElementById('kpiTechWrap').style.display = '';
+            document.getElementById('kpiTicketsWrap').style.display = '';
             // Mobile menu
             document.getElementById('navUsersMobile').style.display = '';
             document.getElementById('navServicesMobile').style.display = '';
@@ -1122,6 +1145,7 @@
             document.getElementById('navServices').style.display = '';
             document.getElementById('navMonitor').style.display = '';
             document.getElementById('navSupport').style.display = '';
+            document.getElementById('kpiTicketsWrap').style.display = '';
             // Mobile menu
             document.getElementById('navServicesMobile').style.display = '';
             document.getElementById('navMonitorMobile').style.display = '';
