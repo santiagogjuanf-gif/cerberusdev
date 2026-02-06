@@ -159,7 +159,8 @@
     .stat-chip.s-all .stat-chip-count { color: #fff; }
     .stat-chip.s-new .stat-chip-count { color: #60a5fa; }
     .stat-chip.s-progress .stat-chip-count { color: #facc15; }
-    .stat-chip.s-waiting .stat-chip-count { color: #fb923c; }
+    .stat-chip.s-waiting .stat-chip-count { color: #c084fc; }
+    .stat-chip.s-waiting-client .stat-chip-count { color: #fb923c; }
     .stat-chip.s-closed .stat-chip-count { color: #4ade80; }
     .stat-chip-dot {
       width: 6px; height: 6px; border-radius: 50%;
@@ -167,7 +168,8 @@
     .stat-chip.s-all .stat-chip-dot { background: #fff; }
     .stat-chip.s-new .stat-chip-dot { background: #60a5fa; }
     .stat-chip.s-progress .stat-chip-dot { background: #facc15; }
-    .stat-chip.s-waiting .stat-chip-dot { background: #fb923c; }
+    .stat-chip.s-waiting .stat-chip-dot { background: #c084fc; }
+    .stat-chip.s-waiting-client .stat-chip-dot { background: #fb923c; }
     .stat-chip.s-closed .stat-chip-dot { background: #4ade80; }
 
     /* Card */
@@ -209,6 +211,7 @@
     .ticket-status.new { background: rgba(59,130,246,0.2); color: #60a5fa; }
     .ticket-status.in_progress { background: rgba(234,179,8,0.2); color: #facc15; }
     .ticket-status.waiting_client { background: rgba(249,115,22,0.2); color: #fb923c; }
+    .ticket-status.waiting_support { background: rgba(168,85,247,0.2); color: #c084fc; }
     .ticket-status.closed { background: rgba(34,197,94,0.2); color: #4ade80; }
 
     .priority-badge {
@@ -457,6 +460,12 @@
       font-size: 13px; font-weight: 500; transition: all 0.2s;
     }
     .btn--request:hover { background: rgba(59,130,246,0.25); }
+    .btn--danger {
+      background: rgba(239,68,68,0.2);
+      border: 1px solid rgba(239,68,68,0.4);
+      color: #f87171;
+    }
+    .btn--danger:hover { background: rgba(239,68,68,0.35); }
 
     /* Request modal form */
     .request-modal .modal-content { max-width: 550px; }
@@ -555,10 +564,15 @@
         <span class="stat-chip-count" id="statProgress">0</span>
         <span class="stat-chip-label">En progreso</span>
       </div>
-      <div class="stat-chip s-waiting" data-filter="waiting_client" onclick="filterTickets('waiting_client', this)">
+      <div class="stat-chip s-waiting" data-filter="waiting_support" onclick="filterTickets('waiting_support', this)">
         <span class="stat-chip-dot"></span>
-        <span class="stat-chip-count" id="statWaiting">0</span>
-        <span class="stat-chip-label">Esperando</span>
+        <span class="stat-chip-count" id="statWaitingSupport">0</span>
+        <span class="stat-chip-label">Pendientes</span>
+      </div>
+      <div class="stat-chip s-waiting-client" data-filter="waiting_client" onclick="filterTickets('waiting_client', this)">
+        <span class="stat-chip-dot"></span>
+        <span class="stat-chip-count" id="statWaitingClient">0</span>
+        <span class="stat-chip-label">Esp. cliente</span>
       </div>
       <div class="stat-chip s-closed" data-filter="closed" onclick="filterTickets('closed', this)">
         <span class="stat-chip-dot"></span>
@@ -638,6 +652,7 @@
           <option value="new">Nuevo</option>
           <option value="in_progress">En progreso</option>
           <option value="waiting_client">Esperando cliente</option>
+          <option value="waiting_support">Esperando soporte</option>
           <option value="closed">Cerrado</option>
         </select>
       </div>
@@ -656,9 +671,12 @@
           <option value="">Sin asignar</option>
         </select>
       </div>
-      <div class="modal-actions">
-        <button class="btn btn--ghost" onclick="closeDetails()">Cancelar</button>
-        <button class="btn btn--primary" onclick="saveDetails()">Guardar</button>
+      <div class="modal-actions" style="justify-content:space-between;">
+        <button class="btn btn--danger" id="deleteTicketBtn" onclick="confirmDeleteTicket()" style="display:none;">Eliminar Ticket</button>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn--ghost" onclick="closeDetails()">Cancelar</button>
+          <button class="btn btn--primary" onclick="saveDetails()">Guardar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -693,7 +711,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Asunto *</label>
-          <input type="text" class="form-input" id="reqSubject" required placeholder="Ej: Reiniciar servicio de pagina web">
+          <input type="text" class="form-input" id="reqSubject" required placeholder="Ej: Reiniciar servicio de pagina web" style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:14px;">
         </div>
         <div class="form-group">
           <label class="form-label">Descripcion *</label>
@@ -728,13 +746,14 @@
     let userId = null;
     let socket = null;
 
-    const statusLabels = { new: 'Nuevo', in_progress: 'En Progreso', waiting_client: 'Esperando Cliente', closed: 'Cerrado' };
+    const statusLabels = { new: 'Nuevo', in_progress: 'En Progreso', waiting_client: 'Esperando Cliente', waiting_support: 'Esperando Soporte', closed: 'Cerrado' };
     const priorityLabels = { low: 'Baja', medium: 'Media', high: 'Alta', urgent: 'Urgente' };
     const filterTitles = {
       all: ['Todos los tickets', 'Vista completa de tickets'],
       new: ['Tickets nuevos', 'Tickets que requieren atencion'],
       in_progress: ['En progreso', 'Tickets siendo atendidos'],
       waiting_client: ['Esperando cliente', 'Esperando respuesta del cliente'],
+      waiting_support: ['Esperando soporte', 'Tickets que requieren tu respuesta'],
       closed: ['Cerrados', 'Tickets resueltos']
     };
 
@@ -790,7 +809,8 @@
           document.getElementById('statAll').textContent = data.stats.total || 0;
           document.getElementById('statNew').textContent = data.stats.new || 0;
           document.getElementById('statProgress').textContent = data.stats.in_progress || 0;
-          document.getElementById('statWaiting').textContent = data.stats.waiting_client || 0;
+          document.getElementById('statWaitingSupport').textContent = data.stats.waiting_support || 0;
+          document.getElementById('statWaitingClient').textContent = data.stats.waiting_client || 0;
           document.getElementById('statClosed').textContent = data.stats.closed || 0;
         }
       } catch (err) {
@@ -1050,6 +1070,8 @@
       document.getElementById('detailStatus').value = ticket.status;
       document.getElementById('detailPriority').value = ticket.priority;
       document.getElementById('detailAssigned').value = ticket.assigned_to || '';
+      // Show delete button only for admin
+      document.getElementById('deleteTicketBtn').style.display = userRole === 'admin' ? '' : 'none';
       document.getElementById('detailsOverlay').classList.add('is-visible');
     }
 
@@ -1124,6 +1146,27 @@
           }
         } catch (err) {
           console.error('Close ticket error:', err);
+        }
+      });
+    }
+
+    function confirmDeleteTicket() {
+      if (!currentDetailsTicketId) return;
+      const id = currentDetailsTicketId;
+      showConfirm('warn', 'Eliminar Ticket', 'Estas seguro que deseas eliminar permanentemente este ticket? Esta accion no se puede deshacer.', async () => {
+        try {
+          const res = await fetch(`./api/tickets/${id}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (data.ok) {
+            closeDetails();
+            closeChat();
+            loadStats();
+            loadTickets();
+          } else {
+            alert(data.error || 'Error al eliminar ticket');
+          }
+        } catch (err) {
+          console.error('Delete ticket error:', err);
         }
       });
     }
@@ -1306,7 +1349,7 @@
           list.innerHTML = '<div class="notif-empty">Sin notificaciones</div>';
         } else {
           list.innerHTML = notifs.slice(0, 20).map(n => `
-            <div class="notif-item ${Number(n.is_read) ? '' : 'is-unread'}">
+            <div class="notif-item ${Number(n.is_read) ? '' : 'is-unread'}" data-type="${n.type}" data-ref="${n.ref_id || ''}" style="cursor:pointer;">
               <div class="notif-item-icon">${notifIcons[n.type] || '&#x1F514;'}</div>
               <div class="notif-item-body">
                 <div class="notif-item-title">${escapeHtml(n.title)}</div>
@@ -1316,6 +1359,19 @@
               <button class="notif-item-delete" onclick="event.stopPropagation();deleteNotif(${n.id})" title="Eliminar">&#x2715;</button>
             </div>
           `).join('');
+
+          // Attach click handlers for navigation
+          list.querySelectorAll('.notif-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+              if (e.target.closest('.notif-item-delete')) return;
+              const type = item.dataset.type;
+              const refId = item.dataset.ref;
+              if ((type === 'ticket' || type === 'ticket_reply' || type === 'ticket_internal') && refId) {
+                document.getElementById('notifDropdown').classList.remove('is-open');
+                openChatModal(parseInt(refId));
+              }
+            });
+          });
         }
       } catch (err) {
         console.warn('Notifications error:', err);

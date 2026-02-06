@@ -224,6 +224,7 @@ router.get("/api/tickets/stats", requireAuth, async (req, res) => {
         SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) as new_count,
         SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
         SUM(CASE WHEN status = 'waiting_client' THEN 1 ELSE 0 END) as waiting_client,
+        SUM(CASE WHEN status = 'waiting_support' THEN 1 ELSE 0 END) as waiting_support,
         SUM(CASE WHEN status = 'closed' THEN 1 ELSE 0 END) as closed
       FROM tickets ${whereClause}
     `, params);
@@ -234,6 +235,7 @@ router.get("/api/tickets/stats", requireAuth, async (req, res) => {
       new: Number(s.new_count || 0),
       in_progress: Number(s.in_progress || 0),
       waiting_client: Number(s.waiting_client || 0),
+      waiting_support: Number(s.waiting_support || 0),
       closed: Number(s.closed || 0)
     }});
   } catch (err) {
@@ -411,15 +413,15 @@ router.post("/api/tickets/:id/messages", requireAuth, async (req, res) => {
 
     // Update ticket status based on who replied
     let newStatus = ticket.status;
-    if (role === 'client' && ticket.status === 'waiting_client') {
-      newStatus = 'in_progress';
-    } else if ((role === 'admin' || role === 'support') && ticket.status === 'new') {
-      newStatus = 'in_progress';
+    if (role === 'client') {
+      // Client replied → waiting for support
+      newStatus = 'waiting_support';
     } else if ((role === 'admin' || role === 'support') && !isInternalNote) {
+      // Staff replied (not internal note) → waiting for client
       newStatus = 'waiting_client';
     }
 
-    if (newStatus !== ticket.status) {
+    if (newStatus !== ticket.status && ticket.status !== 'closed') {
       await db.execute("UPDATE tickets SET status = ? WHERE id = ?", [newStatus, id]);
     }
 
@@ -538,10 +540,15 @@ router.post("/api/tickets/:id/close", requireAuth, requireRole(['admin', 'suppor
   }
 });
 
-// Delete ticket (admin only)
+// Delete ticket (admin only) - permanently removes ticket and all related data
 router.delete("/api/tickets/:id", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
     const { id } = req.params;
+    // Delete related data first (attachments, messages, notifications)
+    await db.execute("DELETE FROM ticket_attachments WHERE ticket_id = ?", [id]);
+    await db.execute("DELETE FROM ticket_messages WHERE ticket_id = ?", [id]);
+    await db.execute("DELETE FROM admin_notifications WHERE ref_id = ? AND type IN ('ticket', 'ticket_reply', 'ticket_internal')", [id]);
+    // Delete the ticket
     await db.execute("DELETE FROM tickets WHERE id = ?", [id]);
     res.json({ ok: true });
   } catch (err) {

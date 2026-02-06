@@ -101,51 +101,34 @@
     }
 
     /* Welcome banner */
-    .welcome-banner {
-      background: linear-gradient(135deg, rgba(255,122,24,0.15), rgba(255,122,24,0.05));
-      border: 1px solid rgba(255,122,24,0.3);
-      border-radius: 20px;
-      padding: 30px;
-      margin-bottom: 30px;
-      display: flex;
-      align-items: center;
-      gap: 24px;
-    }
-    .welcome-icon { font-size: 48px; }
-    .welcome-text h2 { font-size: 24px; color: #fff; margin: 0 0 8px; }
-    .welcome-text p { color: rgba(255,255,255,0.6); margin: 0; font-size: 14px; }
-
-    /* Stats cards */
+    /* Stats cards - compact */
     .portal-stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 30px;
+      gap: 10px;
+      margin-bottom: 16px;
     }
     .portal-stat {
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      padding: 16px 20px;
+      border-radius: 8px;
+      padding: 10px 14px;
       text-align: center;
     }
     .portal-stat-value {
-      font-size: 28px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #fff, rgba(255,255,255,0.7));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
     }
     .portal-stat-label {
-      font-size: 11px;
+      font-size: 10px;
       color: rgba(255,255,255,0.5);
       text-transform: uppercase;
-      margin-top: 4px;
+      margin-top: 2px;
     }
     .portal-stat.new { border-color: rgba(59,130,246,0.3); }
     .portal-stat.in_progress { border-color: rgba(234,179,8,0.3); }
-    .portal-stat.waiting_client { border-color: rgba(249,115,22,0.3); }
+    .portal-stat.waiting_support { border-color: rgba(168,85,247,0.3); }
     .portal-stat.closed { border-color: rgba(34,197,94,0.3); }
 
     /* Services section */
@@ -278,6 +261,7 @@
     .ticket-status.new { background: rgba(59,130,246,0.2); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
     .ticket-status.in_progress { background: rgba(234,179,8,0.2); color: #facc15; border: 1px solid rgba(234,179,8,0.3); }
     .ticket-status.waiting_client { background: rgba(249,115,22,0.2); color: #fb923c; border: 1px solid rgba(249,115,22,0.3); }
+    .ticket-status.waiting_support { background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
     .ticket-status.closed { background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
 
     .ticket-preview {
@@ -453,18 +437,16 @@
 
     /* Mobile responsive */
     @media (max-width: 768px) {
-      .portal-stats { grid-template-columns: repeat(2, 1fr); }
-      .welcome-banner { flex-direction: column; text-align: center; padding: 20px; }
-      .welcome-icon { font-size: 36px; }
+      .portal-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
       .chat-modal { width: 96%; height: 90vh; }
       .chat-header { padding: 14px 16px 12px; }
       .chat-messages { padding: 12px 16px; }
       .chat-input { padding: 10px 16px 16px; }
     }
     @media (max-width: 480px) {
-      .portal-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
-      .portal-stat { padding: 12px; }
-      .portal-stat-value { font-size: 22px; }
+      .portal-stats { grid-template-columns: 1fr 1fr; gap: 6px; }
+      .portal-stat { padding: 8px 10px; }
+      .portal-stat-value { font-size: 18px; }
       .ticket-header { flex-direction: column; gap: 8px; }
     }
   </style>
@@ -500,16 +482,20 @@
     </header>
 
     <div class="portal-container">
-      <!-- Welcome banner -->
-      <div class="welcome-banner">
-        <div class="welcome-icon">&#x1F44B;</div>
-        <div class="welcome-text">
-          <h2>Bienvenido, <span id="userName">Usuario</span></h2>
-          <p>Aqui puedes ver tus servicios, tickets de soporte y crear nuevos</p>
+      <!-- Services (first) -->
+      <div id="servicesSection" style="display:none;">
+        <div class="section-header">
+          <div class="section-title">Mis Servicios</div>
         </div>
+        <div class="services-grid" id="servicesGrid"></div>
       </div>
 
-      <!-- Stats -->
+      <!-- Tickets header + stats -->
+      <div class="section-header">
+        <div class="section-title">Mis Tickets</div>
+        <button class="btn btn--primary" onclick="openNewTicket()">&#x2795; Nuevo Ticket</button>
+      </div>
+
       <div class="portal-stats" id="portalStats">
         <div class="portal-stat new">
           <div class="portal-stat-value" id="statNew">0</div>
@@ -519,9 +505,9 @@
           <div class="portal-stat-value" id="statProgress">0</div>
           <div class="portal-stat-label">En progreso</div>
         </div>
-        <div class="portal-stat waiting_client">
+        <div class="portal-stat waiting_support">
           <div class="portal-stat-value" id="statWaiting">0</div>
-          <div class="portal-stat-label">Esperando respuesta</div>
+          <div class="portal-stat-label">Esperando</div>
         </div>
         <div class="portal-stat closed">
           <div class="portal-stat-value" id="statClosed">0</div>
@@ -529,25 +515,11 @@
         </div>
       </div>
 
-      <!-- Services -->
-      <div id="servicesSection" style="display:none;">
-        <div class="section-header">
-          <div class="section-title">Mis Servicios</div>
-        </div>
-        <div class="services-grid" id="servicesGrid"></div>
-      </div>
-
-      <!-- Tickets -->
-      <div class="section-header">
-        <div class="section-title">Mis Tickets</div>
-        <button class="btn btn--primary" onclick="openNewTicket()">&#x2795; Nuevo Ticket</button>
-      </div>
-
       <div class="ticket-filters">
         <button class="filter-chip active" data-filter="all">Todos</button>
         <button class="filter-chip" data-filter="new">Nuevos</button>
         <button class="filter-chip" data-filter="in_progress">En progreso</button>
-        <button class="filter-chip" data-filter="waiting_client">Esperando</button>
+        <button class="filter-chip" data-filter="waiting_support">Esperando</button>
         <button class="filter-chip" data-filter="closed">Cerrados</button>
       </div>
 
@@ -627,7 +599,8 @@
     const statusLabels = {
       new: 'Nuevo',
       in_progress: 'En Progreso',
-      waiting_client: 'Esperando Respuesta',
+      waiting_client: 'En Revision',
+      waiting_support: 'Esperando Respuesta',
       closed: 'Cerrado'
     };
 
@@ -649,7 +622,6 @@
         const data = await res.json();
         if (data.ok) {
           currentUser = data.user;
-          document.getElementById('userName').textContent = data.user.name || data.user.username;
         }
       } catch (err) {
         console.error('Error loading session:', err);
@@ -663,7 +635,7 @@
         if (data.ok && data.stats) {
           document.getElementById('statNew').textContent = data.stats.new || 0;
           document.getElementById('statProgress').textContent = data.stats.in_progress || 0;
-          document.getElementById('statWaiting').textContent = data.stats.waiting_client || 0;
+          document.getElementById('statWaiting').textContent = data.stats.waiting_support || 0;
           document.getElementById('statClosed').textContent = data.stats.closed || 0;
         }
       } catch (err) {
@@ -1050,7 +1022,7 @@
           list.innerHTML = '<div class="notif-empty">Sin notificaciones</div>';
         } else {
           list.innerHTML = notifs.slice(0, 20).map(n => `
-            <div class="notif-item ${Number(n.is_read) ? '' : 'is-unread'}">
+            <div class="notif-item ${Number(n.is_read) ? '' : 'is-unread'}" data-type="${n.type}" data-ref="${n.ref_id || ''}" style="cursor:pointer;">
               <div class="notif-item-icon">${notifIcons[n.type] || '&#x1F514;'}</div>
               <div class="notif-item-body">
                 <div class="notif-item-title">${escapeHtml(n.title)}</div>
@@ -1060,6 +1032,19 @@
               <button class="notif-item-delete" onclick="event.stopPropagation();deleteNotif(${n.id})" title="Eliminar">&#x2715;</button>
             </div>
           `).join('');
+
+          // Attach click handlers for navigation
+          list.querySelectorAll('.notif-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+              if (e.target.closest('.notif-item-delete')) return;
+              const type = item.dataset.type;
+              const refId = item.dataset.ref;
+              if ((type === 'ticket' || type === 'ticket_reply') && refId) {
+                document.getElementById('notifDropdown').classList.remove('is-open');
+                openChatModal(parseInt(refId));
+              }
+            });
+          });
         }
       } catch (err) {
         console.warn('Notifications error:', err);

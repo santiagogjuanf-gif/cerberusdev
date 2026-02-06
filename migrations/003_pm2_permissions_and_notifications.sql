@@ -16,6 +16,13 @@ ALTER TABLE tickets
 ADD COLUMN IF NOT EXISTS ticket_type ENUM('client', 'internal') DEFAULT 'client' AFTER service_id;
 
 -- ============================================
+-- 2b. Add waiting_support status to tickets
+-- ============================================
+
+ALTER TABLE tickets
+MODIFY COLUMN status ENUM('new', 'in_progress', 'waiting_client', 'waiting_support', 'closed') DEFAULT 'new';
+
+-- ============================================
 -- 3. Enhanced notifications with user targeting
 -- ============================================
 
