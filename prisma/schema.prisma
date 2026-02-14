@@ -1,0 +1,386 @@
+// Prisma Schema for Cerberus Control
+// Generated from cerberus_control MySQL database
+// Run: npx prisma generate (to generate client)
+// Run: npx prisma db pull (to sync with existing DB)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// Users & Authentication
+// ============================================
+
+model AdminUser {
+  id                 Int       @id @default(autoincrement())
+  name               String    @db.VarChar(60)
+  username           String    @unique @db.VarChar(50)
+  email              String?   @db.VarChar(255)
+  fullName           String?   @map("full_name") @db.VarChar(150)
+  company            String?   @db.VarChar(200)
+  phone              String?   @db.VarChar(50)
+  pm2Access          Boolean   @default(false) @map("pm2_access") @db.TinyInt
+  isActive           Boolean   @default(true) @map("is_active") @db.TinyInt
+  passwordHash       String    @map("password_hash") @db.VarChar(255)
+  role               UserRole  @default(client)
+  mustChangePassword Boolean   @default(false) @map("must_change_password") @db.TinyInt
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  lastLoginAt        DateTime? @map("last_login_at")
+
+  // Relations
+  clientServices     ClientService[]
+  ticketsAsClient    Ticket[]           @relation("ClientTickets")
+  ticketsAssigned    Ticket[]           @relation("AssignedTickets")
+  ticketMessages     TicketMessage[]
+  ticketAttachments  TicketAttachment[]
+  services           Service[]
+  notifications      AdminNotification[]
+
+  @@map("admin_users")
+}
+
+enum UserRole {
+  admin
+  support
+  client
+}
+
+// ============================================
+// Leads (Contact Form)
+// ============================================
+
+model Lead {
+  id            Int        @id @default(autoincrement())
+  createdAt     DateTime   @default(now()) @map("created_at")
+  name          String     @db.VarChar(100)
+  email         String     @db.VarChar(120)
+  phone         String?    @db.VarChar(40)
+  projectType   String?    @map("project_type") @db.VarChar(60)
+  message       String     @db.Text
+  status        LeadStatus @default(new)
+  internalNotes String?    @map("internal_notes") @db.Text
+  isImportant   Boolean    @default(false) @map("is_important") @db.TinyInt
+
+  @@map("leads")
+}
+
+enum LeadStatus {
+  new
+  replied
+  closed
+}
+
+// ============================================
+// Blog System
+// ============================================
+
+model BlogCategory {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(100)
+  slug      String     @unique @db.VarChar(120)
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  // Relations
+  posts     BlogPost[]
+
+  @@map("blog_categories")
+}
+
+model BlogPost {
+  id          Int           @id @default(autoincrement())
+  title       String        @db.VarChar(255)
+  titleEn     String?       @map("title_en") @db.VarChar(255)
+  slug        String        @unique @db.VarChar(255)
+  excerpt     String?       @db.Text
+  excerptEn   String?       @map("excerpt_en") @db.Text
+  content     String?       @db.LongText
+  contentEn   String?       @map("content_en") @db.LongText
+  categoryId  Int?          @map("category_id")
+  imageUrl    String?       @map("image_url") @db.VarChar(500)
+  isPublished Boolean       @default(false) @map("is_published") @db.TinyInt
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  category    BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  comments    BlogComment[]
+
+  @@map("blog_posts")
+}
+
+model BlogComment {
+  id         Int      @id @default(autoincrement())
+  postId     Int      @map("post_id")
+  authorName String   @map("author_name") @db.VarChar(100)
+  comment    String   @db.Text
+  isApproved Boolean  @default(false) @map("is_approved") @db.TinyInt
+  isRead     Boolean  @default(false) @map("is_read") @db.TinyInt
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  post       BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("blog_comments")
+}
+
+// ============================================
+// Projects / Portfolio
+// ============================================
+
+model Project {
+  id            Int       @id @default(autoincrement())
+  title         String    @db.VarChar(255)
+  titleEn       String?   @map("title_en") @db.VarChar(255)
+  slug          String    @unique @db.VarChar(255)
+  tag           String?   @db.VarChar(100)
+  tagEn         String?   @map("tag_en") @db.VarChar(100)
+  description   String?   @db.Text
+  descriptionEn String?   @map("description_en") @db.Text
+  content       String?   @db.LongText
+  contentEn     String?   @map("content_en") @db.LongText
+  imageUrl      String?   @map("image_url") @db.VarChar(500)
+  date          DateTime? @db.Date
+  isPublished   Boolean   @default(false) @map("is_published") @db.TinyInt
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  technologies  ProjectTechnology[]
+  images        ProjectImage[]
+
+  @@map("projects")
+}
+
+model ProjectTechnology {
+  id        Int     @id @default(autoincrement())
+  projectId Int     @map("project_id")
+  techName  String  @map("tech_name") @db.VarChar(100)
+  techIcon  String  @map("tech_icon") @db.VarChar(255)
+
+  // Relations
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_technologies")
+}
+
+model ProjectImage {
+  id        Int      @id @default(autoincrement())
+  projectId Int      @map("project_id")
+  imageUrl  String   @map("image_url") @db.VarChar(500)
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_images")
+}
+
+// ============================================
+// Technologies Catalog
+// ============================================
+
+model Technology {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  slug      String   @unique @db.VarChar(100)
+  iconUrl   String?  @map("icon_url") @db.VarChar(255)
+  category  String   @default("tools") @db.VarChar(50)
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active") @db.TinyInt
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("technologies")
+}
+
+// ============================================
+// Client Services
+// ============================================
+
+model ClientService {
+  id             Int                  @id @default(autoincrement())
+  clientId       Int                  @map("client_id")
+  serviceName    String               @map("service_name") @db.VarChar(200)
+  domain         String?              @db.VarChar(255)
+  description    String?              @db.Text
+  serviceType    ClientServiceType    @default(web) @map("service_type")
+  status         ClientServiceStatus  @default(active)
+  storageUsedMb  Decimal              @default(0) @map("storage_used_mb") @db.Decimal(10, 2)
+  storageLimitMb Decimal              @default(5000) @map("storage_limit_mb") @db.Decimal(10, 2)
+  startDate      DateTime?            @map("start_date") @db.Date
+  endDate        DateTime?            @map("end_date") @db.Date
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  // Relations
+  client         AdminUser            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  tickets        Ticket[]
+
+  @@index([clientId], map: "idx_client_services_client")
+  @@map("client_services")
+}
+
+enum ClientServiceType {
+  web
+  api
+  system
+  hosting
+  maintenance
+  other
+}
+
+enum ClientServiceStatus {
+  active
+  suspended
+  cancelled
+}
+
+// ============================================
+// Ticket System
+// ============================================
+
+model Ticket {
+  id         Int          @id @default(autoincrement())
+  clientId   Int          @map("client_id")
+  assignedTo Int?         @map("assigned_to")
+  serviceId  Int?         @map("service_id")
+  ticketType TicketType   @default(client) @map("ticket_type")
+  subject    String       @db.VarChar(255)
+  status     TicketStatus @default(new)
+  priority   Priority     @default(medium)
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  closedAt   DateTime?    @map("closed_at")
+
+  // Relations
+  client      AdminUser          @relation("ClientTickets", fields: [clientId], references: [id], onDelete: Cascade)
+  assignee    AdminUser?         @relation("AssignedTickets", fields: [assignedTo], references: [id], onDelete: SetNull)
+  service     ClientService?     @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  messages    TicketMessage[]
+  attachments TicketAttachment[]
+
+  @@index([clientId], map: "idx_tickets_client")
+  @@index([status], map: "idx_tickets_status")
+  @@index([assignedTo], map: "idx_tickets_assigned")
+  @@map("tickets")
+}
+
+enum TicketType {
+  client
+  internal
+}
+
+enum TicketStatus {
+  new
+  in_progress
+  waiting_client
+  waiting_support
+  closed
+}
+
+enum Priority {
+  low
+  medium
+  high
+  urgent
+}
+
+model TicketMessage {
+  id         Int      @id @default(autoincrement())
+  ticketId   Int      @map("ticket_id")
+  userId     Int      @map("user_id")
+  message    String   @db.Text
+  isInternal Boolean  @default(false) @map("is_internal") @db.TinyInt
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  ticket      Ticket             @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user        AdminUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attachments TicketAttachment[]
+
+  @@index([ticketId], map: "idx_ticket_messages_ticket")
+  @@map("ticket_messages")
+}
+
+model TicketAttachment {
+  id           Int      @id @default(autoincrement())
+  ticketId     Int?     @map("ticket_id")
+  messageId    Int?     @map("message_id")
+  filename     String   @db.VarChar(255)
+  originalName String   @map("original_name") @db.VarChar(255)
+  filePath     String   @map("file_path") @db.VarChar(500)
+  fileSize     Int      @map("file_size")
+  mimeType     String   @map("mime_type") @db.VarChar(100)
+  uploadedBy   Int      @map("uploaded_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  ticket       Ticket?        @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  message      TicketMessage? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  uploader     AdminUser      @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+
+  @@map("ticket_attachments")
+}
+
+// ============================================
+// PM2 Services
+// ============================================
+
+model Service {
+  id          Int           @id @default(autoincrement())
+  name        String        @db.VarChar(100)
+  pm2Name     String        @unique @map("pm2_name") @db.VarChar(100)
+  description String?       @db.Text
+  userId      Int?          @map("user_id")
+  status      ServiceStatus @default(unknown)
+  port        Int?
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  user        AdminUser?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("services")
+}
+
+enum ServiceStatus {
+  online
+  stopped
+  errored
+  unknown
+}
+
+// ============================================
+// Notifications
+// ============================================
+
+model AdminNotification {
+  id        Int              @id @default(autoincrement())
+  type      NotificationType
+  userId    Int?             @map("user_id")
+  refId     Int              @map("ref_id")
+  title     String           @db.VarChar(255)
+  body      String?          @db.VarChar(500)
+  isRead    Boolean          @default(false) @map("is_read") @db.TinyInt
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  // Relations
+  user      AdminUser?       @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead], map: "idx_notifications_user")
+  @@map("admin_notifications")
+}
+
+enum NotificationType {
+  lead
+  comment
+  ticket
+  ticket_reply
+  ticket_internal
+}
