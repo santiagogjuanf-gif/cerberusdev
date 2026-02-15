@@ -76,9 +76,18 @@ app.use("/api/projects", require("./routes/projects"));
 // Public API – Technologies (for tecnologias.html)
 app.get("/api/technologies", async (req, res) => {
   try {
-    const db = require("./config/db");
-    const [rows] = await db.execute("SELECT * FROM technologies WHERE is_active = 1 ORDER BY category ASC, sort_order ASC, name ASC");
-    res.json({ ok: true, technologies: rows });
+    const { prisma } = require("./lib/prisma");
+    const technologies = await prisma.technology.findMany({
+      where: {
+        isActive: true
+      },
+      orderBy: [
+        { category: 'asc' },
+        { sortOrder: 'asc' },
+        { name: 'asc' }
+      ]
+    });
+    res.json({ ok: true, technologies });
   } catch (err) {
     console.error("[TECHNOLOGIES PUBLIC]", err);
     res.json({ ok: true, technologies: [] });

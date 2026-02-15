@@ -1,12 +1,12 @@
 const router = require("express").Router();
-const db = require("../config/db");
+const { prisma } = require("../lib/prisma");
 
 // Helper function to apply translations based on language
 function applyTranslation(post, lang) {
   if (lang === "en") {
-    if (post.title_en) post.title = post.title_en;
-    if (post.excerpt_en) post.excerpt = post.excerpt_en;
-    if (post.content_en) post.content = post.content_en;
+    if (post.titleEn) post.title = post.titleEn;
+    if (post.excerptEn) post.excerpt = post.excerptEn;
+    if (post.contentEn) post.content = post.contentEn;
   }
   return post;
 }
@@ -16,27 +16,40 @@ router.get("/posts", async (req, res) => {
   try {
     const { category, limit, lang } = req.query;
     const currentLang = lang || "es";
-    let sql = `
-      SELECT p.*, c.name AS category_name, c.slug AS category_slug
-      FROM blog_posts p
-      LEFT JOIN blog_categories c ON p.category_id = c.id
-      WHERE p.is_published = 1
-    `;
-    const params = [];
+
+    const where = {
+      isPublished: true
+    };
 
     if (category) {
-      sql += " AND c.slug = ?";
-      params.push(category);
+      where.category = {
+        slug: category
+      };
     }
 
-    sql += " ORDER BY p.created_at DESC";
+    const posts = await prisma.blogPost.findMany({
+      where,
+      include: {
+        category: {
+          select: {
+            name: true,
+            slug: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: limit ? Number(limit) : undefined
+    });
 
-    if (limit) {
-      sql += " LIMIT ?";
-      params.push(Number(limit));
-    }
+    // Transform to match expected format
+    const rows = posts.map(post => ({
+      ...post,
+      category_name: post.category?.name || null,
+      category_slug: post.category?.slug || null
+    }));
 
-    const [rows] = await db.execute(sql, params);
     rows.forEach(post => applyTranslation(post, currentLang));
     res.json({ ok: true, posts: rows });
   } catch (err) {
@@ -50,16 +63,32 @@ router.get("/posts/:slug", async (req, res) => {
   try {
     const { slug } = req.params;
     const lang = req.query.lang || "es";
-    const [[post]] = await db.execute(`
-      SELECT p.*, c.name AS category_name, c.slug AS category_slug
-      FROM blog_posts p
-      LEFT JOIN blog_categories c ON p.category_id = c.id
-      WHERE p.slug = ? AND p.is_published = 1
-    `, [slug]);
+
+    const post = await prisma.blogPost.findFirst({
+      where: {
+        slug,
+        isPublished: true
+      },
+      include: {
+        category: {
+          select: {
+            name: true,
+            slug: true
+          }
+        }
+      }
+    });
 
     if (!post) return res.status(404).json({ ok: false, error: "not_found" });
-    applyTranslation(post, lang);
-    res.json({ ok: true, post });
+
+    const result = {
+      ...post,
+      category_name: post.category?.name || null,
+      category_slug: post.category?.slug || null
+    };
+
+    applyTranslation(result, lang);
+    res.json({ ok: true, post: result });
   } catch (err) {
     console.error("[BLOG ERROR]", err);
     res.status(500).json({ ok: false });
@@ -69,13 +98,29 @@ router.get("/posts/:slug", async (req, res) => {
 // Get all categories
 router.get("/categories", async (req, res) => {
   try {
-    const [rows] = await db.execute(`
-      SELECT c.*, COUNT(p.id) AS post_count
-      FROM blog_categories c
-      LEFT JOIN blog_posts p ON p.category_id = c.id AND p.is_published = 1
-      GROUP BY c.id
-      ORDER BY c.name ASC
-    `);
+    const categories = await prisma.blogCategory.findMany({
+      include: {
+        _count: {
+          select: {
+            posts: {
+              where: {
+                isPublished: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        name: 'asc'
+      }
+    });
+
+    // Transform to match expected format
+    const rows = categories.map(cat => ({
+      ...cat,
+      post_count: cat._count.posts
+    }));
+
     res.json({ ok: true, categories: rows });
   } catch (err) {
     console.error("[BLOG ERROR]", err);
@@ -87,14 +132,42 @@ router.get("/categories", async (req, res) => {
 router.get("/posts/:slug/comments", async (req, res) => {
   try {
     const { slug } = req.params;
+
     // Get post id from slug
-    const [[post]] = await db.execute("SELECT id FROM blog_posts WHERE slug = ? AND is_published = 1", [slug]);
+    const post = await prisma.blogPost.findFirst({
+      where: {
+        slug,
+        isPublished: true
+      },
+      select: { id: true }
+    });
+
     if (!post) return res.json({ ok: true, comments: [] });
 
-    const [rows] = await db.execute(
-      "SELECT id, author_name, comment, created_at FROM blog_comments WHERE post_id = ? AND is_approved = 1 ORDER BY created_at DESC",
-      [post.id]
-    );
+    const comments = await prisma.blogComment.findMany({
+      where: {
+        postId: post.id,
+        isApproved: true
+      },
+      select: {
+        id: true,
+        authorName: true,
+        comment: true,
+        createdAt: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    // Transform to snake_case for frontend compatibility
+    const rows = comments.map(c => ({
+      id: c.id,
+      author_name: c.authorName,
+      comment: c.comment,
+      created_at: c.createdAt
+    }));
+
     res.json({ ok: true, comments: rows });
   } catch (err) {
     console.error("[BLOG ERROR]", err);
@@ -113,21 +186,35 @@ router.post("/posts/:slug/comments", async (req, res) => {
     }
 
     // Get post
-    const [[post]] = await db.execute("SELECT id, title FROM blog_posts WHERE slug = ? AND is_published = 1", [slug]);
+    const post = await prisma.blogPost.findFirst({
+      where: {
+        slug,
+        isPublished: true
+      },
+      select: { id: true, title: true }
+    });
+
     if (!post) return res.status(404).json({ ok: false, error: "post_not_found" });
 
     // Insert comment (pending approval)
-    await db.execute(
-      "INSERT INTO blog_comments (post_id, author_name, comment) VALUES (?, ?, ?)",
-      [post.id, author_name.substring(0, 100), comment.substring(0, 2000)]
-    );
+    await prisma.blogComment.create({
+      data: {
+        postId: post.id,
+        authorName: author_name.substring(0, 100),
+        comment: comment.substring(0, 2000)
+      }
+    });
 
     // Create admin notification
     try {
-      await db.execute(
-        "INSERT INTO admin_notifications (type, ref_id, title, body) VALUES ('comment', ?, ?, ?)",
-        [post.id, `Nuevo comentario en: ${post.title}`, `${author_name} dejo un comentario`]
-      );
+      await prisma.adminNotification.create({
+        data: {
+          type: 'comment',
+          refId: post.id,
+          title: `Nuevo comentario en: ${post.title}`,
+          body: `${author_name} dejo un comentario`
+        }
+      });
     } catch (e) {
       console.warn("[NOTIF] Could not create notification:", e.message);
     }

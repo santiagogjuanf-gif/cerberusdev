@@ -1,13 +1,13 @@
 const router = require("express").Router();
-const db = require("../config/db");
+const { prisma } = require("../lib/prisma");
 
 // Helper function to apply translations based on language
 function applyTranslation(item, lang) {
   if (lang === "en") {
-    if (item.title_en) item.title = item.title_en;
-    if (item.tag_en) item.tag = item.tag_en;
-    if (item.description_en) item.description = item.description_en;
-    if (item.content_en) item.content = item.content_en;
+    if (item.titleEn) item.title = item.titleEn;
+    if (item.tagEn) item.tag = item.tagEn;
+    if (item.descriptionEn) item.description = item.descriptionEn;
+    if (item.contentEn) item.content = item.contentEn;
   }
   return item;
 }
@@ -16,26 +16,46 @@ function applyTranslation(item, lang) {
 router.get("/", async (req, res) => {
   try {
     const lang = req.query.lang || "es";
-    const [rows] = await db.execute(`
-      SELECT * FROM projects
-      WHERE is_published = 1
-      ORDER BY date DESC, created_at DESC
-    `);
 
-    // Attach technologies and images to each project
-    for (const p of rows) {
-      const [techs] = await db.execute(
-        "SELECT tech_name, tech_icon FROM project_technologies WHERE project_id = ?",
-        [p.id]
-      );
-      const [images] = await db.execute(
-        "SELECT image_url FROM project_images WHERE project_id = ? ORDER BY sort_order ASC",
-        [p.id]
-      );
-      p.technologies = techs;
-      p.images = images.map(i => i.image_url);
-      applyTranslation(p, lang);
-    }
+    const projects = await prisma.project.findMany({
+      where: {
+        isPublished: true
+      },
+      include: {
+        technologies: {
+          select: {
+            techName: true,
+            techIcon: true
+          }
+        },
+        images: {
+          select: {
+            imageUrl: true
+          },
+          orderBy: {
+            sortOrder: 'asc'
+          }
+        }
+      },
+      orderBy: [
+        { date: 'desc' },
+        { createdAt: 'desc' }
+      ]
+    });
+
+    // Transform to match expected format
+    const rows = projects.map(p => {
+      const project = {
+        ...p,
+        technologies: p.technologies.map(t => ({
+          tech_name: t.techName,
+          tech_icon: t.techIcon
+        })),
+        images: p.images.map(i => i.imageUrl)
+      };
+      applyTranslation(project, lang);
+      return project;
+    });
 
     res.json({ ok: true, projects: rows });
   } catch (err) {
@@ -49,26 +69,44 @@ router.get("/:slug", async (req, res) => {
   try {
     const { slug } = req.params;
     const lang = req.query.lang || "es";
-    const [[project]] = await db.execute(
-      "SELECT * FROM projects WHERE slug = ? AND is_published = 1",
-      [slug]
-    );
+
+    const project = await prisma.project.findFirst({
+      where: {
+        slug,
+        isPublished: true
+      },
+      include: {
+        technologies: {
+          select: {
+            techName: true,
+            techIcon: true
+          }
+        },
+        images: {
+          select: {
+            imageUrl: true
+          },
+          orderBy: {
+            sortOrder: 'asc'
+          }
+        }
+      }
+    });
 
     if (!project) return res.status(404).json({ ok: false, error: "not_found" });
 
-    const [techs] = await db.execute(
-      "SELECT tech_name, tech_icon FROM project_technologies WHERE project_id = ?",
-      [project.id]
-    );
-    const [images] = await db.execute(
-      "SELECT image_url FROM project_images WHERE project_id = ? ORDER BY sort_order ASC",
-      [project.id]
-    );
-    project.technologies = techs;
-    project.images = images.map(i => i.image_url);
-    applyTranslation(project, lang);
+    // Transform to match expected format
+    const result = {
+      ...project,
+      technologies: project.technologies.map(t => ({
+        tech_name: t.techName,
+        tech_icon: t.techIcon
+      })),
+      images: project.images.map(i => i.imageUrl)
+    };
 
-    res.json({ ok: true, project });
+    applyTranslation(result, lang);
+    res.json({ ok: true, project: result });
   } catch (err) {
     console.error("[PROJECTS ERROR]", err);
     res.status(500).json({ ok: false });
