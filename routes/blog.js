@@ -43,9 +43,17 @@ router.get("/posts", async (req, res) => {
       take: limit ? Number(limit) : undefined
     });
 
-    // Transform to match expected format
+    // Transform to snake_case for frontend compatibility
     const rows = posts.map(post => ({
       ...post,
+      image_url: post.imageUrl,
+      is_published: post.isPublished,
+      created_at: post.createdAt,
+      updated_at: post.updatedAt,
+      category_id: post.categoryId,
+      title_en: post.titleEn,
+      excerpt_en: post.excerptEn,
+      content_en: post.contentEn,
       category_name: post.category?.name || null,
       category_slug: post.category?.slug || null
     }));
@@ -83,6 +91,14 @@ router.get("/posts/:slug", async (req, res) => {
 
     const result = {
       ...post,
+      image_url: post.imageUrl,
+      is_published: post.isPublished,
+      created_at: post.createdAt,
+      updated_at: post.updatedAt,
+      category_id: post.categoryId,
+      title_en: post.titleEn,
+      excerpt_en: post.excerptEn,
+      content_en: post.contentEn,
       category_name: post.category?.name || null,
       category_slug: post.category?.slug || null
     };

@@ -130,9 +130,17 @@ router.get("/api/blog/posts", requireAuth, async (req, res) => {
       orderBy: { createdAt: 'desc' }
     });
 
-    // Transform for frontend compatibility
+    // Transform to snake_case for frontend compatibility
     const rows = posts.map(p => ({
       ...p,
+      image_url: p.imageUrl,
+      is_published: p.isPublished,
+      created_at: p.createdAt,
+      updated_at: p.updatedAt,
+      category_id: p.categoryId,
+      title_en: p.titleEn,
+      excerpt_en: p.excerptEn,
+      content_en: p.contentEn,
       category_name: p.category?.name || null
     }));
 
@@ -443,9 +451,17 @@ router.get("/api/projects", requireAuth, async (req, res) => {
       orderBy: { createdAt: 'desc' }
     });
 
-    // Transform for frontend compatibility
+    // Transform to snake_case for frontend compatibility
     const rows = projects.map(p => ({
       ...p,
+      image_url: p.imageUrl,
+      is_published: p.isPublished,
+      created_at: p.createdAt,
+      updated_at: p.updatedAt,
+      title_en: p.titleEn,
+      tag_en: p.tagEn,
+      description_en: p.descriptionEn,
+      content_en: p.contentEn,
       technologies: p.technologies.map(t => ({
         id: t.id,
         tech_name: t.techName,
@@ -1537,7 +1553,17 @@ router.get("/api/technologies", async (req, res) => {
         { name: 'asc' }
       ]
     });
-    res.json({ ok: true, technologies });
+
+    // Transform to snake_case for frontend compatibility
+    const rows = technologies.map(t => ({
+      ...t,
+      icon_url: t.iconUrl,
+      sort_order: t.sortOrder,
+      is_active: t.isActive,
+      created_at: t.createdAt
+    }));
+
+    res.json({ ok: true, technologies: rows });
   } catch (err) {
     // If table doesn't exist, return empty array
     console.error("[TECHNOLOGIES]", err);

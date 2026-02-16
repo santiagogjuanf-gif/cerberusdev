@@ -87,7 +87,17 @@ app.get("/api/technologies", async (req, res) => {
         { name: 'asc' }
       ]
     });
-    res.json({ ok: true, technologies });
+
+    // Transform to snake_case for frontend compatibility
+    const rows = technologies.map(t => ({
+      ...t,
+      icon_url: t.iconUrl,
+      sort_order: t.sortOrder,
+      is_active: t.isActive,
+      created_at: t.createdAt
+    }));
+
+    res.json({ ok: true, technologies: rows });
   } catch (err) {
     console.error("[TECHNOLOGIES PUBLIC]", err);
     res.json({ ok: true, technologies: [] });

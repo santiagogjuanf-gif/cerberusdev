@@ -43,10 +43,18 @@ router.get("/", async (req, res) => {
       ]
     });
 
-    // Transform to match expected format
+    // Transform to snake_case for frontend compatibility
     const rows = projects.map(p => {
       const project = {
         ...p,
+        image_url: p.imageUrl,
+        is_published: p.isPublished,
+        created_at: p.createdAt,
+        updated_at: p.updatedAt,
+        title_en: p.titleEn,
+        tag_en: p.tagEn,
+        description_en: p.descriptionEn,
+        content_en: p.contentEn,
         technologies: p.technologies.map(t => ({
           tech_name: t.techName,
           tech_icon: t.techIcon
@@ -95,9 +103,17 @@ router.get("/:slug", async (req, res) => {
 
     if (!project) return res.status(404).json({ ok: false, error: "not_found" });
 
-    // Transform to match expected format
+    // Transform to snake_case for frontend compatibility
     const result = {
       ...project,
+      image_url: project.imageUrl,
+      is_published: project.isPublished,
+      created_at: project.createdAt,
+      updated_at: project.updatedAt,
+      title_en: project.titleEn,
+      tag_en: project.tagEn,
+      description_en: project.descriptionEn,
+      content_en: project.contentEn,
       technologies: project.technologies.map(t => ({
         tech_name: t.techName,
         tech_icon: t.techIcon

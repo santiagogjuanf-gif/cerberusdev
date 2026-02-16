@@ -215,7 +215,7 @@
                 <div class="tech-grid-custom">
                   ${grouped[cat].map(t => `
                     <div class="tech-card">
-                      <img src="${esc(t.icon_url || '/assets/img/tech/default.png')}" alt="${esc(t.name)}" onerror="this.style.opacity='0.3'">
+                      <img src="${esc(t.icon_url || '/assets/img/tech/default.svg')}" alt="${esc(t.name)}" onerror="this.style.opacity='0.3'">
                       <span>${esc(t.name)}</span>
                     </div>
                   `).join("")}
