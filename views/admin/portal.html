@@ -435,6 +435,182 @@
       margin-top: 10px; gap: 8px;
     }
 
+    /* Request Storage Button */
+    .request-storage-btn {
+      margin-top: 12px;
+      width: 100%;
+      padding: 8px 12px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.15), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 8px;
+      color: #FF7A18;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .request-storage-btn:hover {
+      background: linear-gradient(135deg, rgba(255,122,24,0.25), rgba(255,122,24,0.1));
+      border-color: rgba(255,122,24,0.5);
+      box-shadow: 0 0 15px rgba(255,122,24,0.15);
+    }
+    .request-storage-btn.warning {
+      background: linear-gradient(135deg, rgba(234,179,8,0.15), rgba(234,179,8,0.05));
+      border-color: rgba(234,179,8,0.3);
+      color: #facc15;
+    }
+    .request-storage-btn.warning:hover {
+      background: linear-gradient(135deg, rgba(234,179,8,0.25), rgba(234,179,8,0.1));
+      border-color: rgba(234,179,8,0.5);
+    }
+    .request-storage-btn.critical {
+      background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05));
+      border-color: rgba(239,68,68,0.3);
+      color: #f87171;
+      animation: criticalPulse 2s ease-in-out infinite;
+    }
+    .request-storage-btn.critical:hover {
+      background: linear-gradient(135deg, rgba(239,68,68,0.25), rgba(239,68,68,0.1));
+      border-color: rgba(239,68,68,0.5);
+    }
+    @keyframes criticalPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
+      50% { box-shadow: 0 0 15px 2px rgba(239,68,68,0.2); }
+    }
+
+    /* Storage Alert Banner */
+    .storage-alert-banner {
+      background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05));
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: alertPulse 3s ease-in-out infinite;
+    }
+    .storage-alert-banner.warning {
+      background: linear-gradient(135deg, rgba(234,179,8,0.15), rgba(234,179,8,0.05));
+      border-color: rgba(234,179,8,0.3);
+    }
+    @keyframes alertPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+    .storage-alert-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .storage-alert-content {
+      flex: 1;
+    }
+    .storage-alert-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f87171;
+      margin-bottom: 4px;
+    }
+    .storage-alert-banner.warning .storage-alert-title {
+      color: #facc15;
+    }
+    .storage-alert-text {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+    }
+    .storage-alert-btn {
+      padding: 8px 16px;
+      background: rgba(239,68,68,0.2);
+      border: 1px solid rgba(239,68,68,0.4);
+      border-radius: 8px;
+      color: #f87171;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    .storage-alert-btn:hover {
+      background: rgba(239,68,68,0.3);
+    }
+    .storage-alert-banner.warning .storage-alert-btn {
+      background: rgba(234,179,8,0.2);
+      border-color: rgba(234,179,8,0.4);
+      color: #facc15;
+    }
+    .storage-alert-banner.warning .storage-alert-btn:hover {
+      background: rgba(234,179,8,0.3);
+    }
+
+    /* Storage Request Modal */
+    .storage-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .storage-option {
+      padding: 14px 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .storage-option:hover {
+      border-color: rgba(255,122,24,0.3);
+      background: rgba(255,255,255,0.05);
+    }
+    .storage-option.selected {
+      border-color: rgba(255,122,24,0.5);
+      background: rgba(255,122,24,0.1);
+    }
+    .storage-option-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #FF7A18;
+      margin-bottom: 4px;
+    }
+    .storage-option-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+    }
+    .storage-current-info {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+    .storage-current-title {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 8px;
+    }
+    .storage-current-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .storage-current-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .storage-current-text {
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      display: flex;
+      justify-content: space-between;
+    }
+
     /* Mobile responsive */
     @media (max-width: 768px) {
       .portal-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
@@ -482,6 +658,9 @@
     </header>
 
     <div class="portal-container">
+      <!-- Storage Alert Banner (shown when services have high usage) -->
+      <div id="storageAlertBanner" style="display:none;"></div>
+
       <!-- Services (first) -->
       <div id="servicesSection" style="display:none;">
         <div class="section-header">
@@ -563,6 +742,55 @@
         <div class="modal-actions">
           <button type="button" class="btn btn--ghost" onclick="closeNewTicket()">Cancelar</button>
           <button type="submit" class="btn btn--primary">Enviar Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Storage Request Modal -->
+  <div class="modal-overlay" id="storageRequestModal">
+    <div class="modal-content">
+      <div class="modal-title">Solicitar Mas Espacio</div>
+      <div class="storage-current-info">
+        <div class="storage-current-title">Estado actual del servicio: <strong id="storageServiceName"></strong></div>
+        <div class="storage-current-bar">
+          <div class="storage-current-fill" id="storageCurrentFill"></div>
+        </div>
+        <div class="storage-current-text">
+          <span id="storageCurrentUsed">0 MB usados</span>
+          <span id="storageCurrentLimit">de 0 MB</span>
+        </div>
+      </div>
+      <form id="storageRequestForm">
+        <input type="hidden" id="storageServiceId">
+        <div class="form-group">
+          <label class="form-label">Espacio adicional necesario</label>
+          <div class="storage-options">
+            <div class="storage-option" data-value="1000">
+              <div class="storage-option-value">+1 GB</div>
+              <div class="storage-option-label">1,000 MB</div>
+            </div>
+            <div class="storage-option" data-value="2000">
+              <div class="storage-option-value">+2 GB</div>
+              <div class="storage-option-label">2,000 MB</div>
+            </div>
+            <div class="storage-option" data-value="5000">
+              <div class="storage-option-value">+5 GB</div>
+              <div class="storage-option-label">5,000 MB</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">O especifica cantidad personalizada (MB)</label>
+          <input type="number" class="form-input" id="storageCustomAmount" placeholder="Ej: 3000" min="100" max="50000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Motivo de la solicitud (opcional)</label>
+          <textarea class="form-textarea" id="storageReason" placeholder="Explica brevemente por que necesitas mas espacio..." rows="3"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn--ghost" onclick="closeStorageRequest()">Cancelar</button>
+          <button type="submit" class="btn btn--primary">Enviar Solicitud</button>
         </div>
       </form>
     </div>
@@ -704,6 +932,12 @@
                   ${endStr ? `<div class="service-date-item">&#x1F4C6; Vence: <span>${endStr}</span></div>` : ''}
                 </div>
                 ${expirationHtml}
+                ${pct >= 70 ? `
+                  <button class="request-storage-btn ${pct >= 90 ? 'critical' : pct >= 80 ? 'warning' : ''}"
+                          onclick="openStorageRequest(${s.id}, '${escapeHtml(s.service_name)}', ${used}, ${limit}, ${pct})">
+                    ${pct >= 90 ? '&#x26A0;' : '&#x1F4E6;'} Solicitar Mas Espacio
+                  </button>
+                ` : ''}
               </div>
             `;
           }).join('');
@@ -716,9 +950,71 @@
             opt.textContent = s.service_name + (s.domain ? ` (${s.domain})` : '');
             select.appendChild(opt);
           });
+
+          // Check for high storage usage and show alert banner
+          checkStorageAlerts();
         }
       } catch (err) {
         console.error('Error loading services:', err);
+      }
+    }
+
+    function checkStorageAlerts() {
+      const criticalServices = [];
+      const warningServices = [];
+
+      services.forEach(s => {
+        const used = Number(s.storage_used_mb) || 0;
+        const limit = Number(s.storage_limit_mb) || 1;
+        const pct = Math.round((used / limit) * 100);
+
+        if (pct >= 90) {
+          criticalServices.push({ ...s, pct, used, limit });
+        } else if (pct >= 80) {
+          warningServices.push({ ...s, pct, used, limit });
+        }
+      });
+
+      const banner = document.getElementById('storageAlertBanner');
+
+      if (criticalServices.length > 0) {
+        const s = criticalServices[0];
+        banner.style.display = '';
+        banner.className = 'storage-alert-banner';
+        banner.innerHTML = `
+          <div class="storage-alert-icon">&#x26A0;</div>
+          <div class="storage-alert-content">
+            <div class="storage-alert-title">Almacenamiento Critico en ${escapeHtml(s.service_name)}</div>
+            <div class="storage-alert-text">
+              Has utilizado el ${s.pct}% del espacio disponible (${s.used} MB de ${s.limit} MB).
+              ${criticalServices.length > 1 ? `Y ${criticalServices.length - 1} servicio(s) mas con uso critico.` : ''}
+              Solicita mas espacio para evitar interrupciones.
+            </div>
+          </div>
+          <button class="storage-alert-btn" onclick="openStorageRequest(${s.id}, '${escapeHtml(s.service_name)}', ${s.used}, ${s.limit}, ${s.pct})">
+            Solicitar Espacio
+          </button>
+        `;
+      } else if (warningServices.length > 0) {
+        const s = warningServices[0];
+        banner.style.display = '';
+        banner.className = 'storage-alert-banner warning';
+        banner.innerHTML = `
+          <div class="storage-alert-icon">&#x1F4E6;</div>
+          <div class="storage-alert-content">
+            <div class="storage-alert-title">Espacio Limitado en ${escapeHtml(s.service_name)}</div>
+            <div class="storage-alert-text">
+              Has utilizado el ${s.pct}% del espacio disponible (${s.used} MB de ${s.limit} MB).
+              ${warningServices.length > 1 ? `Y ${warningServices.length - 1} servicio(s) mas con uso elevado.` : ''}
+              Considera solicitar mas espacio pronto.
+            </div>
+          </div>
+          <button class="storage-alert-btn" onclick="openStorageRequest(${s.id}, '${escapeHtml(s.service_name)}', ${s.used}, ${s.limit}, ${s.pct})">
+            Solicitar Espacio
+          </button>
+        `;
+      } else {
+        banner.style.display = 'none';
       }
     }
 
@@ -931,9 +1227,122 @@
       }
     };
 
+    // ===== Storage Request Functions =====
+    let selectedStorageAmount = null;
+
+    function openStorageRequest(serviceId, serviceName, used, limit, pct) {
+      selectedStorageAmount = null;
+      document.getElementById('storageServiceId').value = serviceId;
+      document.getElementById('storageServiceName').textContent = serviceName;
+      document.getElementById('storageCurrentUsed').textContent = used + ' MB usados';
+      document.getElementById('storageCurrentLimit').textContent = 'de ' + limit + ' MB';
+
+      const fill = document.getElementById('storageCurrentFill');
+      fill.style.width = pct + '%';
+      fill.className = 'storage-current-fill';
+      if (pct >= 85) fill.classList.add('high');
+      else if (pct >= 60) fill.classList.add('medium');
+      else fill.classList.add('low');
+      fill.style.background = pct >= 85 ? 'linear-gradient(90deg, #ef4444, #f87171)' :
+                               pct >= 60 ? 'linear-gradient(90deg, #eab308, #facc15)' :
+                               'linear-gradient(90deg, #22c55e, #4ade80)';
+
+      // Reset form
+      document.querySelectorAll('.storage-option').forEach(opt => opt.classList.remove('selected'));
+      document.getElementById('storageCustomAmount').value = '';
+      document.getElementById('storageReason').value = '';
+
+      document.getElementById('storageRequestModal').classList.add('is-visible');
+    }
+
+    function closeStorageRequest() {
+      document.getElementById('storageRequestModal').classList.remove('is-visible');
+    }
+
+    // Storage option selection
+    document.querySelectorAll('.storage-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.storage-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        selectedStorageAmount = parseInt(opt.dataset.value);
+        document.getElementById('storageCustomAmount').value = '';
+      });
+    });
+
+    document.getElementById('storageCustomAmount').addEventListener('input', function() {
+      if (this.value) {
+        selectedStorageAmount = null;
+        document.querySelectorAll('.storage-option').forEach(o => o.classList.remove('selected'));
+      }
+    });
+
+    document.getElementById('storageRequestForm').onsubmit = async (e) => {
+      e.preventDefault();
+
+      const serviceId = document.getElementById('storageServiceId').value;
+      const customAmount = document.getElementById('storageCustomAmount').value;
+      const reason = document.getElementById('storageReason').value.trim();
+
+      const amount = customAmount ? parseInt(customAmount) : selectedStorageAmount;
+
+      if (!amount || amount < 100) {
+        alert('Por favor selecciona o ingresa la cantidad de espacio adicional (minimo 100 MB)');
+        return;
+      }
+
+      const service = services.find(s => s.id == serviceId);
+      const serviceName = service ? service.service_name : 'Servicio #' + serviceId;
+      const currentUsed = service ? (Number(service.storage_used_mb) || 0) : 0;
+      const currentLimit = service ? (Number(service.storage_limit_mb) || 0) : 0;
+
+      // Create ticket with storage request
+      const subject = `Solicitud de espacio adicional: +${amount >= 1000 ? (amount/1000) + ' GB' : amount + ' MB'}`;
+      const message = `**Solicitud de Aumento de Espacio**
+
+Servicio: ${serviceName}
+Espacio actual: ${currentUsed} MB / ${currentLimit} MB
+Espacio adicional solicitado: ${amount} MB (${(amount/1000).toFixed(1)} GB)
+Nuevo limite solicitado: ${currentLimit + amount} MB (${((currentLimit + amount)/1000).toFixed(1)} GB)
+
+${reason ? 'Motivo: ' + reason : 'Sin motivo especificado'}
+
+---
+Solicitud generada automaticamente desde el portal del cliente.`;
+
+      try {
+        const res = await fetch('./api/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subject: subject,
+            priority: 'medium',
+            message: message,
+            service_id: serviceId,
+            ticket_type: 'storage_request'
+          })
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          closeStorageRequest();
+          loadTickets();
+          loadStats();
+          alert('Solicitud enviada correctamente. Recibiras una respuesta pronto.');
+        } else {
+          alert(data.error || 'Error al enviar la solicitud');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        alert('Error de conexion');
+      }
+    };
+
     // Close modals on backdrop click
     document.getElementById('newTicketModal').onclick = (e) => {
       if (e.target === e.currentTarget) closeNewTicket();
+    };
+    document.getElementById('storageRequestModal').onclick = (e) => {
+      if (e.target === e.currentTarget) closeStorageRequest();
     };
     document.getElementById('chatOverlay').onclick = (e) => {
       if (e.target === e.currentTarget) closeTicketDetail();
@@ -958,6 +1367,8 @@
       if (e.key === 'Escape') {
         if (document.getElementById('chatOverlay').classList.contains('is-visible')) {
           closeTicketDetail();
+        } else if (document.getElementById('storageRequestModal').classList.contains('is-visible')) {
+          closeStorageRequest();
         } else if (document.getElementById('newTicketModal').classList.contains('is-visible')) {
           closeNewTicket();
         }
