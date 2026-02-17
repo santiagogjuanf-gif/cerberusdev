@@ -19,6 +19,7 @@
       background-size: 60px 60px;
       mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
       -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      pointer-events: none;
     }
     .admin-bg::after {
       content: '';
@@ -28,6 +29,7 @@
       background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
       animation: scanline 8s linear infinite;
       opacity: 0.6;
+      pointer-events: none;
     }
     @keyframes scanline {
       0% { top: 0; opacity: 0; }
@@ -36,7 +38,35 @@
       100% { top: 100%; opacity: 0; }
     }
 
-    .dashboard-header { display: flex; align-items: center; gap: 20px; }
+    /* Enhanced header - vertical layout */
+    .admin-top {
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      flex-wrap: wrap;
+      gap: 12px !important;
+    }
+    .dashboard-header {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .admin-actions {
+      width: 100%;
+      order: 3;
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
     .header-logo {
       width: 56px; height: 56px;
       border-radius: 16px;
@@ -74,6 +104,86 @@
     }
     @keyframes statusBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
+    /* Mobile hamburger menu */
+    .mobile-menu-toggle {
+      display: none;
+      width: 44px;
+      height: 40px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .mobile-menu-toggle span {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      height: 2px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+    .mobile-menu-toggle span:nth-child(1) { top: 13px; }
+    .mobile-menu-toggle span:nth-child(2) { top: 19px; }
+    .mobile-menu-toggle span:nth-child(3) { top: 25px; }
+    .mobile-menu-toggle.is-open span:nth-child(1) { top: 19px; transform: rotate(45deg); }
+    .mobile-menu-toggle.is-open span:nth-child(2) { opacity: 0; }
+    .mobile-menu-toggle.is-open span:nth-child(3) { top: 19px; transform: rotate(-45deg); }
+
+    /* Mobile menu panel */
+    .mobile-menu-panel {
+      display: none;
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(280px, 85vw);
+      height: 100%;
+      background: rgba(12,15,24,0.98);
+      border-left: 1px solid rgba(255,122,24,0.3);
+      padding: 20px;
+      z-index: 9999;
+      flex-direction: column;
+      gap: 8px;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+    .mobile-menu-panel.is-open {
+      display: flex;
+      transform: translateX(0);
+    }
+    .mobile-menu-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 9998;
+    }
+    .mobile-menu-backdrop.is-open {
+      display: block;
+    }
+    .mobile-menu-close {
+      align-self: flex-end;
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .mobile-menu-panel .btn {
+      width: 100%;
+      justify-content: flex-start !important;
+      padding: 14px 16px !important;
+      font-size: 14px !important;
+    }
+
     /* Monitor layout */
     .monitor-container {
       width: min(1400px, calc(100% - 40px));
@@ -81,11 +191,54 @@
       padding: 20px;
     }
 
+    /* Donut chart styles */
+    .donut-chart {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 16px;
+    }
+    .donut-ring {
+      fill: none;
+      stroke: rgba(255,255,255,0.1);
+      stroke-width: 12;
+    }
+    .donut-segment {
+      fill: none;
+      stroke-width: 12;
+      stroke-linecap: round;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dasharray 0.5s ease;
+    }
+    .donut-segment.green { stroke: #22c55e; }
+    .donut-segment.orange { stroke: #FF7A18; }
+    .donut-segment.red { stroke: #ef4444; }
+    .donut-segment.blue { stroke: #3b82f6; }
+    .donut-segment.purple { stroke: #8b5cf6; }
+    .donut-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .donut-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .donut-label {
+      font-size: 10px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+    }
+
     /* System stats cards */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
       margin-bottom: 30px;
     }
 
@@ -93,9 +246,10 @@
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 16px;
-      padding: 24px;
+      padding: 20px;
       position: relative;
       overflow: hidden;
+      text-align: center;
     }
     .stat-card::before, .stat-card::after {
       content: '';
@@ -107,47 +261,109 @@
     .stat-card::before { top: -1px; left: -1px; border-right: none; border-bottom: none; border-radius: 16px 0 0 0; }
     .stat-card::after { bottom: -1px; right: -1px; border-left: none; border-top: none; border-radius: 0 0 16px 0; }
 
-    .stat-card-icon {
-      font-size: 32px;
-      margin-bottom: 12px;
-    }
-    .stat-card-label {
+    .stat-card-title {
       font-size: 12px;
       color: rgba(255,255,255,0.5);
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 8px;
-    }
-    .stat-card-value {
-      font-size: 28px;
-      font-weight: 800;
-      color: #fff;
       margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .stat-card-title-icon {
+      font-size: 16px;
+    }
+    .stat-card-info {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 8px;
     }
     .stat-card-sub {
-      font-size: 13px;
-      color: rgba(255,255,255,0.4);
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 4px;
     }
 
-    /* Progress bar */
-    .stat-progress {
+    /* Network card special */
+    .network-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .network-stat {
+      text-align: center;
+    }
+    .network-stat-icon {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    .network-stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .network-stat-label {
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+    }
+    .network-stat.download .network-stat-value { color: #22c55e; }
+    .network-stat.upload .network-stat-value { color: #3b82f6; }
+
+    /* Disks section */
+    .disks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+    .disk-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .disk-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .disk-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .disk-mount {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      font-family: monospace;
+    }
+    .disk-progress {
       height: 8px;
       background: rgba(255,255,255,0.1);
       border-radius: 4px;
       overflow: hidden;
-      margin-top: 16px;
+      margin-bottom: 8px;
     }
-    .stat-progress-bar {
+    .disk-progress-bar {
       height: 100%;
       border-radius: 4px;
       transition: width 0.5s ease;
     }
-    .stat-progress-bar.green { background: linear-gradient(90deg, #22c55e, #4ade80); }
-    .stat-progress-bar.orange { background: linear-gradient(90deg, #FF7A18, #FF9A45); }
-    .stat-progress-bar.red { background: linear-gradient(90deg, #ef4444, #f87171); }
-    .stat-progress-bar.blue { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .disk-progress-bar.green { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .disk-progress-bar.orange { background: linear-gradient(90deg, #FF7A18, #FF9A45); }
+    .disk-progress-bar.red { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .disk-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+    }
 
-    /* PM2 Processes */
+    /* Section title */
     .section-title {
       font-size: 18px;
       font-weight: 700;
@@ -164,9 +380,10 @@
       border-radius: 2px;
     }
 
+    /* PM2 Processes */
     .processes-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 16px;
     }
 
@@ -174,7 +391,7 @@
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 12px;
-      padding: 20px;
+      padding: 16px;
       transition: all 0.3s ease;
     }
     .process-card:hover {
@@ -185,15 +402,15 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
     .process-name {
       font-weight: 600;
       color: #fff;
-      font-size: 15px;
+      font-size: 14px;
     }
     .process-id {
-      font-size: 11px;
+      font-size: 10px;
       color: rgba(255,255,255,0.4);
       font-family: monospace;
     }
@@ -220,24 +437,34 @@
     .process-stats {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      gap: 8px;
     }
     .process-stat {
       background: rgba(0,0,0,0.2);
       border-radius: 8px;
-      padding: 12px;
+      padding: 10px;
+      text-align: center;
     }
     .process-stat-label {
-      font-size: 10px;
+      font-size: 9px;
       color: rgba(255,255,255,0.4);
       text-transform: uppercase;
       margin-bottom: 4px;
     }
     .process-stat-value {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 700;
       color: #fff;
     }
+
+    /* Mini donut for process */
+    .process-donut {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto;
+    }
+    .process-donut .donut-ring { stroke-width: 6; }
+    .process-donut .donut-segment { stroke-width: 6; }
 
     /* Auto-refresh indicator */
     .refresh-indicator {
@@ -252,7 +479,7 @@
       width: 8px; height: 8px;
       background: #22c55e;
       border-radius: 50%;
-      animation: refreshPulse 2s ease-in-out infinite;
+      animation: refreshPulse 1s ease-in-out infinite;
     }
     @keyframes refreshPulse {
       0%, 100% { opacity: 1; transform: scale(1); }
@@ -290,6 +517,47 @@
       color: #FF7A18;
       margin-bottom: 20px;
     }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .mobile-menu-toggle { display: block; }
+      .admin-actions { display: none !important; }
+      .header-right .btn-logout { display: none; }
+
+      .admin-top {
+        padding: 12px 16px !important;
+      }
+      .header-logo {
+        width: 44px !important;
+        height: 44px !important;
+        padding: 8px !important;
+      }
+      .admin-title { font-size: 16px !important; }
+      .admin-sub { font-size: 11px !important; }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .donut-chart {
+        width: 100px;
+        height: 100px;
+      }
+      .donut-value {
+        font-size: 20px;
+      }
+      .processes-grid {
+        grid-template-columns: 1fr;
+      }
+      .disks-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 480px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -304,13 +572,42 @@
           <div class="admin-sub">Metricas en tiempo real</div>
         </div>
       </div>
+
+      <!-- Right side: logout + hamburger -->
+      <div class="header-right">
+        <a class="btn btn--ghost btn-logout" href="./logout">Cerrar sesion</a>
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+
+      <!-- Desktop navigation -->
       <div class="admin-actions">
         <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
-        <a class="btn btn--ghost" href="./users">&#x1F465; Usuarios</a>
-        <a class="btn btn--ghost" href="./services">&#x2699; Servicios</a>
-        <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
+        <a class="btn btn--ghost" href="./users" id="navUsers" style="display:none;">&#x1F465; Usuarios</a>
+        <a class="btn btn--ghost" href="./services" id="navServices" style="display:none;">&#x2699; Servicios</a>
+        <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
+        <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+        <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
+        <a class="btn btn--ghost" href="./tech-admin" id="navTech" style="display:none;">&#x1F527; Tecnologias</a>
+        <a class="btn btn--ghost" href="./support" id="navSupport" style="display:none;">&#x1F3AB; Soporte</a>
       </div>
     </header>
+
+    <!-- Mobile menu backdrop and panel -->
+    <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
+    <div class="mobile-menu-panel" id="mobileMenuPanel">
+      <button class="mobile-menu-close" id="mobileMenuClose">&#x2715;</button>
+      <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
+      <a class="btn btn--ghost" href="./users" id="navUsersMobile" style="display:none;">&#x1F465; Usuarios</a>
+      <a class="btn btn--ghost" href="./services" id="navServicesMobile" style="display:none;">&#x2699; Servicios</a>
+      <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
+      <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+      <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
+      <a class="btn btn--ghost" href="./tech-admin" id="navTechMobile" style="display:none;">&#x1F527; Tecnologias</a>
+      <a class="btn btn--ghost" href="./support" id="navSupportMobile" style="display:none;">&#x1F3AB; Soporte</a>
+      <a class="btn btn--ghost" href="./logout" style="margin-top: auto;">Cerrar sesion</a>
+    </div>
 
     <div class="monitor-container">
       <div class="hostname-badge" id="hostname">
@@ -319,16 +616,22 @@
 
       <div class="refresh-indicator">
         <span class="refresh-dot"></span>
-        <span>Actualizacion automatica cada 5 segundos</span>
+        <span>Actualizacion automatica cada 1 segundo</span>
       </div>
 
-      <!-- System Stats -->
+      <!-- System Stats with Donut Charts -->
       <div class="stats-grid" id="statsGrid">
         <div class="loading"><div class="loading-spinner"></div> Cargando estadisticas...</div>
       </div>
 
+      <!-- Disks Section -->
+      <div class="section-title">&#x1F4C0; Discos</div>
+      <div class="disks-grid" id="disksGrid">
+        <div class="loading"><div class="loading-spinner"></div> Cargando discos...</div>
+      </div>
+
       <!-- PM2 Processes -->
-      <div class="section-title">Procesos PM2</div>
+      <div class="section-title">&#x2699; Procesos PM2</div>
       <div class="processes-grid" id="processesGrid">
         <div class="loading"><div class="loading-spinner"></div> Cargando procesos...</div>
       </div>
@@ -336,12 +639,23 @@
   </main>
 
   <script>
+    // Network tracking for rate calculation
+    let lastNetwork = { rx: 0, tx: 0, time: Date.now() };
+
     function formatBytes(bytes) {
       if (bytes === 0) return '0 B';
       const k = 1024;
       const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
       const i = Math.floor(Math.log(bytes) / Math.log(k));
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function formatBytesRate(bytes) {
+      if (bytes === 0) return '0 B/s';
+      const k = 1024;
+      const sizes = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     }
 
     function formatUptime(ms) {
@@ -354,11 +668,25 @@
       return `${minutes}m`;
     }
 
-    function getProgressColor(percent) {
+    function getColor(percent) {
       const num = parseFloat(percent);
       if (num >= 80) return 'red';
       if (num >= 60) return 'orange';
       return 'green';
+    }
+
+    function createDonutSVG(percent, color, size = 120) {
+      const radius = (size - 24) / 2;
+      const circumference = 2 * Math.PI * radius;
+      const offset = circumference - (percent / 100) * circumference;
+
+      return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+          <circle class="donut-ring" cx="${size/2}" cy="${size/2}" r="${radius}"/>
+          <circle class="donut-segment ${color}" cx="${size/2}" cy="${size/2}" r="${radius}"
+            stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
+        </svg>
+      `;
     }
 
     async function loadStats() {
@@ -370,42 +698,104 @@
           const stats = data.stats;
           document.getElementById('hostname').innerHTML = `&#x1F5A5; ${stats.hostname}`;
 
+          // Calculate network rates
+          const now = Date.now();
+          const timeDiff = (now - lastNetwork.time) / 1000; // seconds
+          const rxRate = timeDiff > 0 ? (stats.network.rx_bytes - lastNetwork.rx) / timeDiff : 0;
+          const txRate = timeDiff > 0 ? (stats.network.tx_bytes - lastNetwork.tx) / timeDiff : 0;
+          lastNetwork = { rx: stats.network.rx_bytes, tx: stats.network.tx_bytes, time: now };
+
+          const cpuPercent = parseFloat(stats.cpu.percent) || 0;
+          const memPercent = parseFloat(stats.memory.percent) || 0;
+
           document.getElementById('statsGrid').innerHTML = `
+            <!-- CPU Card -->
             <div class="stat-card">
-              <div class="stat-card-icon">&#x1F4BB;</div>
-              <div class="stat-card-label">CPU</div>
-              <div class="stat-card-value">${stats.cpu.cores} cores</div>
-              <div class="stat-card-sub">${stats.cpu.model.substring(0, 40)}...</div>
-              <div class="stat-card-sub" style="margin-top:8px;">Load: ${stats.cpu.loadAvg.map(l => l.toFixed(2)).join(' / ')}</div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-card-icon">&#x1F4BE;</div>
-              <div class="stat-card-label">Memoria RAM</div>
-              <div class="stat-card-value">${stats.memory.percent}%</div>
-              <div class="stat-card-sub">${stats.memory.used} / ${stats.memory.total}</div>
-              <div class="stat-progress">
-                <div class="stat-progress-bar ${getProgressColor(stats.memory.percent)}" style="width:${stats.memory.percent}%"></div>
+              <div class="stat-card-title"><span class="stat-card-title-icon">&#x1F4BB;</span> CPU</div>
+              <div class="donut-chart">
+                ${createDonutSVG(cpuPercent, getColor(cpuPercent))}
+                <div class="donut-center">
+                  <div class="donut-value">${cpuPercent}%</div>
+                  <div class="donut-label">uso</div>
+                </div>
               </div>
+              <div class="stat-card-info">${stats.cpu.cores} nucleos</div>
+              <div class="stat-card-sub">${stats.cpu.model.substring(0, 30)}...</div>
             </div>
 
+            <!-- Memory Card -->
             <div class="stat-card">
-              <div class="stat-card-icon">&#x1F4C0;</div>
-              <div class="stat-card-label">Disco</div>
-              <div class="stat-card-value">${stats.disk.percent}</div>
-              <div class="stat-card-sub">${stats.disk.used} / ${stats.disk.total}</div>
-              <div class="stat-progress">
-                <div class="stat-progress-bar ${getProgressColor(stats.disk.percent)}" style="width:${parseInt(stats.disk.percent)}%"></div>
+              <div class="stat-card-title"><span class="stat-card-title-icon">&#x1F4BE;</span> Memoria</div>
+              <div class="donut-chart">
+                ${createDonutSVG(memPercent, getColor(memPercent))}
+                <div class="donut-center">
+                  <div class="donut-value">${memPercent}%</div>
+                  <div class="donut-label">uso</div>
+                </div>
               </div>
+              <div class="stat-card-info">${stats.memory.used} / ${stats.memory.total}</div>
+              <div class="stat-card-sub">${stats.memory.free} libres</div>
             </div>
 
+            <!-- Network Card -->
             <div class="stat-card">
-              <div class="stat-card-icon">&#x23F1;</div>
-              <div class="stat-card-label">Uptime</div>
-              <div class="stat-card-value">${stats.uptime}</div>
-              <div class="stat-card-sub">Tiempo de actividad del servidor</div>
+              <div class="stat-card-title"><span class="stat-card-title-icon">&#x1F310;</span> Red</div>
+              <div class="network-stats">
+                <div class="network-stat download">
+                  <div class="network-stat-icon">&#x2B07;</div>
+                  <div class="network-stat-value">${formatBytesRate(Math.max(0, rxRate))}</div>
+                  <div class="network-stat-label">Descarga</div>
+                </div>
+                <div class="network-stat upload">
+                  <div class="network-stat-icon">&#x2B06;</div>
+                  <div class="network-stat-value">${formatBytesRate(Math.max(0, txRate))}</div>
+                  <div class="network-stat-label">Subida</div>
+                </div>
+              </div>
+              <div class="stat-card-info" style="margin-top:12px;">Total: ${formatBytes(stats.network.rx_bytes + stats.network.tx_bytes)}</div>
+            </div>
+
+            <!-- Uptime Card -->
+            <div class="stat-card">
+              <div class="stat-card-title"><span class="stat-card-title-icon">&#x23F1;</span> Uptime</div>
+              <div class="donut-chart">
+                ${createDonutSVG(100, 'blue')}
+                <div class="donut-center">
+                  <div class="donut-value" style="font-size:16px;">${stats.uptime}</div>
+                  <div class="donut-label">activo</div>
+                </div>
+              </div>
+              <div class="stat-card-info">Servidor encendido</div>
             </div>
           `;
+
+          // Render disks
+          if (stats.disks && stats.disks.length > 0) {
+            document.getElementById('disksGrid').innerHTML = stats.disks.map(disk => {
+              const percent = parseInt(disk.percent) || 0;
+              return `
+                <div class="disk-card">
+                  <div class="disk-header">
+                    <div>
+                      <div class="disk-name">${disk.device}</div>
+                      <div class="disk-mount">${disk.mount}</div>
+                    </div>
+                    <div style="font-size:20px;font-weight:800;color:${percent >= 80 ? '#ef4444' : percent >= 60 ? '#FF7A18' : '#22c55e'}">${disk.percent}</div>
+                  </div>
+                  <div class="disk-progress">
+                    <div class="disk-progress-bar ${getColor(percent)}" style="width:${percent}%"></div>
+                  </div>
+                  <div class="disk-info">
+                    <span>Usado: ${disk.used}</span>
+                    <span>Libre: ${disk.free}</span>
+                    <span>Total: ${disk.total}</span>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          } else {
+            document.getElementById('disksGrid').innerHTML = '<div style="color:rgba(255,255,255,0.5);padding:20px;">No se detectaron discos</div>';
+          }
         }
       } catch (err) {
         console.error('Error loading stats:', err);
@@ -420,38 +810,43 @@
         const grid = document.getElementById('processesGrid');
 
         if (data.ok && data.processes.length > 0) {
-          grid.innerHTML = data.processes.map(p => `
-            <div class="process-card">
-              <div class="process-header">
-                <div>
-                  <div class="process-name">${p.name}</div>
-                  <div class="process-id">ID: ${p.pm_id}</div>
+          grid.innerHTML = data.processes.map(p => {
+            const cpuPercent = Math.min(100, p.cpu || 0);
+            const memMB = (p.memory / 1024 / 1024).toFixed(1);
+
+            return `
+              <div class="process-card">
+                <div class="process-header">
+                  <div>
+                    <div class="process-name">${p.name}</div>
+                    <div class="process-id">PID: ${p.pm_id}</div>
+                  </div>
+                  <div class="process-status ${p.status}">
+                    <span class="process-status-dot"></span>
+                    ${p.status}
+                  </div>
                 </div>
-                <div class="process-status ${p.status}">
-                  <span class="process-status-dot"></span>
-                  ${p.status}
+                <div class="process-stats">
+                  <div class="process-stat">
+                    <div class="process-stat-label">CPU</div>
+                    <div class="process-stat-value" style="color:${getColor(cpuPercent) === 'red' ? '#ef4444' : getColor(cpuPercent) === 'orange' ? '#FF7A18' : '#22c55e'}">${cpuPercent.toFixed(1)}%</div>
+                  </div>
+                  <div class="process-stat">
+                    <div class="process-stat-label">Memoria</div>
+                    <div class="process-stat-value">${memMB} MB</div>
+                  </div>
+                  <div class="process-stat">
+                    <div class="process-stat-label">Uptime</div>
+                    <div class="process-stat-value">${p.uptime ? formatUptime(Date.now() - p.uptime) : '-'}</div>
+                  </div>
+                  <div class="process-stat">
+                    <div class="process-stat-label">Total TX</div>
+                    <div class="process-stat-value" style="color:#3b82f6;">${formatBytes(p.memory)}</div>
+                  </div>
                 </div>
               </div>
-              <div class="process-stats">
-                <div class="process-stat">
-                  <div class="process-stat-label">CPU</div>
-                  <div class="process-stat-value">${p.cpu.toFixed(1)}%</div>
-                </div>
-                <div class="process-stat">
-                  <div class="process-stat-label">Memoria</div>
-                  <div class="process-stat-value">${formatBytes(p.memory)}</div>
-                </div>
-                <div class="process-stat">
-                  <div class="process-stat-label">Uptime</div>
-                  <div class="process-stat-value">${p.uptime ? formatUptime(Date.now() - p.uptime) : '-'}</div>
-                </div>
-                <div class="process-stat">
-                  <div class="process-stat-label">Restarts</div>
-                  <div class="process-stat-value">${p.restarts}</div>
-                </div>
-              </div>
-            </div>
-          `).join('');
+            `;
+          }).join('');
         } else {
           grid.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.5);padding:40px;grid-column:1/-1;">No hay procesos PM2 en ejecucion</div>';
         }
@@ -467,8 +862,68 @@
     // Initial load
     refresh();
 
-    // Auto-refresh every 5 seconds
-    setInterval(refresh, 5000);
+    // Auto-refresh every 3 seconds (reduced to minimize system load)
+    setInterval(refresh, 3000);
+
+    // Show admin navigation based on role
+    (async function() {
+      try {
+        const res = await fetch('./api/session');
+        const data = await res.json();
+        if (data.ok) {
+          const role = data.user.role;
+          if (role === 'admin') {
+            document.getElementById('navUsers').style.display = '';
+            document.getElementById('navServices').style.display = '';
+            document.getElementById('navTech').style.display = '';
+            document.getElementById('navSupport').style.display = '';
+            // Mobile menu
+            document.getElementById('navUsersMobile').style.display = '';
+            document.getElementById('navServicesMobile').style.display = '';
+            document.getElementById('navTechMobile').style.display = '';
+            document.getElementById('navSupportMobile').style.display = '';
+          } else if (role === 'support') {
+            document.getElementById('navServices').style.display = '';
+            document.getElementById('navSupport').style.display = '';
+            // Mobile menu
+            document.getElementById('navServicesMobile').style.display = '';
+            document.getElementById('navSupportMobile').style.display = '';
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load session:', err);
+      }
+    })();
+
+    // Mobile menu toggle
+    (function() {
+      const toggle = document.getElementById('mobileMenuToggle');
+      const panel = document.getElementById('mobileMenuPanel');
+      const backdrop = document.getElementById('mobileMenuBackdrop');
+      const closeBtn = document.getElementById('mobileMenuClose');
+      if (!toggle || !panel) return;
+
+      function openMenu() {
+        toggle.classList.add('is-open');
+        panel.classList.add('is-open');
+        backdrop.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeMenu() {
+        toggle.classList.remove('is-open');
+        panel.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        document.body.style.overflow = '';
+      }
+
+      toggle.addEventListener('click', () => {
+        if (panel.classList.contains('is-open')) closeMenu();
+        else openMenu();
+      });
+      closeBtn?.addEventListener('click', closeMenu);
+      backdrop?.addEventListener('click', closeMenu);
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+    })();
   </script>
 </body>
 </html>

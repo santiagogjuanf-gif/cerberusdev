@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <title>Leads - Cerberus Control Room</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+  <link rel="stylesheet" href="/assets/css/admin.css"/>
+  <style>
+    /* Override admin-bg to work as combined class */
+    .admin-bg {
+      position: relative !important;
+      z-index: auto !important;
+    }
+
+    /* Header styles */
+    .header-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(255,122,24,0.2);
+      padding: 10px;
+      flex-shrink: 0;
+    }
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .admin-top {
+      width: min(1200px, calc(100% - 40px));
+      margin: 0 auto 24px;
+    }
+    .admin-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+    .admin-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin: 4px 0 0;
+    }
+
+    /* Leads specific */
+    /* Navigation styles like dashboard */
+    .admin-top {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 16px !important;
+    }
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .admin-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #FF7A18, transparent);
+      border-radius: 2px;
+    }
+    .admin-title { position: relative; }
+    .admin-sub {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-sub::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: statusBlink 2s ease-in-out infinite;
+      box-shadow: 0 0 8px #22c55e;
+    }
+    @keyframes statusBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+    .mobile-menu-toggle {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 36px;
+      height: 36px;
+      padding: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .mobile-menu-toggle span {
+      width: 100%;
+      height: 2px;
+      background: var(--text);
+      border-radius: 1px;
+      transition: all 0.3s ease;
+    }
+    .mobile-menu-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 998;
+    }
+    .mobile-menu-backdrop.is-open { display: block; }
+    .mobile-menu-panel {
+      position: fixed;
+      top: 0;
+      right: -280px;
+      width: 280px;
+      height: 100vh;
+      background: var(--bg);
+      border-left: 1px solid var(--border);
+      z-index: 999;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: right 0.3s ease;
+    }
+    .mobile-menu-panel.is-open { right: 0; }
+    .admin-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,122,24,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,122,24,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      pointer-events: none;
+    }
+    .admin-bg::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
+      animation: scanline 8s linear infinite;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    @keyframes scanline {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { top: 100%; opacity: 0; }
+    }
+    @keyframes logoPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1); }
+      50% { box-shadow: 0 0 40px rgba(255,122,24,0.35), inset 0 0 25px rgba(255,122,24,0.15); }
+    }
+    .header-logo {
+      animation: logoPulse 3s ease-in-out infinite;
+    }
+    .header-logo img {
+      filter: drop-shadow(0 0 8px rgba(255,122,24,0.4));
+    }
+    .btn--ghost.is-active {
+      background: rgba(255,122,24,0.15);
+      border-color: rgba(255,122,24,0.4);
+      color: var(--orange);
+    }
+    @media (max-width: 768px) {
+      .admin-actions { display: none !important; }
+      .header-right .btn-logout { display: none; }
+      .mobile-menu-toggle { display: flex; }
+    }
+    .leads-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      width: min(1200px, calc(100% - 40px));
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .leads-stat {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 28px;
+      text-align: center;
+      min-width: 130px;
+    }
+    .leads-stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .leads-stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+    .leads-stat.new .leads-stat-value { color: #ef4444; }
+    .leads-stat.replied .leads-stat-value { color: #3b82f6; }
+    .leads-stat.closed .leads-stat-value { color: #22c55e; }
+
+    /* Table container */
+    .leads-table-container {
+      width: min(1200px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    @media (max-width: 768px) {
+      .header-logo {
+        width: 44px;
+        height: 44px;
+        padding: 8px;
+      }
+      .admin-title { font-size: 18px; }
+      .admin-sub { font-size: 12px; }
+      .leads-stat {
+        padding: 16px 20px;
+        min-width: 100px;
+      }
+      .leads-stat-value { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="admin-wrap admin-bg">
+    <header class="admin-top">
+      <div class="dashboard-header">
+        <div class="header-logo">
+          <img src="/assets/img/cerberus-mark.png" alt="Cerberus">
+        </div>
+        <div class="admin-brand">
+          <h1 class="admin-title">Bandeja de Leads</h1>
+          <p class="admin-sub">Gestiona los contactos recibidos</p>
+        </div>
+        <div class="header-right">
+          <a class="btn btn--ghost btn-logout" href="./logout">Cerrar sesion</a>
+          <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menu">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </div>
+      <div class="admin-actions">
+        <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
+        <a class="btn btn--ghost" href="./users" id="navUsers" style="display:none;">&#x1F465; Usuarios</a>
+        <a class="btn btn--ghost" href="./services" id="navServices" style="display:none;">&#x2699; Servicios</a>
+        <a class="btn btn--ghost" href="./monitor" id="navMonitor" style="display:none;">&#x1F4CA; Monitor</a>
+        <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
+        <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+        <a class="btn btn--ghost is-active" href="./leads">&#x1F4E9; Leads</a>
+        <a class="btn btn--ghost" href="./tech-admin" id="navTech" style="display:none;">&#x1F527; Tecnologias</a>
+        <a class="btn btn--ghost" href="./support" id="navSupport" style="display:none;">&#x1F3AB; Soporte</a>
+      </div>
+    </header>
+
+    <!-- Mobile menu backdrop and panel -->
+    <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
+    <div class="mobile-menu-panel" id="mobileMenuPanel">
+      <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
+      <a class="btn btn--ghost" href="./users" id="navUsersMobile" style="display:none;">&#x1F465; Usuarios</a>
+      <a class="btn btn--ghost" href="./services" id="navServicesMobile" style="display:none;">&#x2699; Servicios</a>
+      <a class="btn btn--ghost" href="./monitor" id="navMonitorMobile" style="display:none;">&#x1F4CA; Monitor</a>
+      <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
+      <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+      <a class="btn btn--ghost is-active" href="./leads">&#x1F4E9; Leads</a>
+      <a class="btn btn--ghost" href="./tech-admin" id="navTechMobile" style="display:none;">&#x1F527; Tecnologias</a>
+      <a class="btn btn--ghost" href="./support" id="navSupportMobile" style="display:none;">&#x1F3AB; Soporte</a>
+      <a class="btn btn--ghost" href="./logout" style="margin-top: auto;">Cerrar sesion</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="leads-stats">
+      <div class="leads-stat new">
+        <div class="leads-stat-value" id="statNew">0</div>
+        <div class="leads-stat-label">Nuevos</div>
+      </div>
+      <div class="leads-stat replied">
+        <div class="leads-stat-value" id="statReplied">0</div>
+        <div class="leads-stat-label">Respondidos</div>
+      </div>
+      <div class="leads-stat closed">
+        <div class="leads-stat-value" id="statClosed">0</div>
+        <div class="leads-stat-label">Cerrados</div>
+      </div>
+    </div>
+
+    <!-- Filters and Table -->
+    <div class="leads-table-container">
+      <section class="admin-card">
+        <div class="admin-card-head">
+          <div>
+            <div class="admin-card-title">Todos los leads</div>
+            <div class="admin-card-sub">Ordenado por importante y mas reciente</div>
+          </div>
+          <div class="admin-filters">
+            <button class="chip is-on" data-filter="all">Todos</button>
+            <button class="chip" data-filter="new">Nuevos</button>
+            <button class="chip" data-filter="replied">Respondidos</button>
+            <button class="chip" data-filter="closed">Cerrados</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table" id="leadsTable">
+            <thead>
+              <tr>
+                <th class="col-star">&#x2605;</th>
+                <th>Cliente</th>
+                <th>Email</th>
+                <th>Telefono</th>
+                <th>Estado</th>
+                <th class="col-date">Fecha</th>
+                <th class="col-actions">Accion</th>
+              </tr>
+            </thead>
+            <tbody id="leadsTbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+  (function() {
+    let ALL = [];
+    let filter = "all";
+    const $ = (q) => document.querySelector(q);
+
+    function fmtDate(iso) {
+      try {
+        const d = new Date(iso);
+        return d.toLocaleString("es-MX", {
+          year: "numeric", month: "2-digit", day: "2-digit",
+          hour: "2-digit", minute: "2-digit"
+        });
+      } catch { return iso || ""; }
+    }
+
+    function badge(status) {
+      const s = status || "new";
+      const text = s === "replied" ? "Respondido" : (s === "closed" ? "Cerrado" : "Nuevo");
+      return `<span class="badge ${s}">${text}</span>`;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    function setChips() {
+      document.querySelectorAll(".chip").forEach(c => {
+        c.classList.toggle("is-on", c.dataset.filter === filter);
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      const chip = e.target.closest?.(".chip");
+      if (chip && chip.dataset.filter) {
+        filter = chip.dataset.filter;
+        setChips();
+        render();
+      }
+    });
+
+    async function api(url, opts) {
+      const res = await fetch(url, opts);
+      if (!res.ok) throw new Error(`${res.status}`);
+      return res.json();
+    }
+
+    async function load() {
+      try {
+        const [sum, leads] = await Promise.all([
+          api("./api/summary"),
+          api("./api/leads")
+        ]);
+
+        $("#statNew").textContent = sum.summary?.new || 0;
+        $("#statReplied").textContent = sum.summary?.replied || 0;
+        $("#statClosed").textContent = sum.summary?.closed || 0;
+
+        ALL = leads.leads || [];
+        render();
+      } catch (err) {
+        console.error("Error loading leads:", err);
+      }
+    }
+
+    function render() {
+      const tbody = $("#leadsTbody");
+      const rows = ALL.filter(l => {
+        if (filter === "all") return true;
+        return (l.status || "new") === filter;
+      });
+
+      if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:40px;">No hay leads en esta categoria</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(l => {
+        const isOn = Number(l.is_important) === 1;
+        return `
+          <tr class="${isOn ? "is-starred" : ""}">
+            <td class="col-star">
+              <button class="star-btn ${isOn ? "on" : ""}" title="Importante" data-act="star" data-id="${l.id}">
+                ${isOn ? "\u2605" : "\u2606"}
+              </button>
+            </td>
+            <td>${escapeHtml(l.name || "")}</td>
+            <td>${escapeHtml(l.email || "")}</td>
+            <td>${escapeHtml(l.phone || "")}</td>
+            <td>${badge(l.status)}</td>
+            <td class="col-date">${fmtDate(l.created_at)}</td>
+            <td class="col-actions">
+              <div class="row-actions">
+                <a class="small-btn" href="./lead?id=${l.id}">Detalle</a>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      tbody.querySelectorAll("[data-act]").forEach(btn => {
+        btn.addEventListener("click", onAction);
+      });
+    }
+
+    async function onAction(e) {
+      const btn = e.currentTarget;
+      const id = btn.dataset.id;
+      const act = btn.dataset.act;
+
+      if (act === "star") {
+        await api(`./api/leads/${id}/important`, { method: "POST" });
+        await load();
+      }
+    }
+
+    load();
+  })();
+
+  // Mobile menu toggle
+  (function() {
+    const toggle = document.getElementById('mobileMenuToggle');
+    const backdrop = document.getElementById('mobileMenuBackdrop');
+    const panel = document.getElementById('mobileMenuPanel');
+
+    function openMenu() {
+      backdrop.classList.add('is-open');
+      panel.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMenu() {
+      backdrop.classList.remove('is-open');
+      panel.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+
+    if (toggle) toggle.addEventListener('click', openMenu);
+    if (backdrop) backdrop.addEventListener('click', closeMenu);
+  })();
+
+  // Role-based navigation
+  (function() {
+    async function checkRole() {
+      try {
+        const res = await fetch('./api/session');
+        const data = await res.json();
+        if (data.ok && data.user) {
+          const role = data.user.role;
+          // Show admin/support only buttons
+          if (role === 'admin' || role === 'support') {
+            document.querySelectorAll('#navUsers, #navUsersMobile, #navServices, #navServicesMobile, #navMonitor, #navMonitorMobile, #navSupport, #navSupportMobile').forEach(el => {
+              el.style.display = '';
+            });
+          }
+          // Show admin only buttons
+          if (role === 'admin') {
+            document.querySelectorAll('#navTech, #navTechMobile').forEach(el => {
+              el.style.display = '';
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Error checking role:', e);
+      }
+    }
+    checkRole();
+  })();
+  </script>
+</body>
+</html>

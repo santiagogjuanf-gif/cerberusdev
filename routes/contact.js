@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const db = require("../config/db");
+const { prisma } = require("../lib/prisma");
 const nodemailer = require("nodemailer");
 
 // Configure email transporter (only if credentials are set)
@@ -96,20 +96,28 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ ok: false, error: "Missing fields" });
     }
 
-    await db.execute(
-      `INSERT INTO leads (name, email, phone, project_type, message)
-       VALUES (?, ?, ?, ?, ?)`,
-      [name, email, phone, project_type, message]
-    );
+    await prisma.lead.create({
+      data: {
+        name,
+        email,
+        phone,
+        projectType: project_type,
+        message
+      }
+    });
 
     console.log(`[NEW LEAD] ${name} <${email}>`);
 
     // Create admin notification
     try {
-      await db.execute(
-        "INSERT INTO admin_notifications (type, ref_id, title, body) VALUES ('lead', 0, ?, ?)",
-        [`Nuevo lead: ${name}`, `${email} - ${project_type || "Sin tipo"}`]
-      );
+      await prisma.adminNotification.create({
+        data: {
+          type: 'lead',
+          refId: 0,
+          title: `Nuevo lead: ${name}`,
+          body: `${email} - ${project_type || "Sin tipo"}`
+        }
+      });
     } catch (e) {
       console.warn("[NOTIF] Could not create notification:", e.message);
     }

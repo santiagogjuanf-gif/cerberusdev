@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual del Administrador - Cerberus Dev v3.0</title>
+    <style>
+        @page {
+            margin: 2.5cm;
+            @bottom-center {
+                content: "Cerberus Dev - www.cerberusdev.pro - info@cerberusdev.com";
+            }
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            color: #333;
+            max-width: 21cm;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .portada {
+            text-align: center;
+            page-break-after: always;
+            padding-top: 100px;
+        }
+        .portada img {
+            max-width: 300px;
+            margin-bottom: 50px;
+        }
+        .portada h1 {
+            font-size: 28pt;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+        }
+        .portada .subtitulo {
+            font-size: 18pt;
+            color: #4a4a6a;
+            margin-bottom: 30px;
+        }
+        .portada .version {
+            font-size: 14pt;
+            color: #666;
+            margin-top: 50px;
+        }
+        .portada .info-empresa {
+            margin-top: 100px;
+            font-size: 11pt;
+            color: #666;
+        }
+        h1 {
+            color: #1a1a2e;
+            border-bottom: 3px solid #805ad5;
+            padding-bottom: 10px;
+            page-break-after: avoid;
+        }
+        h2 {
+            color: #2d3748;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-top: 30px;
+            page-break-after: avoid;
+        }
+        h3 {
+            color: #4a5568;
+            margin-top: 25px;
+            page-break-after: avoid;
+        }
+        .indice {
+            background-color: #f7fafc;
+            padding: 20px 30px;
+            border-radius: 8px;
+            margin: 20px 0;
+            page-break-after: always;
+        }
+        .indice h2 {
+            border-bottom: none;
+            color: #1a1a2e;
+        }
+        .indice ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .indice li {
+            padding: 8px 0;
+            border-bottom: 1px dotted #cbd5e0;
+        }
+        .indice a {
+            color: #805ad5;
+            text-decoration: none;
+        }
+        .captura-placeholder {
+            background-color: #edf2f7;
+            border: 2px dashed #a0aec0;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            color: #718096;
+            font-style: italic;
+        }
+        .nota {
+            background-color: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .nota strong {
+            color: #2b6cb0;
+        }
+        .advertencia {
+            background-color: #fffaf0;
+            border-left: 4px solid #ed8936;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .advertencia strong {
+            color: #c05621;
+        }
+        .importante {
+            background-color: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .importante strong {
+            color: #c53030;
+        }
+        .exito {
+            background-color: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .exito strong {
+            color: #276749;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #805ad5;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+        .paso {
+            background-color: #faf5ff;
+            border-left: 4px solid #805ad5;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+        .paso-numero {
+            display: inline-block;
+            background-color: #805ad5;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .pie-pagina {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+            text-align: center;
+            font-size: 10pt;
+            color: #718096;
+            page-break-before: avoid;
+        }
+        .pie-pagina img {
+            max-width: 80px;
+            margin-bottom: 10px;
+        }
+        code {
+            background-color: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11pt;
+        }
+        .seccion {
+            page-break-before: always;
+        }
+        .primera-seccion {
+            page-break-before: avoid;
+        }
+        .permiso-si {
+            color: #48bb78;
+            font-weight: bold;
+        }
+        .permiso-no {
+            color: #fc8181;
+            font-weight: bold;
+        }
+        .estado-online {
+            background-color: #c6f6d5;
+            color: #276749;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .estado-stopped {
+            background-color: #fed7d7;
+            color: #c53030;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .estado-error {
+            background-color: #feebc8;
+            color: #c05621;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .crud-crear { color: #48bb78; font-weight: bold; }
+        .crud-leer { color: #4299e1; font-weight: bold; }
+        .crud-actualizar { color: #ed8936; font-weight: bold; }
+        .crud-eliminar { color: #fc8181; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <!-- PORTADA -->
+    <div class="portada">
+        <!-- CAPTURA: Insertar aqui el logo cerberus-logo.png -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR LOGO AQUI</strong><br>
+            Archivo: cerberus-logo.png<br>
+            Ubicacion: /public/assets/img/cerberus-logo.png
+        </div>
+
+        <h1>MANUAL DEL ADMINISTRADOR</h1>
+        <div class="subtitulo">Sistema de Gestion Cerberus Dev</div>
+        <div class="subtitulo">Panel de Administracion Completo</div>
+
+        <div class="version">
+            <strong>Version:</strong> 3.0<br>
+            <strong>Fecha:</strong> Enero 2026
+        </div>
+
+        <div class="info-empresa">
+            <strong>Cerberus Dev</strong><br>
+            Director: Juan Felipe Santiago Gonzalez<br>
+            www.cerberusdev.pro | info@cerberusdev.com
+        </div>
+    </div>
+
+    <!-- INDICE -->
+    <div class="indice">
+        <h2>INDICE DE CONTENIDOS</h2>
+        <ul>
+            <li><a href="#introduccion">1. Introduccion al Sistema</a></li>
+            <li><a href="#acceso">2. Acceso al Panel de Administracion</a></li>
+            <li><a href="#dashboard">3. Dashboard Principal</a></li>
+            <li><a href="#usuarios">4. Gestion de Usuarios (CRUD)</a></li>
+            <li><a href="#servicios">5. Gestion de Servicios (CRUD)</a></li>
+            <li><a href="#monitor">6. Monitor del Sistema</a></li>
+            <li><a href="#leads">7. Gestion de Leads</a></li>
+            <li><a href="#tickets">8. Gestion de Tickets</a></li>
+            <li><a href="#blog">9. Administracion del Blog</a></li>
+            <li><a href="#proyectos">10. Administracion de Proyectos</a></li>
+            <li><a href="#roles">11. Sistema de Roles y Permisos</a></li>
+            <li><a href="#configuracion">12. Configuracion del Sistema</a></li>
+            <li><a href="#contacto">13. Contacto</a></li>
+        </ul>
+    </div>
+
+    <!-- SECCION 1: INTRODUCCION -->
+    <div class="seccion primera-seccion" id="introduccion">
+        <h1>1. Introduccion al Sistema</h1>
+
+        <h2>1.1 Bienvenido Administrador</h2>
+        <p>
+            Bienvenido al Panel de Administracion de <strong>Cerberus Dev</strong>. Como administrador,
+            tienes acceso completo a todas las funcionalidades del sistema, incluyendo la gestion de
+            usuarios, servicios, contenido y configuracion general.
+        </p>
+
+        <h2>1.2 Tu Rol como Administrador</h2>
+        <p>
+            El rol de <strong>Administrador (Admin)</strong> tiene control total sobre el sistema:
+        </p>
+        <ul>
+            <li>Gestion completa de usuarios (crear, editar, eliminar)</li>
+            <li>Control total de servicios PM2</li>
+            <li>Administracion de leads y oportunidades</li>
+            <li>Gestion de tickets de todos los clientes</li>
+            <li>Publicacion y edicion de blog y proyectos</li>
+            <li>Monitoreo del servidor en tiempo real</li>
+            <li>Configuracion del sistema</li>
+        </ul>
+
+        <div class="importante">
+            <strong>Responsabilidad:</strong> Con el acceso total viene una gran responsabilidad.
+            Las acciones administrativas afectan a todos los usuarios del sistema.
+            Actua con precaucion, especialmente al eliminar datos.
+        </div>
+
+        <h2>1.3 Componentes del Sistema</h2>
+        <table>
+            <tr>
+                <th>Modulo</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><strong>Dashboard</strong></td>
+                <td>Centro de control con estadisticas y resumen</td>
+            </tr>
+            <tr>
+                <td><strong>Usuarios</strong></td>
+                <td>Gestion de cuentas de usuario y roles</td>
+            </tr>
+            <tr>
+                <td><strong>Servicios</strong></td>
+                <td>Control de procesos PM2 del servidor</td>
+            </tr>
+            <tr>
+                <td><strong>Monitor</strong></td>
+                <td>Estado del servidor en tiempo real</td>
+            </tr>
+            <tr>
+                <td><strong>Leads</strong></td>
+                <td>Contactos y oportunidades de negocio</td>
+            </tr>
+            <tr>
+                <td><strong>Tickets</strong></td>
+                <td>Sistema de soporte al cliente</td>
+            </tr>
+            <tr>
+                <td><strong>Blog</strong></td>
+                <td>Publicacion de articulos</td>
+            </tr>
+            <tr>
+                <td><strong>Proyectos</strong></td>
+                <td>Portafolio de trabajos realizados</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- SECCION 2: ACCESO -->
+    <div class="seccion" id="acceso">
+        <h1>2. Acceso al Panel de Administracion</h1>
+
+        <h2>2.1 URL de Acceso</h2>
+        <p>
+            El panel de administracion se encuentra en una URL segura. Esta ruta esta
+            configurada mediante la variable de entorno <code>ADMIN_PATH</code> para mayor seguridad.
+        </p>
+
+        <div class="nota">
+            <strong>Seguridad:</strong> La URL del panel no es publica. Mantener esta
+            informacion confidencial es crucial para la seguridad del sistema.
+        </div>
+
+        <h2>2.2 Iniciar Sesion</h2>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Accede a la URL</strong> del panel administrativo.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Ingresa tus credenciales</strong> de administrador.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Haz clic en "Iniciar Sesion".</strong>
+        </div>
+
+        <!-- CAPTURA: Pantalla de login -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Pantalla de inicio de sesion<br>
+            Mostrar: Formulario de login del sistema
+        </div>
+
+        <h2>2.3 Proteccion contra Ataques</h2>
+        <p>
+            El sistema incluye proteccion contra ataques de fuerza bruta mediante
+            <strong>rate limiting</strong>. Despues de varios intentos fallidos,
+            la cuenta puede bloquearse temporalmente.
+        </p>
+    </div>
+
+    <!-- SECCION 3: DASHBOARD -->
+    <div class="seccion" id="dashboard">
+        <h1>3. Dashboard Principal</h1>
+
+        <h2>3.1 Vista General</h2>
+        <p>
+            El Dashboard es tu centro de operaciones. Muestra un resumen de toda la
+            actividad del sistema y acceso rapido a las funciones principales.
+        </p>
+
+        <!-- CAPTURA: Dashboard del administrador -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Dashboard completo del administrador<br>
+            Mostrar: Panel con estadisticas, leads y menu completo
+        </div>
+
+        <h2>3.2 Estadisticas de Leads</h2>
+        <p>El dashboard muestra contadores de leads por estado:</p>
+        <table>
+            <tr>
+                <th>Estado</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><strong>Nuevos (New)</strong></td>
+                <td>Leads recien recibidos sin atender</td>
+            </tr>
+            <tr>
+                <td><strong>Respondidos (Replied)</strong></td>
+                <td>Leads que ya fueron contactados</td>
+            </tr>
+            <tr>
+                <td><strong>Cerrados (Closed)</strong></td>
+                <td>Leads finalizados</td>
+            </tr>
+        </table>
+
+        <h2>3.3 Menu de Navegacion</h2>
+        <p>Como administrador, tienes acceso a todas las secciones:</p>
+        <ul>
+            <li><strong>Dashboard</strong> - Pagina principal</li>
+            <li><strong>Usuarios</strong> - Gestion de cuentas</li>
+            <li><strong>Servicios</strong> - Control de PM2</li>
+            <li><strong>Monitor</strong> - Estado del servidor</li>
+            <li><strong>Blog</strong> - Administrar articulos</li>
+            <li><strong>Proyectos</strong> - Administrar portafolio</li>
+            <li><strong>Cambiar Contrasena</strong> - Seguridad personal</li>
+            <li><strong>Cerrar Sesion</strong> - Salir del sistema</li>
+        </ul>
+    </div>
+
+    <!-- SECCION 4: USUARIOS -->
+    <div class="seccion" id="usuarios">
+        <h1>4. Gestion de Usuarios (CRUD)</h1>
+
+        <h2>4.1 Introduccion</h2>
+        <p>
+            La gestion de usuarios te permite crear, ver, editar y eliminar cuentas
+            de usuario del sistema. Cada usuario tiene un rol que define sus permisos.
+        </p>
+
+        <div class="nota">
+            <strong>CRUD:</strong>
+            <span class="crud-crear">C</span>reate (Crear) |
+            <span class="crud-leer">R</span>ead (Leer) |
+            <span class="crud-actualizar">U</span>pdate (Actualizar) |
+            <span class="crud-eliminar">D</span>elete (Eliminar)
+        </div>
+
+        <h2>4.2 Ver Lista de Usuarios</h2>
+        <p>Accede a <strong>"Usuarios"</strong> en el menu para ver todos los usuarios registrados.</p>
+
+        <!-- CAPTURA: Lista de usuarios -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Tabla de usuarios del sistema<br>
+            Mostrar: Lista con nombre, email, rol y acciones
+        </div>
+
+        <h3>4.2.1 Informacion de Cada Usuario</h3>
+        <table>
+            <tr>
+                <th>Campo</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><strong>ID</strong></td>
+                <td>Identificador unico</td>
+            </tr>
+            <tr>
+                <td><strong>Usuario</strong></td>
+                <td>Nombre de usuario para login</td>
+            </tr>
+            <tr>
+                <td><strong>Nombre</strong></td>
+                <td>Nombre completo</td>
+            </tr>
+            <tr>
+                <td><strong>Email</strong></td>
+                <td>Correo electronico</td>
+            </tr>
+            <tr>
+                <td><strong>Rol</strong></td>
+                <td>admin, support, client</td>
+            </tr>
+            <tr>
+                <td><strong>Ultimo Acceso</strong></td>
+                <td>Fecha del ultimo login</td>
+            </tr>
+        </table>
+
+        <h2>4.3 Crear Nuevo Usuario</h2>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Haz clic en "Nuevo Usuario"</strong> o el boton correspondiente.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Completa el formulario:</strong>
+            <ul>
+                <li><strong>Usuario:</strong> Nombre unico para login</li>
+                <li><strong>Nombre:</strong> Nombre completo del usuario</li>
+                <li><strong>Email:</strong> Correo electronico</li>
+                <li><strong>Contrasena:</strong> Contrasena inicial</li>
+                <li><strong>Rol:</strong> Selecciona admin, support o client</li>
+                <li><strong>Forzar cambio de contrasena:</strong> Si el usuario debe cambiarla en su primer acceso</li>
+            </ul>
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Haz clic en "Guardar"</strong> para crear el usuario.
+        </div>
+
+        <!-- CAPTURA: Formulario de nuevo usuario -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Formulario de creacion de usuario<br>
+            Mostrar: Campos de usuario, nombre, email, contrasena, rol
+        </div>
+
+        <h2>4.4 Editar Usuario</h2>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Localiza el usuario</strong> en la lista.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Haz clic en el boton "Editar"</strong> (icono de lapiz).
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Modifica los campos</strong> necesarios.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">4</span>
+            <strong>Guarda los cambios.</strong>
+        </div>
+
+        <div class="nota">
+            <strong>Cambiar contrasena:</strong> Si dejas el campo de contrasena vacio,
+            se mantendra la contrasena actual del usuario.
+        </div>
+
+        <h2>4.5 Eliminar Usuario</h2>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Localiza el usuario</strong> a eliminar.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Haz clic en "Eliminar"</strong> (icono de papelera).
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Confirma la eliminacion</strong> en el dialogo.
+        </div>
+
+        <div class="importante">
+            <strong>Advertencias:</strong>
+            <ul>
+                <li>No puedes eliminarte a ti mismo</li>
+                <li>La eliminacion es permanente</li>
+                <li>Los tickets del usuario quedaran sin propietario</li>
+            </ul>
+        </div>
+
+        <h2>4.6 Roles Disponibles</h2>
+        <table>
+            <tr>
+                <th>Rol</th>
+                <th>Descripcion</th>
+                <th>Uso Tipico</th>
+            </tr>
+            <tr>
+                <td><strong>admin</strong></td>
+                <td>Acceso total al sistema</td>
+                <td>Administradores y propietarios</td>
+            </tr>
+            <tr>
+                <td><strong>support</strong></td>
+                <td>Acceso operativo limitado</td>
+                <td>Equipo de soporte tecnico</td>
+            </tr>
+            <tr>
+                <td><strong>client</strong></td>
+                <td>Solo portal personal</td>
+                <td>Clientes con servicios contratados</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- SECCION 5: SERVICIOS -->
+    <div class="seccion" id="servicios">
+        <h1>5. Gestion de Servicios (CRUD)</h1>
+
+        <h2>5.1 Que son los Servicios?</h2>
+        <p>
+            Los servicios son aplicaciones Node.js ejecutadas mediante <strong>PM2</strong>
+            (Process Manager). El sistema permite registrar estos servicios y controlarlos
+            desde el panel web.
+        </p>
+
+        <h2>5.2 Ver Lista de Servicios</h2>
+        <p>Accede a <strong>"Servicios"</strong> en el menu para ver todos los servicios.</p>
+
+        <!-- CAPTURA: Lista de servicios -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Tabla de servicios registrados<br>
+            Mostrar: Lista con nombre, estado, acciones de control
+        </div>
+
+        <h2>5.3 Crear Nuevo Servicio</h2>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Primero, inicia el proceso con PM2</strong> en el servidor:
+            <br><code>pm2 start app.js --name "mi-servicio"</code>
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>En el panel, haz clic en "Nuevo Servicio".</strong>
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Completa el formulario:</strong>
+            <ul>
+                <li><strong>Nombre:</strong> Nombre descriptivo</li>
+                <li><strong>Nombre PM2:</strong> Debe coincidir exactamente con el nombre en PM2</li>
+                <li><strong>Descripcion:</strong> Detalle del servicio</li>
+                <li><strong>Puerto:</strong> Puerto de red (opcional)</li>
+                <li><strong>Cliente:</strong> Usuario propietario (opcional)</li>
+            </ul>
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">4</span>
+            <strong>Guarda el servicio.</strong>
+        </div>
+
+        <!-- CAPTURA: Formulario de nuevo servicio -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Formulario de creacion de servicio<br>
+            Mostrar: Campos de nombre, nombre PM2, descripcion, puerto
+        </div>
+
+        <div class="advertencia">
+            <strong>Importante:</strong> El "Nombre PM2" debe ser exactamente igual al nombre
+            que usaste al iniciar el proceso con <code>pm2 start</code>. De lo contrario,
+            las acciones de control no funcionaran.
+        </div>
+
+        <h2>5.4 Editar Servicio</h2>
+        <p>Puedes modificar los datos de un servicio existente:</p>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Haz clic en "Editar"</strong> del servicio deseado.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Modifica los campos</strong> necesarios.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Guarda los cambios.</strong>
+        </div>
+
+        <h2>5.5 Eliminar Servicio</h2>
+
+        <div class="importante">
+            <strong>Nota:</strong> Eliminar un servicio del panel NO detiene el proceso en PM2.
+            Solo elimina el registro del sistema. Si deseas detener el proceso completamente,
+            primero usa "Stop" y luego elimina el registro.
+        </div>
+
+        <h2>5.6 Controlar Servicios PM2</h2>
+
+        <h3>5.6.1 Iniciar (Start)</h3>
+        <p>Inicia un servicio que esta detenido.</p>
+        <div class="exito">
+            <strong>Comando ejecutado:</strong> <code>pm2 start [nombre]</code>
+        </div>
+
+        <h3>5.6.2 Reiniciar (Restart)</h3>
+        <p>Reinicia un servicio. Util despues de actualizaciones o para resolver problemas.</p>
+        <div class="exito">
+            <strong>Comando ejecutado:</strong> <code>pm2 restart [nombre]</code>
+        </div>
+
+        <h3>5.6.3 Detener (Stop)</h3>
+        <p>Detiene completamente un servicio. <strong>Solo disponible para administradores.</strong></p>
+        <div class="exito">
+            <strong>Comando ejecutado:</strong> <code>pm2 stop [nombre]</code>
+        </div>
+
+        <div class="advertencia">
+            <strong>Precaucion:</strong> Detener un servicio puede afectar a los clientes
+            que lo utilizan. Asegurate de notificar si es necesario.
+        </div>
+
+        <h3>5.6.4 Ver Logs</h3>
+        <p>Muestra los registros recientes del servicio para diagnostico.</p>
+
+        <!-- CAPTURA: Logs de un servicio -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Ventana de logs de servicio<br>
+            Mostrar: Registros con timestamps y mensajes
+        </div>
+
+        <h2>5.7 Estados de los Servicios</h2>
+        <table>
+            <tr>
+                <th>Estado</th>
+                <th>Descripcion</th>
+                <th>Accion</th>
+            </tr>
+            <tr>
+                <td><span class="estado-online">online</span></td>
+                <td>Funcionando correctamente</td>
+                <td>Ninguna necesaria</td>
+            </tr>
+            <tr>
+                <td><span class="estado-stopped">stopped</span></td>
+                <td>Detenido</td>
+                <td>Iniciar si es necesario</td>
+            </tr>
+            <tr>
+                <td><span class="estado-error">errored</span></td>
+                <td>Error en ejecucion</td>
+                <td>Revisar logs y reiniciar</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- SECCION 6: MONITOR -->
+    <div class="seccion" id="monitor">
+        <h1>6. Monitor del Sistema</h1>
+
+        <h2>6.1 Descripcion</h2>
+        <p>
+            El Monitor muestra el estado de salud del servidor en tiempo real,
+            incluyendo uso de CPU, memoria, disco y todos los procesos PM2.
+        </p>
+
+        <!-- CAPTURA: Monitor del sistema -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Panel de monitor completo<br>
+            Mostrar: Metricas de CPU, RAM, disco y procesos
+        </div>
+
+        <h2>6.2 Metricas del Servidor</h2>
+
+        <h3>6.2.1 CPU</h3>
+        <table>
+            <tr>
+                <th>Metrica</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><strong>Modelo</strong></td>
+                <td>Tipo de procesador</td>
+            </tr>
+            <tr>
+                <td><strong>Nucleos</strong></td>
+                <td>Cantidad de nucleos</td>
+            </tr>
+            <tr>
+                <td><strong>Carga</strong></td>
+                <td>Promedio de uso (1, 5, 15 min)</td>
+            </tr>
+        </table>
+
+        <h3>6.2.2 Memoria</h3>
+        <table>
+            <tr>
+                <th>Metrica</th>
+                <th>Descripcion</th>
+                <th>Umbral Critico</th>
+            </tr>
+            <tr>
+                <td>Total</td>
+                <td>RAM total disponible</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Usada</td>
+                <td>RAM en uso</td>
+                <td>&gt; 90%</td>
+            </tr>
+            <tr>
+                <td>Libre</td>
+                <td>RAM disponible</td>
+                <td>&lt; 10%</td>
+            </tr>
+        </table>
+
+        <h3>6.2.3 Disco</h3>
+        <table>
+            <tr>
+                <th>Metrica</th>
+                <th>Descripcion</th>
+                <th>Umbral Critico</th>
+            </tr>
+            <tr>
+                <td>Total</td>
+                <td>Espacio total</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Usado</td>
+                <td>Espacio ocupado</td>
+                <td>&gt; 85%</td>
+            </tr>
+            <tr>
+                <td>Libre</td>
+                <td>Espacio disponible</td>
+                <td>&lt; 15%</td>
+            </tr>
+        </table>
+
+        <h3>6.2.4 Uptime</h3>
+        <p>Tiempo desde el ultimo reinicio del servidor.</p>
+
+        <h2>6.3 Procesos PM2</h2>
+        <p>Lista de todos los procesos con:</p>
+        <ul>
+            <li>Nombre y PID</li>
+            <li>Estado (online/stopped/errored)</li>
+            <li>Uso de CPU y memoria</li>
+            <li>Tiempo de ejecucion</li>
+            <li>Numero de reinicios</li>
+        </ul>
+
+        <div class="advertencia">
+            <strong>Alerta:</strong> Un alto numero de reinicios puede indicar
+            problemas con la aplicacion. Revisa los logs para diagnosticar.
+        </div>
+    </div>
+
+    <!-- SECCION 7: LEADS -->
+    <div class="seccion" id="leads">
+        <h1>7. Gestion de Leads</h1>
+
+        <h2>7.1 Que son los Leads?</h2>
+        <p>
+            Los leads son contactos de clientes potenciales que llegan a traves del
+            formulario de contacto del sitio web. Representan oportunidades de negocio.
+        </p>
+
+        <h2>7.2 Ver Lista de Leads</h2>
+        <p>
+            Los leads se muestran en el Dashboard principal, organizados por estado.
+        </p>
+
+        <!-- CAPTURA: Lista de leads -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Lista de leads en el dashboard<br>
+            Mostrar: Tarjetas o tabla con leads y su estado
+        </div>
+
+        <h2>7.3 Informacion de Cada Lead</h2>
+        <table>
+            <tr>
+                <th>Campo</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><strong>Nombre</strong></td>
+                <td>Nombre del contacto</td>
+            </tr>
+            <tr>
+                <td><strong>Email</strong></td>
+                <td>Correo electronico</td>
+            </tr>
+            <tr>
+                <td><strong>Telefono</strong></td>
+                <td>Numero de contacto</td>
+            </tr>
+            <tr>
+                <td><strong>Tipo de Proyecto</strong></td>
+                <td>Que tipo de servicio busca</td>
+            </tr>
+            <tr>
+                <td><strong>Mensaje</strong></td>
+                <td>Descripcion de su necesidad</td>
+            </tr>
+            <tr>
+                <td><strong>Estado</strong></td>
+                <td>new, replied, closed</td>
+            </tr>
+            <tr>
+                <td><strong>Importante</strong></td>
+                <td>Marca de prioridad</td>
+            </tr>
+            <tr>
+                <td><strong>Notas Internas</strong></td>
+                <td>Comentarios privados</td>
+            </tr>
+        </table>
+
+        <h2>7.4 Gestionar un Lead</h2>
+
+        <h3>7.4.1 Ver Detalle</h3>
+        <p>Haz clic en un lead para ver toda su informacion.</p>
+
+        <!-- CAPTURA: Detalle de lead -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Vista detallada de un lead<br>
+            Mostrar: Informacion completa y acciones disponibles
+        </div>
+
+        <h3>7.4.2 Cambiar Estado</h3>
+        <table>
+            <tr>
+                <th>Estado</th>
+                <th>Significado</th>
+            </tr>
+            <tr>
+                <td><strong>New</strong></td>
+                <td>Nuevo, sin contactar</td>
+            </tr>
+            <tr>
+                <td><strong>Replied</strong></td>
+                <td>Ya se ha respondido</td>
+            </tr>
+            <tr>
+                <td><strong>Closed</strong></td>
+                <td>Finalizado (ganado o perdido)</td>
+            </tr>
+        </table>
+
+        <h3>7.4.3 Marcar como Importante</h3>
+        <p>
+            Puedes marcar leads prioritarios para identificarlos rapidamente.
+            Usa el boton de estrella o "Importante".
+        </p>
+
+        <h3>7.4.4 Agregar Notas Internas</h3>
+        <p>
+            Las notas internas son comentarios privados que solo los administradores
+            pueden ver. Utiles para registrar seguimiento y detalles de conversaciones.
+        </p>
+
+        <h3>7.4.5 Eliminar Lead</h3>
+        <div class="importante">
+            <strong>Advertencia:</strong> La eliminacion de leads es permanente.
+            Solo elimina leads que sean spam o duplicados.
+        </div>
+    </div>
+
+    <!-- SECCION 8: TICKETS -->
+    <div class="seccion" id="tickets">
+        <h1>8. Gestion de Tickets</h1>
+
+        <h2>8.1 Sistema de Tickets</h2>
+        <p>
+            Los tickets son solicitudes de soporte creadas por clientes.
+            Como administrador, puedes ver y gestionar todos los tickets del sistema.
+        </p>
+
+        <h2>8.2 Ver Todos los Tickets</h2>
+        <p>
+            Accede a la seccion de tickets desde el Dashboard o el menu para ver
+            todas las solicitudes de soporte.
+        </p>
+
+        <!-- CAPTURA: Lista de todos los tickets -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Lista completa de tickets<br>
+            Mostrar: Tabla con tickets de todos los clientes
+        </div>
+
+        <h2>8.3 Gestionar Tickets</h2>
+
+        <h3>8.3.1 Responder</h3>
+        <p>Agrega respuestas a los tickets para comunicarte con los clientes.</p>
+
+        <h3>8.3.2 Cambiar Estado</h3>
+        <table>
+            <tr>
+                <th>Estado</th>
+                <th>Cuando Usar</th>
+            </tr>
+            <tr>
+                <td><strong>Open</strong></td>
+                <td>Ticket nuevo o reabierto</td>
+            </tr>
+            <tr>
+                <td><strong>In Progress</strong></td>
+                <td>Se esta trabajando activamente</td>
+            </tr>
+            <tr>
+                <td><strong>Resolved</strong></td>
+                <td>Solucion proporcionada</td>
+            </tr>
+            <tr>
+                <td><strong>Closed</strong></td>
+                <td>Finalizado completamente</td>
+            </tr>
+        </table>
+
+        <h3>8.3.3 Prioridades</h3>
+        <table>
+            <tr>
+                <th>Prioridad</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><strong>Low</strong></td>
+                <td>Consultas generales</td>
+            </tr>
+            <tr>
+                <td><strong>Medium</strong></td>
+                <td>Problemas menores</td>
+            </tr>
+            <tr>
+                <td><strong>High</strong></td>
+                <td>Problemas que afectan operacion</td>
+            </tr>
+            <tr>
+                <td><strong>Urgent</strong></td>
+                <td>Critico, requiere atencion inmediata</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- SECCION 9: BLOG -->
+    <div class="seccion" id="blog">
+        <h1>9. Administracion del Blog</h1>
+
+        <h2>9.1 Descripcion</h2>
+        <p>
+            El modulo de blog permite publicar articulos en el sitio web.
+            Soporta contenido en espanol e ingles (multiidioma).
+        </p>
+
+        <h2>9.2 Acceder al Blog Admin</h2>
+        <p>Haz clic en <strong>"Blog"</strong> en el menu de navegacion.</p>
+
+        <!-- CAPTURA: Panel de blog admin -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Panel de administracion del blog<br>
+            Mostrar: Lista de articulos y opciones
+        </div>
+
+        <h2>9.3 Crear Articulo</h2>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Haz clic en "Nuevo Articulo".</strong>
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Completa los campos:</strong>
+            <ul>
+                <li><strong>Titulo (ES/EN):</strong> Titulo en ambos idiomas</li>
+                <li><strong>Slug:</strong> URL amigable del articulo</li>
+                <li><strong>Extracto (ES/EN):</strong> Resumen corto</li>
+                <li><strong>Contenido (ES/EN):</strong> Cuerpo del articulo</li>
+                <li><strong>Categoria:</strong> Clasificacion del articulo</li>
+                <li><strong>Imagen:</strong> Imagen destacada</li>
+                <li><strong>Publicado:</strong> Si debe mostrarse en el sitio</li>
+            </ul>
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Guarda el articulo.</strong>
+        </div>
+
+        <!-- CAPTURA: Formulario de articulo -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Formulario de creacion/edicion de articulo<br>
+            Mostrar: Campos del formulario completo
+        </div>
+
+        <h2>9.4 Gestionar Categorias</h2>
+        <p>Puedes crear y gestionar categorias para organizar los articulos.</p>
+
+        <h2>9.5 Moderar Comentarios</h2>
+        <p>
+            Los comentarios de visitantes requieren aprobacion antes de mostrarse.
+            Puedes aprobar, rechazar o eliminar comentarios.
+        </p>
+
+        <!-- CAPTURA: Moderacion de comentarios -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Lista de comentarios pendientes<br>
+            Mostrar: Comentarios con opciones de aprobar/eliminar
+        </div>
+    </div>
+
+    <!-- SECCION 10: PROYECTOS -->
+    <div class="seccion" id="proyectos">
+        <h1>10. Administracion de Proyectos</h1>
+
+        <h2>10.1 Descripcion</h2>
+        <p>
+            El modulo de proyectos permite gestionar el portafolio de trabajos
+            realizados que se muestra en el sitio web.
+        </p>
+
+        <h2>10.2 Acceder a Proyectos Admin</h2>
+        <p>Haz clic en <strong>"Proyectos"</strong> en el menu de navegacion.</p>
+
+        <!-- CAPTURA: Panel de proyectos -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Panel de administracion de proyectos<br>
+            Mostrar: Lista de proyectos con opciones
+        </div>
+
+        <h2>10.3 Crear Proyecto</h2>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Haz clic en "Nuevo Proyecto".</strong>
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Completa los campos:</strong>
+            <ul>
+                <li><strong>Titulo (ES/EN):</strong> Nombre del proyecto</li>
+                <li><strong>Slug:</strong> URL amigable</li>
+                <li><strong>Tag (ES/EN):</strong> Etiqueta corta</li>
+                <li><strong>Descripcion (ES/EN):</strong> Resumen del proyecto</li>
+                <li><strong>Contenido (ES/EN):</strong> Descripcion detallada</li>
+                <li><strong>Fecha:</strong> Fecha del proyecto</li>
+                <li><strong>Imagen principal:</strong> Imagen de portada</li>
+                <li><strong>Tecnologias:</strong> Stack tecnologico usado</li>
+                <li><strong>Publicado:</strong> Visibilidad en el sitio</li>
+            </ul>
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Guarda el proyecto.</strong>
+        </div>
+
+        <!-- CAPTURA: Formulario de proyecto -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Formulario de creacion de proyecto<br>
+            Mostrar: Campos completos del formulario
+        </div>
+
+        <h2>10.4 Gestionar Imagenes</h2>
+        <p>
+            Cada proyecto puede tener multiples imagenes. Puedes subir,
+            reordenar y eliminar imagenes de la galeria del proyecto.
+        </p>
+
+        <h3>10.4.1 Subir Imagenes</h3>
+        <ul>
+            <li>Formatos permitidos: JPG, JPEG, PNG, GIF, WEBP</li>
+            <li>Tamano maximo: 10MB por imagen</li>
+            <li>Las imagenes se guardan en <code>/public/uploads/projects/</code></li>
+        </ul>
+
+        <h2>10.5 Tecnologias</h2>
+        <p>
+            Puedes agregar las tecnologias utilizadas en cada proyecto.
+            Cada tecnologia incluye nombre e icono.
+        </p>
+    </div>
+
+    <!-- SECCION 11: ROLES -->
+    <div class="seccion" id="roles">
+        <h1>11. Sistema de Roles y Permisos</h1>
+
+        <h2>11.1 Roles del Sistema</h2>
+        <p>
+            Cerberus Dev utiliza un sistema de control de acceso basado en roles (RBAC).
+            Cada usuario tiene un rol que define sus permisos.
+        </p>
+
+        <h2>11.2 Comparativa de Permisos</h2>
+
+        <table>
+            <tr>
+                <th>Funcion</th>
+                <th>Admin</th>
+                <th>Support</th>
+                <th>Client</th>
+            </tr>
+            <tr>
+                <td>Dashboard</td>
+                <td class="permiso-si">Completo</td>
+                <td class="permiso-si">Lectura</td>
+                <td class="permiso-no">No</td>
+            </tr>
+            <tr>
+                <td>Gestionar Usuarios</td>
+                <td class="permiso-si">CRUD</td>
+                <td class="permiso-no">No</td>
+                <td class="permiso-no">No</td>
+            </tr>
+            <tr>
+                <td>Ver Servicios</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-no">No</td>
+            </tr>
+            <tr>
+                <td>Crear/Editar Servicios</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-no">No</td>
+                <td class="permiso-no">No</td>
+            </tr>
+            <tr>
+                <td>Iniciar/Reiniciar Servicios</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-no">No</td>
+            </tr>
+            <tr>
+                <td>Detener Servicios</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-no">No</td>
+                <td class="permiso-no">No</td>
+            </tr>
+            <tr>
+                <td>Monitor del Sistema</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-no">No</td>
+            </tr>
+            <tr>
+                <td>Gestionar Leads</td>
+                <td class="permiso-si">CRUD</td>
+                <td class="permiso-no">No</td>
+                <td class="permiso-no">No</td>
+            </tr>
+            <tr>
+                <td>Ver Todos los Tickets</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-no">No</td>
+            </tr>
+            <tr>
+                <td>Gestionar Tickets</td>
+                <td class="permiso-si">CRUD</td>
+                <td class="permiso-si">RU</td>
+                <td class="permiso-si">CR (propios)</td>
+            </tr>
+            <tr>
+                <td>Gestionar Blog</td>
+                <td class="permiso-si">CRUD</td>
+                <td class="permiso-no">No</td>
+                <td class="permiso-no">No</td>
+            </tr>
+            <tr>
+                <td>Gestionar Proyectos</td>
+                <td class="permiso-si">CRUD</td>
+                <td class="permiso-no">No</td>
+                <td class="permiso-no">No</td>
+            </tr>
+            <tr>
+                <td>Portal Personal</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-si">Si</td>
+            </tr>
+            <tr>
+                <td>Cambiar Contrasena</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-si">Si</td>
+                <td class="permiso-si">Si</td>
+            </tr>
+        </table>
+
+        <h2>11.3 Middleware de Seguridad</h2>
+        <p>El sistema usa middlewares para proteger las rutas:</p>
+        <ul>
+            <li><strong>requireAuth:</strong> Verifica que el usuario este autenticado</li>
+            <li><strong>requireRole:</strong> Verifica que el usuario tenga el rol necesario</li>
+            <li><strong>rateLimit:</strong> Limita intentos de login para prevenir ataques</li>
+        </ul>
+    </div>
+
+    <!-- SECCION 12: CONFIGURACION -->
+    <div class="seccion" id="configuracion">
+        <h1>12. Configuracion del Sistema</h1>
+
+        <h2>12.1 Variables de Entorno</h2>
+        <p>
+            El sistema se configura mediante un archivo <code>.env</code>.
+            Las principales variables son:
+        </p>
+
+        <table>
+            <tr>
+                <th>Variable</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><code>PORT</code></td>
+                <td>Puerto del servidor (default: 3000)</td>
+            </tr>
+            <tr>
+                <td><code>DB_HOST</code></td>
+                <td>Host de la base de datos</td>
+            </tr>
+            <tr>
+                <td><code>DB_USER</code></td>
+                <td>Usuario de MySQL</td>
+            </tr>
+            <tr>
+                <td><code>DB_PASS</code></td>
+                <td>Contrasena de MySQL</td>
+            </tr>
+            <tr>
+                <td><code>DB_NAME</code></td>
+                <td>Nombre de la base de datos</td>
+            </tr>
+            <tr>
+                <td><code>SESSION_SECRET</code></td>
+                <td>Secreto para sesiones</td>
+            </tr>
+            <tr>
+                <td><code>ADMIN_PATH</code></td>
+                <td>Ruta del panel admin</td>
+            </tr>
+        </table>
+
+        <div class="importante">
+            <strong>Seguridad:</strong> Nunca compartas las variables de entorno.
+            Asegurate de que el archivo <code>.env</code> no este en control de versiones.
+        </div>
+
+        <h2>12.2 Base de Datos</h2>
+        <p>
+            El sistema utiliza MySQL como base de datos. Las tablas principales son:
+        </p>
+        <ul>
+            <li><strong>admin_users:</strong> Usuarios del sistema</li>
+            <li><strong>services:</strong> Servicios PM2 registrados</li>
+            <li><strong>leads:</strong> Contactos y oportunidades</li>
+            <li><strong>tickets:</strong> Tickets de soporte</li>
+            <li><strong>ticket_responses:</strong> Respuestas a tickets</li>
+            <li><strong>blog_posts:</strong> Articulos del blog</li>
+            <li><strong>blog_categories:</strong> Categorias del blog</li>
+            <li><strong>blog_comments:</strong> Comentarios en articulos</li>
+            <li><strong>projects:</strong> Proyectos del portafolio</li>
+            <li><strong>project_technologies:</strong> Tecnologias por proyecto</li>
+            <li><strong>project_images:</strong> Imagenes de proyectos</li>
+        </ul>
+
+        <h2>12.3 PM2</h2>
+        <p>
+            PM2 es el gestor de procesos utilizado para ejecutar las aplicaciones Node.js.
+            Comandos utiles:
+        </p>
+        <table>
+            <tr>
+                <th>Comando</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><code>pm2 list</code></td>
+                <td>Ver todos los procesos</td>
+            </tr>
+            <tr>
+                <td><code>pm2 start app.js --name "nombre"</code></td>
+                <td>Iniciar proceso</td>
+            </tr>
+            <tr>
+                <td><code>pm2 restart nombre</code></td>
+                <td>Reiniciar proceso</td>
+            </tr>
+            <tr>
+                <td><code>pm2 stop nombre</code></td>
+                <td>Detener proceso</td>
+            </tr>
+            <tr>
+                <td><code>pm2 logs nombre</code></td>
+                <td>Ver logs</td>
+            </tr>
+            <tr>
+                <td><code>pm2 monit</code></td>
+                <td>Monitor en terminal</td>
+            </tr>
+        </table>
+
+        <h2>12.4 Uploads</h2>
+        <p>Los archivos subidos se guardan en:</p>
+        <ul>
+            <li><strong>Proyectos:</strong> <code>/public/uploads/projects/</code></li>
+            <li><strong>Blog:</strong> Configurado en el sistema de uploads</li>
+        </ul>
+
+        <div class="nota">
+            <strong>Backup:</strong> Recuerda hacer copias de seguridad regulares
+            de la carpeta uploads y la base de datos.
+        </div>
+    </div>
+
+    <!-- SECCION 13: CONTACTO -->
+    <div class="seccion" id="contacto">
+        <h1>13. Contacto</h1>
+
+        <h2>13.1 Informacion de la Empresa</h2>
+        <table>
+            <tr>
+                <th>Dato</th>
+                <th>Informacion</th>
+            </tr>
+            <tr>
+                <td><strong>Empresa</strong></td>
+                <td>Cerberus Dev</td>
+            </tr>
+            <tr>
+                <td><strong>Director</strong></td>
+                <td>Juan Felipe Santiago Gonzalez</td>
+            </tr>
+            <tr>
+                <td><strong>Sitio Web</strong></td>
+                <td>www.cerberusdev.pro</td>
+            </tr>
+            <tr>
+                <td><strong>Correo</strong></td>
+                <td>info@cerberusdev.com</td>
+            </tr>
+        </table>
+
+        <h2>13.2 Recursos Adicionales</h2>
+        <ul>
+            <li><strong>Documentacion de PM2:</strong> pm2.keymetrics.io</li>
+            <li><strong>Documentacion de Node.js:</strong> nodejs.org</li>
+            <li><strong>Documentacion de MySQL:</strong> dev.mysql.com</li>
+        </ul>
+    </div>
+
+    <!-- PIE DE PAGINA -->
+    <div class="pie-pagina">
+        <!-- CAPTURA: Insertar aqui el logo cerberus-mark.png -->
+        <div class="captura-placeholder" style="padding: 20px; margin-bottom: 10px;">
+            <strong>INSERTAR LOGO AQUI</strong><br>
+            Archivo: cerberus-mark.png<br>
+            Ubicacion: /public/assets/img/cerberus-mark.png
+        </div>
+
+        <p>
+            <strong>Cerberus Dev</strong><br>
+            www.cerberusdev.pro | info@cerberusdev.com<br><br>
+            Manual del Administrador - Version 3.0<br>
+            &copy; 2026 Cerberus Dev. Todos los derechos reservados.<br>
+            Director: Juan Felipe Santiago Gonzalez
+        </p>
+    </div>
+
+</body>
+</html>

@@ -629,6 +629,8 @@
   box-shadow: 0 6px 24px rgba(239,68,68,0.4);
 }
 
+/* ===== RESPONSIVE STYLES ===== */
+
 @media (max-width: 980px) {
   .admin-kpis { grid-template-columns: 1fr 1fr; }
   .kpi-wide { grid-column: span 2; }
@@ -637,8 +639,252 @@
   .admin-form-row { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 768px) {
+  /* Quick stats bar - stack vertically on mobile */
+  .quick-stats {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+  .quick-stat-sep { display: none !important; }
+  .quick-stat {
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .quick-stat:last-of-type { border-bottom: none; }
+  .quick-stats-time {
+    margin-left: 0 !important;
+    text-align: center;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* Weather widget in quick stats */
+  .weather-widget-dash {
+    width: 100% !important;
+    margin-left: 0 !important;
+    justify-content: center;
+    padding: 16px !important;
+  }
+
+  /* Services grid */
+  .services-grid {
+    grid-template-columns: 1fr !important;
+    padding: 12px !important;
+  }
+
+  /* Service card buttons */
+  .service-actions {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+  .service-actions .btn {
+    padding: 10px 8px !important;
+    font-size: 11px !important;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Modal responsive */
+  .modal__panel {
+    width: calc(100% - 24px) !important;
+    max-height: 85vh !important;
+    padding: 20px !important;
+  }
+
+  /* Monitor stats grid */
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* PM2 processes grid */
+  .processes-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Process card stats - 2x2 grid */
+  .process-stats {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+}
+
 @media (max-width: 640px) {
-  .admin-kpis { grid-template-columns: 1fr; }
+  .admin-kpis { grid-template-columns: 1fr; gap: 12px; }
   .kpi-wide { grid-column: span 1; }
   .blog-admin-grid { grid-template-columns: 1fr; }
+
+  /* Admin top header */
+  .admin-top {
+    padding: 0 12px !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Header layout */
+  .dashboard-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .header-logo {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .admin-title {
+    font-size: 22px !important;
+  }
+
+  /* Admin actions - grid layout for mobile */
+  .admin-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    padding-top: 12px !important;
+  }
+  .admin-actions .btn {
+    padding: 10px 12px !important;
+    font-size: 12px !important;
+    justify-content: center;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .admin-actions .notif-wrapper {
+    grid-column: span 2;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* KPI cards */
+  .kpi {
+    padding: 16px !important;
+  }
+  .kpi-value {
+    font-size: 28px !important;
+  }
+  .kpi-icon {
+    font-size: 24px !important;
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  /* Table - horizontal scroll with touch */
+  .table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -12px;
+    padding: 0 12px;
+  }
+  .table {
+    min-width: 600px !important;
+  }
+  .table th, .table td {
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+  }
+
+  /* Admin card */
+  .admin-card {
+    border-radius: 12px !important;
+    margin: 0 12px !important;
+    width: calc(100% - 24px) !important;
+  }
+  .admin-card-head {
+    padding: 16px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .admin-filters {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+  .chip {
+    padding: 6px 12px !important;
+    font-size: 11px !important;
+  }
+
+  /* Section header (services page) */
+  .section-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 16px 12px !important;
+  }
+  .section-header .btn {
+    width: 100% !important;
+  }
+
+  /* Notification dropdown */
+  .notif-dropdown {
+    width: calc(100vw - 24px) !important;
+    right: -50% !important;
+    max-width: 340px !important;
+  }
+
+  /* Stat card (monitor) */
+  .stat-card {
+    padding: 16px !important;
+  }
+  .stat-card-value {
+    font-size: 22px !important;
+  }
+  .stat-card-sub {
+    font-size: 11px !important;
+  }
+
+  /* Process card */
+  .process-card {
+    padding: 16px !important;
+  }
+  .process-name {
+    font-size: 14px !important;
+  }
+  .process-stat {
+    padding: 10px !important;
+  }
+  .process-stat-value {
+    font-size: 14px !important;
+  }
+
+  /* Users page specific */
+  .users-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 400px) {
+  .admin-actions {
+    grid-template-columns: 1fr !important;
+  }
+  .admin-actions .notif-wrapper {
+    grid-column: span 1;
+  }
+
+  .service-actions {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .admin-title {
+    font-size: 18px !important;
+  }
+
+  .quick-stats {
+    margin: 0 8px 16px !important;
+    width: calc(100% - 16px) !important;
+  }
+
+  .admin-kpis {
+    width: calc(100% - 16px) !important;
+    margin: 0 8px 16px !important;
+  }
 }

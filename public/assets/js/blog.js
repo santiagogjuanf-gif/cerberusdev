@@ -26,7 +26,7 @@
         const btn = document.createElement("button");
         btn.className = "sidebar-cat";
         btn.dataset.cat = c.slug;
-        btn.innerHTML = `<span>${esc(c.name)}</span><span class="sidebar-cat-count">${c.post_count || 0}</span>`;
+        btn.innerHTML = `<span>${esc(translateCategory(c.name))}</span><span class="sidebar-cat-count">${c.post_count || 0}</span>`;
         catsWrap.appendChild(btn);
       });
 
@@ -55,7 +55,7 @@
         <article class="blog-card">
           ${p.image_url ? `<img class="blog-card-img" src="${esc(p.image_url)}" alt="${esc(p.title)}" onerror="this.style.display='none'">` : ""}
           <div class="blog-card-body">
-            ${p.category_name ? `<span class="blog-card-cat">${esc(p.category_name)}</span>` : ""}
+            ${p.category_name ? `<span class="blog-card-cat">${esc(translateCategory(p.category_name))}</span>` : ""}
             <h3 class="blog-card-title">${esc(p.title)}</h3>
             <p class="blog-card-excerpt">${esc(p.excerpt || "")}</p>
             <div class="blog-card-meta">
@@ -74,8 +74,24 @@
 
   function fmtDate(iso) {
     try {
-      return new Date(iso).toLocaleDateString("es-MX", { year: "numeric", month: "long", day: "numeric" });
+      const locale = lang === 'en' ? 'en-US' : 'es-MX';
+      return new Date(iso).toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" });
     } catch { return ""; }
+  }
+
+  // Category name translation fallback
+  function translateCategory(name) {
+    if (lang !== 'en') return name;
+    const translations = {
+      'Tecnología': 'Technology',
+      'Tecnologia': 'Technology',
+      'Desarrollo': 'Development',
+      'Tutoriales': 'Tutorials',
+      'Noticias': 'News',
+      'Tips': 'Tips',
+      'General': 'General'
+    };
+    return translations[name] || name;
   }
 
   function esc(s) {

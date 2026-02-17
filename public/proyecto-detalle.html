@@ -111,13 +111,18 @@
       font-size: 12px;
       color: white;
     }
-    /* Thumbnails strip */
+    /* Thumbnails strip - hide scrollbar */
     .proj-thumbs {
       display: flex;
       gap: 8px;
       margin-top: 12px;
       overflow-x: auto;
       padding: 4px 0;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE/Edge */
+    }
+    .proj-thumbs::-webkit-scrollbar {
+      display: none; /* Chrome/Safari */
     }
     .proj-thumb {
       flex-shrink: 0;
@@ -266,6 +271,141 @@
       .lightbox-nav.prev { left: 10px; }
       .lightbox-nav.next { right: 10px; }
     }
+
+    /* Mobile Responsive Fixes - Comprehensive */
+    @media (max-width: 768px) {
+      /* Force no horizontal scroll at all levels */
+      html {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+      }
+      body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        min-width: 0 !important;
+      }
+      .page {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+      }
+      main, section, .section {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        box-sizing: border-box !important;
+      }
+      .container {
+        width: calc(100% - 32px) !important;
+        max-width: 100% !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+      }
+      /* Hero section */
+      .hero, .hero--small {
+        overflow: hidden !important;
+      }
+      .hero-content {
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      .hero h1, .h-title {
+        font-size: 22px !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        line-height: 1.3 !important;
+      }
+      .h-sub {
+        font-size: 14px !important;
+      }
+      /* Project detail grid - single column on mobile */
+      .proj-detail {
+        display: block !important;
+        width: 100% !important;
+      }
+      .proj-main {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      /* Main image - full width, proper aspect ratio */
+      .proj-main-image {
+        width: 100% !important;
+        max-width: 100% !important;
+        aspect-ratio: 16/10 !important;
+        border-radius: 12px !important;
+        margin-bottom: 20px !important;
+      }
+      .proj-main-image img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+      }
+      /* Text content - proper wrapping */
+      .proj-description,
+      .proj-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        word-break: normal !important;
+        hyphens: auto !important;
+        -webkit-hyphens: auto !important;
+        font-size: 15px !important;
+        line-height: 1.7 !important;
+      }
+      .proj-content p,
+      .proj-description p {
+        margin-bottom: 16px !important;
+        text-align: left !important;
+      }
+      .proj-content img {
+        max-width: 100% !important;
+        height: auto !important;
+        border-radius: 8px !important;
+      }
+      .proj-content pre,
+      .proj-content code {
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        white-space: pre-wrap !important;
+        word-break: break-all !important;
+        font-size: 13px !important;
+      }
+      /* Gallery sidebar - below content on mobile */
+      .proj-gallery-side {
+        position: relative !important;
+        top: 0 !important;
+        margin-top: 24px !important;
+        width: 100% !important;
+      }
+      /* Technologies section */
+      .proj-techs-section {
+        padding: 32px 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      .proj-techs-grid {
+        gap: 10px !important;
+        justify-content: center !important;
+      }
+      .proj-techs-grid .tech {
+        padding: 10px 14px !important;
+        flex: 0 0 auto !important;
+      }
+      .proj-techs-grid .tech img {
+        width: 28px !important;
+        height: 28px !important;
+      }
+      .proj-techs-grid .tech span {
+        font-size: 11px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -298,7 +438,7 @@
 
           <!-- Right: Gallery Carousel -->
           <div class="proj-gallery-side" id="gallerySide" style="display:none;">
-            <div class="proj-gallery-title">Galeria</div>
+            <div class="proj-gallery-title" data-i18n="projects.gallery">Galeria</div>
             <div class="proj-carousel" id="carousel">
               <img class="proj-carousel-img" id="carouselImg" src="" alt="Gallery">
               <button class="proj-carousel-nav prev" id="carouselPrev">&#8249;</button>
@@ -316,7 +456,7 @@
 
         <!-- Technologies - Centered -->
         <div class="proj-techs-section" id="projTechsSection" style="display:none;">
-          <div class="proj-techs-title">Tecnologias utilizadas</div>
+          <div class="proj-techs-title" data-i18n="projects.techs_used">Tecnologias utilizadas</div>
           <div class="proj-techs-grid" id="projTechsGrid"></div>
         </div>
       </div>
@@ -342,6 +482,14 @@
     const parts = location.pathname.split("/").filter(Boolean);
     const slug = parts[1];
     if (!slug || slug === "proyectos") return;
+
+    // Listen for language changes and reload page
+    window.addEventListener("storage", (e) => {
+      if (e.key === "cerberus_lang") location.reload();
+    });
+    // Also listen for custom event from same tab
+    window.addEventListener("langChange", () => location.reload());
+
     const lang = localStorage.getItem("cerberus_lang") || "es";
 
     const projTitle = document.getElementById("projTitle");
@@ -403,7 +551,8 @@
 
     function fmtDate(d) {
       try {
-        return new Date(d).toLocaleDateString("es-MX", { year:"numeric", month:"long", day:"numeric" });
+        const locale = lang === 'en' ? 'en-US' : 'es-MX';
+        return new Date(d).toLocaleDateString(locale, { year:"numeric", month:"long", day:"numeric" });
       } catch { return ""; }
     }
 

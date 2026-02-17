@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual del Cliente - Cerberus Dev v3.0</title>
+    <style>
+        @page {
+            margin: 2.5cm;
+            @bottom-center {
+                content: "Cerberus Dev - www.cerberusdev.pro - info@cerberusdev.com";
+            }
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            color: #333;
+            max-width: 21cm;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .portada {
+            text-align: center;
+            page-break-after: always;
+            padding-top: 100px;
+        }
+        .portada img {
+            max-width: 300px;
+            margin-bottom: 50px;
+        }
+        .portada h1 {
+            font-size: 28pt;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+        }
+        .portada .subtitulo {
+            font-size: 18pt;
+            color: #4a4a6a;
+            margin-bottom: 30px;
+        }
+        .portada .version {
+            font-size: 14pt;
+            color: #666;
+            margin-top: 50px;
+        }
+        .portada .info-empresa {
+            margin-top: 100px;
+            font-size: 11pt;
+            color: #666;
+        }
+        h1 {
+            color: #1a1a2e;
+            border-bottom: 3px solid #4a90d9;
+            padding-bottom: 10px;
+            page-break-after: avoid;
+        }
+        h2 {
+            color: #2d3748;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-top: 30px;
+            page-break-after: avoid;
+        }
+        h3 {
+            color: #4a5568;
+            margin-top: 25px;
+            page-break-after: avoid;
+        }
+        .indice {
+            background-color: #f7fafc;
+            padding: 20px 30px;
+            border-radius: 8px;
+            margin: 20px 0;
+            page-break-after: always;
+        }
+        .indice h2 {
+            border-bottom: none;
+            color: #1a1a2e;
+        }
+        .indice ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .indice li {
+            padding: 8px 0;
+            border-bottom: 1px dotted #cbd5e0;
+        }
+        .indice a {
+            color: #4a90d9;
+            text-decoration: none;
+        }
+        .captura-placeholder {
+            background-color: #edf2f7;
+            border: 2px dashed #a0aec0;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            color: #718096;
+            font-style: italic;
+        }
+        .nota {
+            background-color: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .nota strong {
+            color: #2b6cb0;
+        }
+        .advertencia {
+            background-color: #fffaf0;
+            border-left: 4px solid #ed8936;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .advertencia strong {
+            color: #c05621;
+        }
+        .importante {
+            background-color: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .importante strong {
+            color: #c53030;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4a90d9;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+        .paso {
+            background-color: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+        .paso-numero {
+            display: inline-block;
+            background-color: #48bb78;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .pie-pagina {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+            text-align: center;
+            font-size: 10pt;
+            color: #718096;
+            page-break-before: avoid;
+        }
+        .pie-pagina img {
+            max-width: 80px;
+            margin-bottom: 10px;
+        }
+        code {
+            background-color: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11pt;
+        }
+        .seccion {
+            page-break-before: always;
+        }
+        .primera-seccion {
+            page-break-before: avoid;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PORTADA -->
+    <div class="portada">
+        <!-- CAPTURA: Insertar aqui el logo cerberus-logo.png -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR LOGO AQUI</strong><br>
+            Archivo: cerberus-logo.png<br>
+            Ubicacion: /public/assets/img/cerberus-logo.png
+        </div>
+
+        <h1>MANUAL DEL CLIENTE</h1>
+        <div class="subtitulo">Sistema de Gestion Cerberus Dev</div>
+        <div class="subtitulo">Portal del Cliente</div>
+
+        <div class="version">
+            <strong>Version:</strong> 3.0<br>
+            <strong>Fecha:</strong> Enero 2026
+        </div>
+
+        <div class="info-empresa">
+            <strong>Cerberus Dev</strong><br>
+            Director: Juan Felipe Santiago Gonzalez<br>
+            www.cerberusdev.pro | info@cerberusdev.com
+        </div>
+    </div>
+
+    <!-- INDICE -->
+    <div class="indice">
+        <h2>INDICE DE CONTENIDOS</h2>
+        <ul>
+            <li><a href="#introduccion">1. Introduccion al Sistema</a></li>
+            <li><a href="#acceso">2. Acceso al Portal del Cliente</a></li>
+            <li><a href="#dashboard">3. Panel Principal (Dashboard)</a></li>
+            <li><a href="#tickets">4. Sistema de Tickets de Soporte</a></li>
+            <li><a href="#password">5. Cambio de Contrasena</a></li>
+            <li><a href="#faq">6. Preguntas Frecuentes</a></li>
+            <li><a href="#contacto">7. Contacto y Soporte</a></li>
+        </ul>
+    </div>
+
+    <!-- SECCION 1: INTRODUCCION -->
+    <div class="seccion primera-seccion" id="introduccion">
+        <h1>1. Introduccion al Sistema</h1>
+
+        <h2>1.1 Bienvenido a Cerberus Dev</h2>
+        <p>
+            Bienvenido al Portal del Cliente de <strong>Cerberus Dev</strong>. Este sistema ha sido disenado
+            para brindarte una experiencia completa de gestion y comunicacion con nuestro equipo de soporte.
+        </p>
+
+        <p>
+            Como cliente, tienes acceso a un portal personalizado donde podras:
+        </p>
+        <ul>
+            <li>Crear y gestionar tickets de soporte</li>
+            <li>Comunicarte directamente con el equipo tecnico</li>
+            <li>Dar seguimiento al estado de tus solicitudes</li>
+            <li>Gestionar tu cuenta y seguridad</li>
+        </ul>
+
+        <h2>1.2 Que es el Portal del Cliente?</h2>
+        <p>
+            El Portal del Cliente es tu espacio personal dentro del sistema Cerberus Dev. Desde aqui
+            podras gestionar todas tus interacciones con nuestro equipo sin necesidad de enviar correos
+            electronicos o realizar llamadas telefonicas.
+        </p>
+
+        <div class="nota">
+            <strong>Nota:</strong> Tu cuenta ha sido creada por el administrador del sistema.
+            Si es tu primer acceso, es posible que debas cambiar tu contrasena por motivos de seguridad.
+        </div>
+
+        <h2>1.3 Requisitos del Sistema</h2>
+        <table>
+            <tr>
+                <th>Requisito</th>
+                <th>Especificacion</th>
+            </tr>
+            <tr>
+                <td>Navegador Web</td>
+                <td>Chrome, Firefox, Safari, Edge (versiones actualizadas)</td>
+            </tr>
+            <tr>
+                <td>Conexion a Internet</td>
+                <td>Conexion estable requerida</td>
+            </tr>
+            <tr>
+                <td>JavaScript</td>
+                <td>Debe estar habilitado en el navegador</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- SECCION 2: ACCESO AL PORTAL -->
+    <div class="seccion" id="acceso">
+        <h1>2. Acceso al Portal del Cliente</h1>
+
+        <h2>2.1 Iniciar Sesion</h2>
+        <p>Para acceder al Portal del Cliente, sigue estos pasos:</p>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Abre tu navegador web</strong> y ve a la direccion proporcionada por el administrador.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Ingresa tus credenciales:</strong>
+            <ul>
+                <li><strong>Usuario:</strong> Tu nombre de usuario asignado</li>
+                <li><strong>Contrasena:</strong> Tu contrasena personal</li>
+            </ul>
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Haz clic en "Iniciar Sesion"</strong> para acceder al sistema.
+        </div>
+
+        <!-- CAPTURA: Pantalla de login -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Pantalla de inicio de sesion del sistema<br>
+            Mostrar: Formulario de login con campos de usuario y contrasena
+        </div>
+
+        <h2>2.2 Primer Acceso</h2>
+        <p>
+            Si es la primera vez que accedes al sistema, es posible que el administrador haya
+            configurado tu cuenta para que cambies la contrasena obligatoriamente.
+        </p>
+
+        <div class="advertencia">
+            <strong>Importante:</strong> Por seguridad, te recomendamos cambiar tu contrasena
+            inmediatamente despues de tu primer acceso.
+        </div>
+
+        <h2>2.3 Problemas de Acceso</h2>
+        <p>Si tienes problemas para acceder al sistema:</p>
+        <ul>
+            <li><strong>Contrasena incorrecta:</strong> Verifica que estas escribiendo correctamente tu contrasena. Recuerda que las contrasenas distinguen entre mayusculas y minusculas.</li>
+            <li><strong>Usuario no encontrado:</strong> Confirma que estas usando el nombre de usuario correcto proporcionado por el administrador.</li>
+            <li><strong>Cuenta bloqueada:</strong> Despues de varios intentos fallidos, tu cuenta podria bloquearse temporalmente. Contacta al soporte.</li>
+        </ul>
+
+        <div class="nota">
+            <strong>Consejo:</strong> Si olvidaste tu contrasena, contacta al administrador
+            del sistema para que te genere una nueva.
+        </div>
+    </div>
+
+    <!-- SECCION 3: DASHBOARD -->
+    <div class="seccion" id="dashboard">
+        <h1>3. Panel Principal (Dashboard)</h1>
+
+        <h2>3.1 Vista General</h2>
+        <p>
+            Una vez que inicies sesion, seras redirigido automaticamente al Portal del Cliente.
+            Este es tu panel principal donde podras ver y gestionar toda tu informacion.
+        </p>
+
+        <!-- CAPTURA: Dashboard del cliente -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Vista general del portal del cliente<br>
+            Mostrar: Panel principal con menu y area de contenido
+        </div>
+
+        <h2>3.2 Elementos del Panel</h2>
+
+        <h3>3.2.1 Menu de Navegacion</h3>
+        <p>En la parte superior o lateral encontraras las siguientes opciones:</p>
+        <table>
+            <tr>
+                <th>Opcion</th>
+                <th>Descripcion</th>
+            </tr>
+            <tr>
+                <td><strong>Portal</strong></td>
+                <td>Pagina principal con tus tickets</td>
+            </tr>
+            <tr>
+                <td><strong>Cambiar Contrasena</strong></td>
+                <td>Acceso para modificar tu contrasena</td>
+            </tr>
+            <tr>
+                <td><strong>Cerrar Sesion</strong></td>
+                <td>Salir del sistema de forma segura</td>
+            </tr>
+        </table>
+
+        <h3>3.2.2 Area de Tickets</h3>
+        <p>
+            La seccion principal del portal muestra todos tus tickets de soporte, tanto activos
+            como historicos. Desde aqui puedes crear nuevos tickets y dar seguimiento a los existentes.
+        </p>
+
+        <h2>3.3 Informacion de tu Cuenta</h2>
+        <p>
+            En el panel podras ver tu nombre de usuario y el rol asignado (Cliente).
+            Esta informacion confirma que has accedido correctamente a tu cuenta.
+        </p>
+    </div>
+
+    <!-- SECCION 4: TICKETS -->
+    <div class="seccion" id="tickets">
+        <h1>4. Sistema de Tickets de Soporte</h1>
+
+        <h2>4.1 Que son los Tickets?</h2>
+        <p>
+            Los tickets son solicitudes de soporte que puedes crear para comunicarte con nuestro
+            equipo tecnico. Cada ticket tiene un seguimiento completo desde su creacion hasta su resolucion.
+        </p>
+
+        <h2>4.2 Crear un Nuevo Ticket</h2>
+        <p>Para crear un nuevo ticket de soporte:</p>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Haz clic en "Nuevo Ticket"</strong> o el boton correspondiente en tu portal.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Completa el formulario:</strong>
+            <ul>
+                <li><strong>Asunto:</strong> Titulo breve que describa tu solicitud</li>
+                <li><strong>Mensaje:</strong> Descripcion detallada de tu consulta o problema</li>
+                <li><strong>Prioridad:</strong> Selecciona la urgencia de tu solicitud</li>
+            </ul>
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Haz clic en "Enviar"</strong> para crear el ticket.
+        </div>
+
+        <!-- CAPTURA: Formulario de nuevo ticket -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Formulario para crear un nuevo ticket<br>
+            Mostrar: Campos de asunto, mensaje y prioridad
+        </div>
+
+        <h3>4.2.1 Niveles de Prioridad</h3>
+        <table>
+            <tr>
+                <th>Prioridad</th>
+                <th>Descripcion</th>
+                <th>Uso Recomendado</th>
+            </tr>
+            <tr>
+                <td><strong>Baja (Low)</strong></td>
+                <td>Solicitud sin urgencia</td>
+                <td>Consultas generales, sugerencias</td>
+            </tr>
+            <tr>
+                <td><strong>Media (Medium)</strong></td>
+                <td>Solicitud normal</td>
+                <td>Problemas que no afectan la operacion</td>
+            </tr>
+            <tr>
+                <td><strong>Alta (High)</strong></td>
+                <td>Solicitud urgente</td>
+                <td>Problemas que afectan parcialmente la operacion</td>
+            </tr>
+            <tr>
+                <td><strong>Urgente (Urgent)</strong></td>
+                <td>Atencion inmediata</td>
+                <td>Sistema caido o problema critico</td>
+            </tr>
+        </table>
+
+        <div class="advertencia">
+            <strong>Importante:</strong> Utiliza la prioridad "Urgente" solo cuando sea
+            estrictamente necesario. El mal uso de las prioridades puede afectar la
+            atencion de casos verdaderamente criticos.
+        </div>
+
+        <h2>4.3 Ver tus Tickets</h2>
+        <p>
+            En tu portal puedes ver la lista completa de todos los tickets que has creado.
+            Cada ticket muestra:
+        </p>
+        <ul>
+            <li><strong>ID:</strong> Numero unico de identificacion</li>
+            <li><strong>Asunto:</strong> Titulo del ticket</li>
+            <li><strong>Estado:</strong> Situacion actual del ticket</li>
+            <li><strong>Prioridad:</strong> Nivel de urgencia asignado</li>
+            <li><strong>Fecha:</strong> Cuando fue creado</li>
+        </ul>
+
+        <!-- CAPTURA: Lista de tickets -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Lista de tickets del cliente<br>
+            Mostrar: Tabla con tickets y sus estados
+        </div>
+
+        <h3>4.3.1 Estados de los Tickets</h3>
+        <table>
+            <tr>
+                <th>Estado</th>
+                <th>Significado</th>
+            </tr>
+            <tr>
+                <td><strong>Abierto (Open)</strong></td>
+                <td>El ticket ha sido creado y esta esperando atencion</td>
+            </tr>
+            <tr>
+                <td><strong>En Progreso (In Progress)</strong></td>
+                <td>El equipo de soporte esta trabajando en tu solicitud</td>
+            </tr>
+            <tr>
+                <td><strong>Resuelto (Resolved)</strong></td>
+                <td>El problema ha sido solucionado</td>
+            </tr>
+            <tr>
+                <td><strong>Cerrado (Closed)</strong></td>
+                <td>El ticket ha sido finalizado</td>
+            </tr>
+        </table>
+
+        <h2>4.4 Responder a un Ticket</h2>
+        <p>Puedes agregar respuestas o informacion adicional a tus tickets existentes:</p>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Selecciona el ticket</strong> que deseas responder de la lista.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Lee las respuestas previas</strong> del equipo de soporte si las hay.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Escribe tu respuesta</strong> en el campo de texto.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">4</span>
+            <strong>Haz clic en "Enviar Respuesta"</strong> para agregar tu mensaje.
+        </div>
+
+        <!-- CAPTURA: Detalle de ticket con respuestas -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Vista detallada de un ticket con conversacion<br>
+            Mostrar: Historial de mensajes y campo para responder
+        </div>
+
+        <div class="nota">
+            <strong>Consejo:</strong> Proporciona la mayor cantidad de detalles posible en tus
+            respuestas para ayudar al equipo de soporte a resolver tu caso mas rapidamente.
+        </div>
+    </div>
+
+    <!-- SECCION 5: CAMBIO DE CONTRASENA -->
+    <div class="seccion" id="password">
+        <h1>5. Cambio de Contrasena</h1>
+
+        <h2>5.1 Por que Cambiar tu Contrasena?</h2>
+        <p>
+            Cambiar tu contrasena regularmente es una buena practica de seguridad.
+            Ademas, en los siguientes casos es obligatorio:
+        </p>
+        <ul>
+            <li>Primer acceso al sistema</li>
+            <li>Cuando el administrador lo solicite</li>
+            <li>Si sospechas que tu contrasena ha sido comprometida</li>
+        </ul>
+
+        <h2>5.2 Como Cambiar tu Contrasena</h2>
+
+        <div class="paso">
+            <span class="paso-numero">1</span>
+            <strong>Accede a "Cambiar Contrasena"</strong> desde el menu de navegacion.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">2</span>
+            <strong>Ingresa tu contrasena actual</strong> para verificar tu identidad.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">3</span>
+            <strong>Ingresa tu nueva contrasena</strong> y confirmala escribiendola nuevamente.
+        </div>
+
+        <div class="paso">
+            <span class="paso-numero">4</span>
+            <strong>Haz clic en "Cambiar Contrasena"</strong> para guardar los cambios.
+        </div>
+
+        <!-- CAPTURA: Pantalla de cambio de contrasena -->
+        <div class="captura-placeholder">
+            <strong>INSERTAR CAPTURA AQUI</strong><br>
+            Descripcion: Formulario de cambio de contrasena<br>
+            Mostrar: Campos para contrasena actual, nueva y confirmacion
+        </div>
+
+        <h2>5.3 Requisitos de la Contrasena</h2>
+        <div class="importante">
+            <strong>Tu nueva contrasena debe cumplir con estos requisitos:</strong>
+            <ul>
+                <li>Minimo 6 caracteres de longitud</li>
+                <li>Se recomienda usar una combinacion de letras, numeros y simbolos</li>
+                <li>No debe ser igual a la contrasena anterior</li>
+            </ul>
+        </div>
+
+        <div class="nota">
+            <strong>Consejo de Seguridad:</strong> Utiliza una contrasena unica que no uses
+            en otros servicios. Considera usar un gestor de contrasenas para mayor seguridad.
+        </div>
+    </div>
+
+    <!-- SECCION 6: FAQ -->
+    <div class="seccion" id="faq">
+        <h1>6. Preguntas Frecuentes</h1>
+
+        <h3>Como puedo recuperar mi contrasena si la olvide?</h3>
+        <p>
+            Contacta al administrador del sistema o al equipo de soporte para que te
+            generen una nueva contrasena temporal.
+        </p>
+
+        <h3>Puedo tener mas de un ticket abierto al mismo tiempo?</h3>
+        <p>
+            Si, puedes crear tantos tickets como necesites. Sin embargo, te recomendamos
+            no duplicar solicitudes para el mismo problema.
+        </p>
+
+        <h3>Cuanto tiempo tardaran en responder mi ticket?</h3>
+        <p>
+            El tiempo de respuesta depende de la prioridad del ticket y la carga de trabajo
+            del equipo. Los tickets urgentes se atienden con mayor rapidez.
+        </p>
+
+        <h3>Puedo cerrar mi propio ticket?</h3>
+        <p>
+            No, los tickets solo pueden ser cerrados por el equipo de soporte o administradores.
+            Si consideras que tu problema esta resuelto, puedes indicarlo en una respuesta.
+        </p>
+
+        <h3>Que hago si mi servicio no funciona correctamente?</h3>
+        <p>
+            Crea un ticket de soporte con prioridad alta o urgente describiendo el problema
+            detalladamente. Incluye mensajes de error si los hay.
+        </p>
+
+        <h3>Puedo adjuntar archivos a mis tickets?</h3>
+        <p>
+            Actualmente el sistema no soporta adjuntos. Si necesitas compartir imagenes o
+            archivos, puedes usar servicios externos y compartir el enlace en tu mensaje.
+        </p>
+    </div>
+
+    <!-- SECCION 7: CONTACTO -->
+    <div class="seccion" id="contacto">
+        <h1>7. Contacto y Soporte</h1>
+
+        <h2>7.1 Informacion de Contacto</h2>
+        <table>
+            <tr>
+                <th>Canal</th>
+                <th>Informacion</th>
+            </tr>
+            <tr>
+                <td><strong>Sitio Web</strong></td>
+                <td>www.cerberusdev.pro</td>
+            </tr>
+            <tr>
+                <td><strong>Correo Electronico</strong></td>
+                <td>info@cerberusdev.com</td>
+            </tr>
+            <tr>
+                <td><strong>Sistema de Tickets</strong></td>
+                <td>A traves de tu Portal del Cliente</td>
+            </tr>
+        </table>
+
+        <h2>7.2 Cuando Contactar Soporte</h2>
+        <ul>
+            <li>Problemas tecnicos con tu servicio</li>
+            <li>Consultas sobre funcionalidades</li>
+            <li>Reportar errores o comportamientos inesperados</li>
+            <li>Solicitar asistencia con tu cuenta</li>
+        </ul>
+
+        <div class="nota">
+            <strong>Recomendacion:</strong> Para una atencion mas rapida y eficiente,
+            utiliza siempre el sistema de tickets dentro de tu portal.
+        </div>
+    </div>
+
+    <!-- PIE DE PAGINA -->
+    <div class="pie-pagina">
+        <!-- CAPTURA: Insertar aqui el logo cerberus-mark.png -->
+        <div class="captura-placeholder" style="padding: 20px; margin-bottom: 10px;">
+            <strong>INSERTAR LOGO AQUI</strong><br>
+            Archivo: cerberus-mark.png<br>
+            Ubicacion: /public/assets/img/cerberus-mark.png
+        </div>
+
+        <p>
+            <strong>Cerberus Dev</strong><br>
+            www.cerberusdev.pro | info@cerberusdev.com<br><br>
+            Manual del Cliente - Version 3.0<br>
+            &copy; 2026 Cerberus Dev. Todos los derechos reservados.<br>
+            Director: Juan Felipe Santiago Gonzalez
+        </p>
+    </div>
+
+</body>
+</html>

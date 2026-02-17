@@ -157,9 +157,10 @@ async function loadNotifications() {
       if (notifs.length === 0) {
         list.innerHTML = '<div class="notif-empty">Sin notificaciones</div>';
       } else {
+        const notifIcons = { lead: '&#x1F4E9;', comment: '&#x1F4AC;', ticket: '&#x1F3AB;', ticket_reply: '&#x1F4AC;', ticket_internal: '&#x1F4E8;' };
         list.innerHTML = notifs.slice(0, 20).map(n => `
-          <div class="notif-item ${Number(n.is_read) ? '' : 'is-unread'}" data-notif-id="${n.id}">
-            <div class="notif-item-icon">${n.type === "lead" ? "&#x1F4E9;" : "&#x1F4AC;"}</div>
+          <div class="notif-item ${Number(n.is_read) ? '' : 'is-unread'}" data-notif-id="${n.id}" data-type="${n.type}" data-ref="${n.ref_id || ''}" style="cursor:pointer;">
+            <div class="notif-item-icon">${notifIcons[n.type] || '&#x1F514;'}</div>
             <div class="notif-item-body">
               <div class="notif-item-title">${escapeHtml(n.title)}</div>
               <div class="notif-item-text">${escapeHtml(n.body || "")}</div>
@@ -168,6 +169,20 @@ async function loadNotifications() {
             <button class="notif-item-delete" data-delete="${n.id}" title="Eliminar">&#x2715;</button>
           </div>
         `).join("");
+
+        // Attach click handlers for navigation
+        list.querySelectorAll(".notif-item").forEach(item => {
+          item.addEventListener("click", (e) => {
+            if (e.target.closest('[data-delete]')) return;
+            const type = item.dataset.type;
+            const refId = item.dataset.ref;
+            if (type === 'lead' || type === 'comment') {
+              window.location.href = './leads';
+            } else if (type === 'ticket' || type === 'ticket_reply' || type === 'ticket_internal') {
+              window.location.href = './support';
+            }
+          });
+        });
 
         // Attach delete handlers
         list.querySelectorAll("[data-delete]").forEach(btn => {

@@ -47,20 +47,32 @@ function setupMobileMenu() {
   const mobileBackdrop = document.getElementById("mobileBackdrop");
   if (!mobile || !navToggle) return;
 
+  let scrollY = 0;
+
   function openMobile() {
+    scrollY = window.scrollY;
     mobile.classList.add("is-open");
     mobile.setAttribute("aria-hidden", "false");
     navToggle.setAttribute("aria-expanded", "true");
-    document.body.style.overflow = "hidden";
+    document.body.classList.add("menu-open");
+    document.body.style.top = `-${scrollY}px`;
   }
   function closeMobile() {
     mobile.classList.remove("is-open");
     mobile.setAttribute("aria-hidden", "true");
     navToggle.setAttribute("aria-expanded", "false");
-    document.body.style.overflow = "";
+    document.body.classList.remove("menu-open");
+    document.body.style.top = "";
+    window.scrollTo(0, scrollY);
   }
 
-  navToggle.addEventListener("click", openMobile);
+  navToggle.addEventListener("click", () => {
+    if (mobile.classList.contains("is-open")) {
+      closeMobile();
+    } else {
+      openMobile();
+    }
+  });
   mobileClose?.addEventListener("click", closeMobile);
   mobileBackdrop?.addEventListener("click", closeMobile);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMobile(); });
@@ -156,6 +168,8 @@ function setLang(lang) {
   applyTranslations(lang);
   updateLangButtons(lang);
   document.documentElement.lang = lang;
+  // Dispatch event for pages that need to reload dynamic content
+  window.dispatchEvent(new CustomEvent("langChange", { detail: { lang } }));
 }
 
 function applyTranslations(lang) {

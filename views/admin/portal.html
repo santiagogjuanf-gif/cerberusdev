@@ -19,6 +19,7 @@
       background-size: 60px 60px;
       mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
       -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      pointer-events: none;
     }
     .admin-bg::after {
       content: '';
@@ -28,6 +29,7 @@
       background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
       animation: scanline 8s linear infinite;
       opacity: 0.6;
+      pointer-events: none;
     }
     @keyframes scanline {
       0% { top: 0; opacity: 0; }
@@ -42,9 +44,7 @@
       border-radius: 16px;
       background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
       border: 1px solid rgba(255,122,24,0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1);
       animation: logoPulse 3s ease-in-out infinite;
       padding: 10px;
@@ -74,6 +74,25 @@
     }
     @keyframes statusBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
+    .admin-top {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 16px !important;
+    }
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+
     /* Portal layout */
     .portal-container {
       width: min(1200px, calc(100% - 40px));
@@ -82,29 +101,89 @@
     }
 
     /* Welcome banner */
-    .welcome-banner {
-      background: linear-gradient(135deg, rgba(255,122,24,0.15), rgba(255,122,24,0.05));
-      border: 1px solid rgba(255,122,24,0.3);
-      border-radius: 20px;
-      padding: 30px;
-      margin-bottom: 30px;
-      display: flex;
-      align-items: center;
-      gap: 24px;
+    /* Stats cards - compact */
+    .portal-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
     }
-    .welcome-icon {
-      font-size: 48px;
+    .portal-stat {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 10px 14px;
+      text-align: center;
     }
-    .welcome-text h2 {
-      font-size: 24px;
+    .portal-stat-value {
+      font-size: 20px;
+      font-weight: 700;
       color: #fff;
-      margin: 0 0 8px;
     }
-    .welcome-text p {
-      color: rgba(255,255,255,0.6);
-      margin: 0;
-      font-size: 14px;
+    .portal-stat-label {
+      font-size: 10px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      margin-top: 2px;
     }
+    .portal-stat.new { border-color: rgba(59,130,246,0.3); }
+    .portal-stat.in_progress { border-color: rgba(234,179,8,0.3); }
+    .portal-stat.waiting_support { border-color: rgba(168,85,247,0.3); }
+    .portal-stat.closed { border-color: rgba(34,197,94,0.3); }
+
+    /* Services section */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+    .service-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 22px;
+      transition: border-color 0.3s;
+    }
+    .service-card:hover { border-color: rgba(255,122,24,0.25); }
+    .service-card.expiring-soon { border-color: rgba(234,179,8,0.4); }
+    .service-card.expired { border-color: rgba(239,68,68,0.4); }
+    .service-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .service-name { font-size: 16px; font-weight: 600; color: #fff; }
+    .service-domain { font-size: 13px; color: rgba(255,122,24,0.8); margin-bottom: 14px; }
+    .service-status {
+      display: inline-block; padding: 3px 10px; border-radius: 10px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+    }
+    .service-status.active { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .service-status.suspended { background: rgba(234,179,8,0.2); color: #facc15; }
+    .service-status.cancelled { background: rgba(239,68,68,0.2); color: #f87171; }
+    .service-type-badge {
+      font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase;
+      background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 8px;
+    }
+
+    /* Storage bar */
+    .storage-section { margin: 14px 0; }
+    .storage-label { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+    .storage-bar { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+    .storage-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+    .storage-fill.low { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .storage-fill.medium { background: linear-gradient(90deg, #eab308, #facc15); }
+    .storage-fill.high { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+    /* Dates section */
+    .service-dates { display: flex; gap: 16px; margin-top: 14px; flex-wrap: wrap; }
+    .service-date-item { font-size: 11px; color: rgba(255,255,255,0.45); display: flex; align-items: center; gap: 5px; }
+    .service-date-item span { color: rgba(255,255,255,0.7); font-weight: 500; }
+
+    /* Expiration alert */
+    .expiration-alert {
+      margin-top: 12px; padding: 8px 12px; border-radius: 8px;
+      font-size: 11px; font-weight: 500; display: flex; align-items: center; gap: 6px;
+    }
+    .expiration-alert.warn { background: rgba(234,179,8,0.12); color: #facc15; border: 1px solid rgba(234,179,8,0.25); }
+    .expiration-alert.danger { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
 
     /* Tickets section */
     .section-header {
@@ -114,12 +193,8 @@
       margin-bottom: 20px;
     }
     .section-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      font-size: 18px; font-weight: 700; color: #fff;
+      display: flex; align-items: center; gap: 12px;
     }
     .section-title::before {
       content: '';
@@ -128,13 +203,29 @@
       border-radius: 2px;
     }
 
-    /* Ticket cards */
-    .tickets-list {
+    /* Filter chips */
+    .ticket-filters {
       display: flex;
-      flex-direction: column;
-      gap: 12px;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
     }
+    .filter-chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      color: rgba(255,255,255,0.6);
+      transition: all 0.2s;
+    }
+    .filter-chip:hover { border-color: rgba(255,122,24,0.3); color: #fff; }
+    .filter-chip.active { background: rgba(255,122,24,0.15); border-color: rgba(255,122,24,0.4); color: #FF7A18; }
 
+    /* Ticket cards */
+    .tickets-list { display: flex; flex-direction: column; gap: 12px; }
     .ticket-card {
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.08);
@@ -147,24 +238,14 @@
       border-color: rgba(255,122,24,0.3);
       background: rgba(255,255,255,0.04);
     }
-
     .ticket-header {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       margin-bottom: 12px;
     }
-    .ticket-subject {
-      font-size: 16px;
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 4px;
-    }
-    .ticket-id {
-      font-size: 12px;
-      color: rgba(255,255,255,0.4);
-      font-family: monospace;
-    }
+    .ticket-subject { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .ticket-id { font-size: 12px; color: rgba(255,255,255,0.4); font-family: monospace; }
 
     .ticket-status {
       display: inline-flex;
@@ -175,11 +256,13 @@
       font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
+      flex-shrink: 0;
     }
-    .ticket-status.open { background: rgba(59,130,246,0.2); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+    .ticket-status.new { background: rgba(59,130,246,0.2); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
     .ticket-status.in_progress { background: rgba(234,179,8,0.2); color: #facc15; border: 1px solid rgba(234,179,8,0.3); }
-    .ticket-status.resolved { background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
-    .ticket-status.closed { background: rgba(156,163,175,0.2); color: #9ca3af; border: 1px solid rgba(156,163,175,0.3); }
+    .ticket-status.waiting_client { background: rgba(249,115,22,0.2); color: #fb923c; border: 1px solid rgba(249,115,22,0.3); }
+    .ticket-status.waiting_support { background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+    .ticket-status.closed { background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
 
     .ticket-preview {
       font-size: 13px;
@@ -190,7 +273,6 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-
     .ticket-footer {
       display: flex;
       align-items: center;
@@ -198,14 +280,12 @@
       margin-top: 12px;
       font-size: 12px;
       color: rgba(255,255,255,0.4);
+      flex-wrap: wrap;
     }
 
     .priority-badge {
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
+      padding: 2px 8px; border-radius: 10px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
     }
     .priority-badge.low { background: rgba(34,197,94,0.2); color: #4ade80; }
     .priority-badge.medium { background: rgba(59,130,246,0.2); color: #60a5fa; }
@@ -213,34 +293,16 @@
     .priority-badge.urgent { background: rgba(239,68,68,0.2); color: #f87171; }
 
     /* Empty state */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: rgba(255,255,255,0.5);
-    }
-    .empty-state-icon {
-      font-size: 64px;
-      margin-bottom: 20px;
-      opacity: 0.5;
-    }
-    .empty-state-text {
-      font-size: 16px;
-      margin-bottom: 20px;
-    }
+    .empty-state { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.5); }
+    .empty-state-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
+    .empty-state-text { font-size: 16px; margin-bottom: 20px; }
 
     /* Modal */
     .modal-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 10000;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
     }
     .modal-overlay.is-visible { opacity: 1; visibility: visible; }
     .modal-content {
@@ -248,22 +310,14 @@
       border: 1px solid rgba(255,122,24,0.3);
       border-radius: 20px;
       padding: 30px;
-      width: 90%;
-      max-width: 600px;
-      max-height: 80vh;
+      width: 90%; max-width: 600px; max-height: 80vh;
       overflow-y: auto;
-      transform: translateY(20px);
-      transition: transform 0.3s ease;
+      transform: translateY(20px); transition: transform 0.3s ease;
     }
     .modal-overlay.is-visible .modal-content { transform: translateY(0); }
     .modal-title {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 24px;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      font-size: 20px; font-weight: 700; margin-bottom: 24px;
+      color: #fff; display: flex; align-items: center; gap: 12px;
     }
     .modal-title::before {
       content: '';
@@ -274,19 +328,15 @@
     .form-group { margin-bottom: 20px; }
     .form-label { display: block; font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
     .form-input, .form-select, .form-textarea {
-      width: 100%;
-      padding: 12px 16px;
+      width: 100%; padding: 12px 16px;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      color: #fff;
-      font-size: 14px;
+      border-radius: 10px; color: #fff; font-size: 14px;
       transition: all 0.3s ease;
     }
     .form-textarea { resize: vertical; min-height: 120px; font-family: inherit; }
     .form-input:focus, .form-select:focus, .form-textarea:focus {
-      outline: none;
-      border-color: rgba(255,122,24,0.5);
+      outline: none; border-color: rgba(255,122,24,0.5);
       box-shadow: 0 0 20px rgba(255,122,24,0.1);
     }
     .form-select { cursor: pointer; }
@@ -294,62 +344,286 @@
     .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
     .modal-actions .btn { flex: 1; padding: 12px 20px; }
 
-    /* Ticket detail modal */
-    .ticket-detail-header {
-      margin-bottom: 24px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+    /* Chat-style ticket detail modal */
+    .chat-overlay {
+      position: fixed; inset: 0; z-index: 10001;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
     }
-    .ticket-detail-subject {
-      font-size: 20px;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 12px;
+    .chat-overlay.is-visible { opacity: 1; visibility: visible; }
+    .chat-modal {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 20px;
+      width: 90%; max-width: 650px;
+      height: min(80vh, 600px);
+      display: flex; flex-direction: column;
+      transform: translateY(20px); transition: transform 0.3s ease;
+      overflow: hidden;
     }
-    .ticket-detail-meta {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      font-size: 13px;
-      color: rgba(255,255,255,0.5);
+    .chat-overlay.is-visible .chat-modal { transform: translateY(0); }
+
+    .chat-header {
+      padding: 18px 24px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+    .chat-subject {
+      font-size: 17px; font-weight: 700; color: #fff;
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 6px;
+    }
+    .chat-subject::before {
+      content: ''; width: 4px; height: 18px;
+      background: linear-gradient(180deg, #FF7A18, #FF9A45);
+      border-radius: 2px; flex-shrink: 0;
+    }
+    .chat-meta {
+      font-size: 12px; color: rgba(255,255,255,0.4);
+      display: flex; gap: 12px; flex-wrap: wrap; padding-left: 14px;
     }
 
-    .ticket-message {
-      background: rgba(255,255,255,0.03);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 14px 24px;
+      display: flex; flex-direction: column; gap: 10px;
     }
-    .ticket-message.staff {
-      background: rgba(255,122,24,0.1);
+    .chat-messages::-webkit-scrollbar { width: 6px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,122,24,0.3); border-radius: 3px; }
+
+    .chat-msg {
+      background: rgba(255,255,255,0.03); border-radius: 12px;
+      padding: 12px 16px;
+    }
+    .chat-msg.staff {
+      background: rgba(255,122,24,0.08);
       border-left: 3px solid #FF7A18;
     }
-    .ticket-message-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
+    .chat-msg-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px;
     }
-    .ticket-message-author {
-      font-weight: 600;
-      color: #fff;
-      font-size: 14px;
-    }
-    .ticket-message-time {
-      font-size: 12px;
-      color: rgba(255,255,255,0.4);
-    }
-    .ticket-message-body {
-      font-size: 14px;
-      color: rgba(255,255,255,0.7);
-      line-height: 1.6;
-      white-space: pre-wrap;
+    .chat-msg-author { font-weight: 600; color: #fff; font-size: 13px; }
+    .chat-msg-time { font-size: 11px; color: rgba(255,255,255,0.35); }
+    .chat-msg-body {
+      font-size: 13px; color: rgba(255,255,255,0.75);
+      line-height: 1.6; white-space: pre-wrap;
     }
 
-    .reply-form {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255,255,255,0.1);
+    .chat-input {
+      flex-shrink: 0;
+      padding: 12px 24px 18px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.2);
+    }
+    .chat-textarea {
+      width: 100%; padding: 10px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; color: #fff; font-size: 13px;
+      font-family: inherit; resize: none;
+      min-height: 42px; max-height: 100px;
+      transition: border-color 0.3s;
+    }
+    .chat-textarea:focus {
+      outline: none; border-color: rgba(255,122,24,0.5);
+      box-shadow: 0 0 15px rgba(255,122,24,0.08);
+    }
+    .chat-bottom-row {
+      display: flex; align-items: center; justify-content: flex-end;
+      margin-top: 10px; gap: 8px;
+    }
+
+    /* Request Storage Button */
+    .request-storage-btn {
+      margin-top: 12px;
+      width: 100%;
+      padding: 8px 12px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.15), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 8px;
+      color: #FF7A18;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .request-storage-btn:hover {
+      background: linear-gradient(135deg, rgba(255,122,24,0.25), rgba(255,122,24,0.1));
+      border-color: rgba(255,122,24,0.5);
+      box-shadow: 0 0 15px rgba(255,122,24,0.15);
+    }
+    .request-storage-btn.warning {
+      background: linear-gradient(135deg, rgba(234,179,8,0.15), rgba(234,179,8,0.05));
+      border-color: rgba(234,179,8,0.3);
+      color: #facc15;
+    }
+    .request-storage-btn.warning:hover {
+      background: linear-gradient(135deg, rgba(234,179,8,0.25), rgba(234,179,8,0.1));
+      border-color: rgba(234,179,8,0.5);
+    }
+    .request-storage-btn.critical {
+      background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05));
+      border-color: rgba(239,68,68,0.3);
+      color: #f87171;
+      animation: criticalPulse 2s ease-in-out infinite;
+    }
+    .request-storage-btn.critical:hover {
+      background: linear-gradient(135deg, rgba(239,68,68,0.25), rgba(239,68,68,0.1));
+      border-color: rgba(239,68,68,0.5);
+    }
+    @keyframes criticalPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
+      50% { box-shadow: 0 0 15px 2px rgba(239,68,68,0.2); }
+    }
+
+    /* Storage Alert Banner */
+    .storage-alert-banner {
+      background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05));
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: alertPulse 3s ease-in-out infinite;
+    }
+    .storage-alert-banner.warning {
+      background: linear-gradient(135deg, rgba(234,179,8,0.15), rgba(234,179,8,0.05));
+      border-color: rgba(234,179,8,0.3);
+    }
+    @keyframes alertPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+    .storage-alert-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .storage-alert-content {
+      flex: 1;
+    }
+    .storage-alert-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f87171;
+      margin-bottom: 4px;
+    }
+    .storage-alert-banner.warning .storage-alert-title {
+      color: #facc15;
+    }
+    .storage-alert-text {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+    }
+    .storage-alert-btn {
+      padding: 8px 16px;
+      background: rgba(239,68,68,0.2);
+      border: 1px solid rgba(239,68,68,0.4);
+      border-radius: 8px;
+      color: #f87171;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    .storage-alert-btn:hover {
+      background: rgba(239,68,68,0.3);
+    }
+    .storage-alert-banner.warning .storage-alert-btn {
+      background: rgba(234,179,8,0.2);
+      border-color: rgba(234,179,8,0.4);
+      color: #facc15;
+    }
+    .storage-alert-banner.warning .storage-alert-btn:hover {
+      background: rgba(234,179,8,0.3);
+    }
+
+    /* Storage Request Modal */
+    .storage-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .storage-option {
+      padding: 14px 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .storage-option:hover {
+      border-color: rgba(255,122,24,0.3);
+      background: rgba(255,255,255,0.05);
+    }
+    .storage-option.selected {
+      border-color: rgba(255,122,24,0.5);
+      background: rgba(255,122,24,0.1);
+    }
+    .storage-option-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #FF7A18;
+      margin-bottom: 4px;
+    }
+    .storage-option-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+    }
+    .storage-current-info {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+    .storage-current-title {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 8px;
+    }
+    .storage-current-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .storage-current-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .storage-current-text {
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .portal-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .chat-modal { width: 96%; height: 90vh; }
+      .chat-header { padding: 14px 16px 12px; }
+      .chat-messages { padding: 12px 16px; }
+      .chat-input { padding: 10px 16px 16px; }
+    }
+    @media (max-width: 480px) {
+      .portal-stats { grid-template-columns: 1fr 1fr; gap: 6px; }
+      .portal-stat { padding: 8px 10px; }
+      .portal-stat-value { font-size: 18px; }
+      .ticket-header { flex-direction: column; gap: 8px; }
     }
   </style>
 </head>
@@ -364,25 +638,68 @@
           <div class="admin-title">Portal de Cliente</div>
           <div class="admin-sub">Centro de soporte</div>
         </div>
-      </div>
-      <div class="admin-actions">
-        <a class="btn btn--ghost" href="./change-password">&#x1F512; Cambiar contrasena</a>
-        <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
+        <div class="header-right">
+          <div class="notif-wrapper">
+            <button class="notif-btn" id="notifBtn" title="Notificaciones">&#x1F514;<span class="notif-badge" id="notifBadge" style="display:none;">0</span></button>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-dropdown-header">
+                <span class="notif-dropdown-title">Notificaciones</span>
+                <button class="notif-clear-btn" id="markAllRead" title="Marcar todo leido">&#x2713; Leido</button>
+              </div>
+              <div class="notif-dropdown-list" id="notifList">
+                <div class="notif-empty">Sin notificaciones</div>
+              </div>
+            </div>
+          </div>
+          <a class="btn btn--ghost" href="./change-password">&#x1F512; Cambiar contrasena</a>
+          <a class="btn btn--ghost" href="./logout">Cerrar sesion</a>
+        </div>
       </div>
     </header>
 
     <div class="portal-container">
-      <div class="welcome-banner">
-        <div class="welcome-icon">&#x1F44B;</div>
-        <div class="welcome-text">
-          <h2>Bienvenido, <span id="userName">Usuario</span></h2>
-          <p>Aqui puedes ver tus tickets de soporte y crear nuevos</p>
+      <!-- Storage Alert Banner (shown when services have high usage) -->
+      <div id="storageAlertBanner" style="display:none;"></div>
+
+      <!-- Services (first) -->
+      <div id="servicesSection" style="display:none;">
+        <div class="section-header">
+          <div class="section-title">Mis Servicios</div>
         </div>
+        <div class="services-grid" id="servicesGrid"></div>
       </div>
 
+      <!-- Tickets header + stats -->
       <div class="section-header">
         <div class="section-title">Mis Tickets</div>
         <button class="btn btn--primary" onclick="openNewTicket()">&#x2795; Nuevo Ticket</button>
+      </div>
+
+      <div class="portal-stats" id="portalStats">
+        <div class="portal-stat new">
+          <div class="portal-stat-value" id="statNew">0</div>
+          <div class="portal-stat-label">Nuevos</div>
+        </div>
+        <div class="portal-stat in_progress">
+          <div class="portal-stat-value" id="statProgress">0</div>
+          <div class="portal-stat-label">En progreso</div>
+        </div>
+        <div class="portal-stat waiting_support">
+          <div class="portal-stat-value" id="statWaiting">0</div>
+          <div class="portal-stat-label">Esperando</div>
+        </div>
+        <div class="portal-stat closed">
+          <div class="portal-stat-value" id="statClosed">0</div>
+          <div class="portal-stat-label">Cerrados</div>
+        </div>
+      </div>
+
+      <div class="ticket-filters">
+        <button class="filter-chip active" data-filter="all">Todos</button>
+        <button class="filter-chip" data-filter="new">Nuevos</button>
+        <button class="filter-chip" data-filter="in_progress">En progreso</button>
+        <button class="filter-chip" data-filter="waiting_support">Esperando</button>
+        <button class="filter-chip" data-filter="closed">Cerrados</button>
       </div>
 
       <div class="tickets-list" id="ticketsList">
@@ -399,6 +716,12 @@
     <div class="modal-content">
       <div class="modal-title">Nuevo Ticket de Soporte</div>
       <form id="newTicketForm">
+        <div class="form-group" id="serviceSelectGroup" style="display:none;">
+          <label class="form-label">Servicio relacionado</label>
+          <select class="form-select" id="ticketService">
+            <option value="">-- Sin servicio --</option>
+          </select>
+        </div>
         <div class="form-group">
           <label class="form-label">Asunto *</label>
           <input type="text" class="form-input" id="ticketSubject" required placeholder="Describe brevemente tu problema">
@@ -424,28 +747,70 @@
     </div>
   </div>
 
-  <!-- Ticket Detail Modal -->
-  <div class="modal-overlay" id="ticketDetailModal">
-    <div class="modal-content" style="max-width:700px;">
-      <div class="ticket-detail-header">
-        <div class="ticket-detail-subject" id="detailSubject">Cargando...</div>
-        <div class="ticket-detail-meta">
-          <span id="detailStatus"></span>
-          <span id="detailPriority"></span>
-          <span id="detailDate"></span>
+  <!-- Storage Request Modal -->
+  <div class="modal-overlay" id="storageRequestModal">
+    <div class="modal-content">
+      <div class="modal-title">Solicitar Mas Espacio</div>
+      <div class="storage-current-info">
+        <div class="storage-current-title">Estado actual del servicio: <strong id="storageServiceName"></strong></div>
+        <div class="storage-current-bar">
+          <div class="storage-current-fill" id="storageCurrentFill"></div>
+        </div>
+        <div class="storage-current-text">
+          <span id="storageCurrentUsed">0 MB usados</span>
+          <span id="storageCurrentLimit">de 0 MB</span>
         </div>
       </div>
-      <div id="ticketMessages">
-        <!-- Messages will be loaded here -->
-      </div>
-      <div class="reply-form" id="replyForm">
+      <form id="storageRequestForm">
+        <input type="hidden" id="storageServiceId">
         <div class="form-group">
-          <label class="form-label">Responder</label>
-          <textarea class="form-textarea" id="replyMessage" placeholder="Escribe tu respuesta..."></textarea>
+          <label class="form-label">Espacio adicional necesario</label>
+          <div class="storage-options">
+            <div class="storage-option" data-value="1000">
+              <div class="storage-option-value">+1 GB</div>
+              <div class="storage-option-label">1,000 MB</div>
+            </div>
+            <div class="storage-option" data-value="2000">
+              <div class="storage-option-value">+2 GB</div>
+              <div class="storage-option-label">2,000 MB</div>
+            </div>
+            <div class="storage-option" data-value="5000">
+              <div class="storage-option-value">+5 GB</div>
+              <div class="storage-option-label">5,000 MB</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">O especifica cantidad personalizada (MB)</label>
+          <input type="number" class="form-input" id="storageCustomAmount" placeholder="Ej: 3000" min="100" max="50000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Motivo de la solicitud (opcional)</label>
+          <textarea class="form-textarea" id="storageReason" placeholder="Explica brevemente por que necesitas mas espacio..." rows="3"></textarea>
         </div>
         <div class="modal-actions">
-          <button type="button" class="btn btn--ghost" onclick="closeTicketDetail()">Cerrar</button>
-          <button type="button" class="btn btn--primary" onclick="sendReply()">Enviar Respuesta</button>
+          <button type="button" class="btn btn--ghost" onclick="closeStorageRequest()">Cancelar</button>
+          <button type="submit" class="btn btn--primary">Enviar Solicitud</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Chat-style Ticket Detail Modal -->
+  <div class="chat-overlay" id="chatOverlay">
+    <div class="chat-modal">
+      <div class="chat-header">
+        <div class="chat-subject" id="chatSubject">Cargando...</div>
+        <div class="chat-meta" id="chatMeta"></div>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">Cargando...</div>
+      </div>
+      <div class="chat-input" id="chatInput">
+        <textarea class="chat-textarea" id="chatTextarea" placeholder="Escribe tu respuesta..." rows="1"></textarea>
+        <div class="chat-bottom-row">
+          <button class="btn btn--ghost btn--sm" onclick="closeTicketDetail()">Cerrar</button>
+          <button class="btn btn--primary btn--sm" onclick="sendReply()">Enviar</button>
         </div>
       </div>
     </div>
@@ -453,13 +818,17 @@
 
   <script>
     let tickets = [];
+    let services = [];
     let currentTicketId = null;
     let currentUser = null;
+    let currentFilter = 'all';
+    let socket = null;
 
     const statusLabels = {
-      open: 'Abierto',
+      new: 'Nuevo',
       in_progress: 'En Progreso',
-      resolved: 'Resuelto',
+      waiting_client: 'En Revision',
+      waiting_support: 'Esperando Respuesta',
       closed: 'Cerrado'
     };
 
@@ -470,16 +839,182 @@
       urgent: 'Urgente'
     };
 
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
     async function loadSession() {
       try {
         const res = await fetch('./api/session');
         const data = await res.json();
         if (data.ok) {
           currentUser = data.user;
-          document.getElementById('userName').textContent = data.user.username;
         }
       } catch (err) {
         console.error('Error loading session:', err);
+      }
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('./api/tickets/stats');
+        const data = await res.json();
+        if (data.ok && data.stats) {
+          document.getElementById('statNew').textContent = data.stats.new || 0;
+          document.getElementById('statProgress').textContent = data.stats.in_progress || 0;
+          document.getElementById('statWaiting').textContent = data.stats.waiting_support || 0;
+          document.getElementById('statClosed').textContent = data.stats.closed || 0;
+        }
+      } catch (err) {
+        console.error('Error loading stats:', err);
+      }
+    }
+
+    async function loadServices() {
+      try {
+        const res = await fetch('./api/client/services');
+        const data = await res.json();
+        if (data.ok && data.services.length > 0) {
+          services = data.services;
+          document.getElementById('servicesSection').style.display = '';
+          document.getElementById('serviceSelectGroup').style.display = '';
+
+          // Render services grid
+          const grid = document.getElementById('servicesGrid');
+          grid.innerHTML = services.map(s => {
+            const used = Number(s.storage_used_mb) || 0;
+            const limit = Number(s.storage_limit_mb) || 1;
+            const pct = Math.min(100, Math.round((used / limit) * 100));
+            const barClass = pct >= 85 ? 'high' : pct >= 60 ? 'medium' : 'low';
+
+            const statusLabel = s.status === 'active' ? 'Activo' : s.status === 'suspended' ? 'Suspendido' : 'Cancelado';
+            const startStr = s.start_date ? new Date(s.start_date).toLocaleDateString('es-MX') : null;
+            const endStr = s.end_date ? new Date(s.end_date).toLocaleDateString('es-MX') : null;
+
+            // Expiration check
+            let expirationHtml = '';
+            let cardClass = '';
+            if (s.end_date) {
+              const now = new Date();
+              const end = new Date(s.end_date);
+              const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+              if (daysLeft < 0) {
+                expirationHtml = '<div class="expiration-alert danger">&#x26A0; Servicio vencido - Requiere renovacion</div>';
+                cardClass = 'expired';
+              } else if (daysLeft <= 30) {
+                expirationHtml = `<div class="expiration-alert warn">&#x23F0; Vence en ${daysLeft} dia${daysLeft !== 1 ? 's' : ''} - Renovar pronto</div>`;
+                cardClass = 'expiring-soon';
+              }
+            }
+
+            return `
+              <div class="service-card ${cardClass}">
+                <div class="service-card-top">
+                  <div class="service-name">${escapeHtml(s.service_name)}</div>
+                  <span class="service-status ${s.status}">${statusLabel}</span>
+                </div>
+                ${s.domain ? `<div class="service-domain">&#x1F310; ${escapeHtml(s.domain)}</div>` : ''}
+                <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+                  <span class="service-type-badge">${s.service_type || 'web'}</span>
+                </div>
+                <div class="storage-section">
+                  <div class="storage-label">
+                    <span>Almacenamiento</span>
+                    <span>${used} MB / ${s.storage_limit_mb || 0} MB (${pct}%)</span>
+                  </div>
+                  <div class="storage-bar">
+                    <div class="storage-fill ${barClass}" style="width:${pct}%"></div>
+                  </div>
+                </div>
+                <div class="service-dates">
+                  ${startStr ? `<div class="service-date-item">&#x1F4C5; Inicio: <span>${startStr}</span></div>` : ''}
+                  ${endStr ? `<div class="service-date-item">&#x1F4C6; Vence: <span>${endStr}</span></div>` : ''}
+                </div>
+                ${expirationHtml}
+                ${pct >= 70 ? `
+                  <button class="request-storage-btn ${pct >= 90 ? 'critical' : pct >= 80 ? 'warning' : ''}"
+                          onclick="openStorageRequest(${s.id}, '${escapeHtml(s.service_name)}', ${used}, ${limit}, ${pct})">
+                    ${pct >= 90 ? '&#x26A0;' : '&#x1F4E6;'} Solicitar Mas Espacio
+                  </button>
+                ` : ''}
+              </div>
+            `;
+          }).join('');
+
+          // Populate service select in new ticket form
+          const select = document.getElementById('ticketService');
+          services.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = s.service_name + (s.domain ? ` (${s.domain})` : '');
+            select.appendChild(opt);
+          });
+
+          // Check for high storage usage and show alert banner
+          checkStorageAlerts();
+        }
+      } catch (err) {
+        console.error('Error loading services:', err);
+      }
+    }
+
+    function checkStorageAlerts() {
+      const criticalServices = [];
+      const warningServices = [];
+
+      services.forEach(s => {
+        const used = Number(s.storage_used_mb) || 0;
+        const limit = Number(s.storage_limit_mb) || 1;
+        const pct = Math.round((used / limit) * 100);
+
+        if (pct >= 90) {
+          criticalServices.push({ ...s, pct, used, limit });
+        } else if (pct >= 80) {
+          warningServices.push({ ...s, pct, used, limit });
+        }
+      });
+
+      const banner = document.getElementById('storageAlertBanner');
+
+      if (criticalServices.length > 0) {
+        const s = criticalServices[0];
+        banner.style.display = '';
+        banner.className = 'storage-alert-banner';
+        banner.innerHTML = `
+          <div class="storage-alert-icon">&#x26A0;</div>
+          <div class="storage-alert-content">
+            <div class="storage-alert-title">Almacenamiento Critico en ${escapeHtml(s.service_name)}</div>
+            <div class="storage-alert-text">
+              Has utilizado el ${s.pct}% del espacio disponible (${s.used} MB de ${s.limit} MB).
+              ${criticalServices.length > 1 ? `Y ${criticalServices.length - 1} servicio(s) mas con uso critico.` : ''}
+              Solicita mas espacio para evitar interrupciones.
+            </div>
+          </div>
+          <button class="storage-alert-btn" onclick="openStorageRequest(${s.id}, '${escapeHtml(s.service_name)}', ${s.used}, ${s.limit}, ${s.pct})">
+            Solicitar Espacio
+          </button>
+        `;
+      } else if (warningServices.length > 0) {
+        const s = warningServices[0];
+        banner.style.display = '';
+        banner.className = 'storage-alert-banner warning';
+        banner.innerHTML = `
+          <div class="storage-alert-icon">&#x1F4E6;</div>
+          <div class="storage-alert-content">
+            <div class="storage-alert-title">Espacio Limitado en ${escapeHtml(s.service_name)}</div>
+            <div class="storage-alert-text">
+              Has utilizado el ${s.pct}% del espacio disponible (${s.used} MB de ${s.limit} MB).
+              ${warningServices.length > 1 ? `Y ${warningServices.length - 1} servicio(s) mas con uso elevado.` : ''}
+              Considera solicitar mas espacio pronto.
+            </div>
+          </div>
+          <button class="storage-alert-btn" onclick="openStorageRequest(${s.id}, '${escapeHtml(s.service_name)}', ${s.used}, ${s.limit}, ${s.pct})">
+            Solicitar Espacio
+          </button>
+        `;
+      } else {
+        banner.style.display = 'none';
       }
     }
 
@@ -487,41 +1022,55 @@
       try {
         const res = await fetch('./api/tickets');
         const data = await res.json();
-
-        const list = document.getElementById('ticketsList');
-
-        if (data.ok && data.tickets.length > 0) {
-          tickets = data.tickets;
-          list.innerHTML = tickets.map(t => `
-            <div class="ticket-card" onclick="openTicketDetail(${t.id})">
-              <div class="ticket-header">
-                <div>
-                  <div class="ticket-subject">${t.subject}</div>
-                  <div class="ticket-id">#${t.id}</div>
-                </div>
-                <span class="ticket-status ${t.status}">${statusLabels[t.status]}</span>
-              </div>
-              <div class="ticket-preview">${t.message}</div>
-              <div class="ticket-footer">
-                <span class="priority-badge ${t.priority}">${priorityLabels[t.priority]}</span>
-                <span>&#x1F4AC; ${t.response_count || 0} respuestas</span>
-                <span>${new Date(t.created_at).toLocaleDateString('es-MX')}</span>
-              </div>
-            </div>
-          `).join('');
-        } else {
-          list.innerHTML = `
-            <div class="empty-state">
-              <div class="empty-state-icon">&#x1F4E8;</div>
-              <div class="empty-state-text">No tienes tickets de soporte</div>
-              <button class="btn btn--primary" onclick="openNewTicket()">Crear mi primer ticket</button>
-            </div>
-          `;
-        }
+        tickets = data.ok ? data.tickets : [];
+        renderTickets();
       } catch (err) {
         console.error('Error loading tickets:', err);
       }
     }
+
+    function renderTickets() {
+      const list = document.getElementById('ticketsList');
+      const filtered = currentFilter === 'all' ? tickets : tickets.filter(t => t.status === currentFilter);
+
+      if (filtered.length > 0) {
+        list.innerHTML = filtered.map(t => `
+          <div class="ticket-card" onclick="openTicketDetail(${t.id})">
+            <div class="ticket-header">
+              <div>
+                <div class="ticket-subject">${escapeHtml(t.subject)}</div>
+                <div class="ticket-id">#${t.id}${t.service_name ? ' &bull; ' + escapeHtml(t.service_name) : ''}</div>
+              </div>
+              <span class="ticket-status ${t.status}">${statusLabels[t.status] || t.status}</span>
+            </div>
+            <div class="ticket-footer">
+              <span class="priority-badge ${t.priority}">${priorityLabels[t.priority] || t.priority}</span>
+              <span>&#x1F4AC; ${t.message_count || 0} mensajes</span>
+              ${t.assigned_name ? '<span>&#x1F464; ' + escapeHtml(t.assigned_name) + '</span>' : ''}
+              <span>${new Date(t.created_at).toLocaleDateString('es-MX')}</span>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">&#x1F4E8;</div>
+            <div class="empty-state-text">${currentFilter === 'all' ? 'No tienes tickets de soporte' : 'No hay tickets con este filtro'}</div>
+            ${currentFilter === 'all' ? '<button class="btn btn--primary" onclick="openNewTicket()">Crear mi primer ticket</button>' : ''}
+          </div>
+        `;
+      }
+    }
+
+    // Filter chips
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentFilter = chip.dataset.filter;
+        renderTickets();
+      });
+    });
 
     function openNewTicket() {
       document.getElementById('newTicketModal').classList.add('is-visible');
@@ -534,67 +1083,102 @@
 
     async function openTicketDetail(id) {
       currentTicketId = id;
-      document.getElementById('ticketDetailModal').classList.add('is-visible');
-      document.getElementById('ticketMessages').innerHTML = '<div class="loading" style="padding:20px;"><div class="loading-spinner"></div></div>';
+      document.getElementById('chatOverlay').classList.add('is-visible');
+      document.getElementById('chatMessages').innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">Cargando...</div>';
+      document.getElementById('chatTextarea').value = '';
+
+      // Join socket room
+      if (socket) socket.emit('join-ticket', id);
 
       try {
         const res = await fetch(`./api/tickets/${id}`);
         const data = await res.json();
 
-        if (data.ok) {
-          const ticket = data.ticket;
-          document.getElementById('detailSubject').textContent = ticket.subject;
-          document.getElementById('detailStatus').innerHTML = `<span class="ticket-status ${ticket.status}">${statusLabels[ticket.status]}</span>`;
-          document.getElementById('detailPriority').innerHTML = `<span class="priority-badge ${ticket.priority}">${priorityLabels[ticket.priority]}</span>`;
-          document.getElementById('detailDate').textContent = new Date(ticket.created_at).toLocaleString('es-MX');
+        if (!data.ok) return;
+        const t = data.ticket;
 
-          // Hide reply form if ticket is closed
-          document.getElementById('replyForm').style.display = ticket.status === 'closed' ? 'none' : '';
+        document.getElementById('chatSubject').innerHTML = `<span style="width:4px;height:18px;background:linear-gradient(180deg,#FF7A18,#FF9A45);border-radius:2px;flex-shrink:0;"></span>${escapeHtml(t.subject)}`;
+        document.getElementById('chatMeta').innerHTML = `
+          <span class="ticket-status ${t.status}" style="font-size:10px;">${statusLabels[t.status]}</span>
+          <span class="priority-badge ${t.priority}" style="font-size:9px;">${priorityLabels[t.priority]}</span>
+          ${t.service_name ? `<span>Servicio: ${escapeHtml(t.service_name)}</span>` : ''}
+          ${t.assigned_name ? `<span>Agente: ${escapeHtml(t.assigned_name)}</span>` : ''}
+          <span>${new Date(t.created_at).toLocaleString('es-MX')}</span>
+        `;
 
-          // Build messages
-          let html = `
-            <div class="ticket-message">
-              <div class="ticket-message-header">
-                <span class="ticket-message-author">${ticket.user_name || 'Tu'}</span>
-                <span class="ticket-message-time">${new Date(ticket.created_at).toLocaleString('es-MX')}</span>
-              </div>
-              <div class="ticket-message-body">${ticket.message}</div>
-            </div>
-          `;
+        // Render messages
+        renderChatMessages(data.messages || []);
 
-          if (data.responses && data.responses.length > 0) {
-            for (const r of data.responses) {
-              const isStaff = r.user_role === 'admin' || r.user_role === 'support';
-              html += `
-                <div class="ticket-message ${isStaff ? 'staff' : ''}">
-                  <div class="ticket-message-header">
-                    <span class="ticket-message-author">${r.username}${isStaff ? ' (Soporte)' : ''}</span>
-                    <span class="ticket-message-time">${new Date(r.created_at).toLocaleString('es-MX')}</span>
-                  </div>
-                  <div class="ticket-message-body">${r.message}</div>
-                </div>
-              `;
-            }
-          }
+        // Hide input if closed
+        document.getElementById('chatInput').style.display = t.status === 'closed' ? 'none' : '';
 
-          document.getElementById('ticketMessages').innerHTML = html;
-        }
       } catch (err) {
         console.error('Error loading ticket:', err);
       }
     }
 
+    function renderChatMessages(messages) {
+      const container = document.getElementById('chatMessages');
+      if (!messages || messages.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.35);">Sin mensajes</div>';
+        return;
+      }
+
+      container.innerHTML = messages.map(m => {
+        const isStaff = m.role === 'admin' || m.role === 'support';
+        return `
+          <div class="chat-msg ${isStaff ? 'staff' : ''}">
+            <div class="chat-msg-head">
+              <span class="chat-msg-author">${escapeHtml(m.display_name || m.username)}${isStaff ? ' (Soporte)' : ''}</span>
+              <span class="chat-msg-time">${new Date(m.created_at).toLocaleString('es-MX')}</span>
+            </div>
+            <div class="chat-msg-body">${escapeHtml(m.message)}</div>
+          </div>
+        `;
+      }).join('');
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function appendChatMessage(m) {
+      const container = document.getElementById('chatMessages');
+      if (container.querySelector(`[data-msg-id="${m.id}"]`)) return;
+      if (m.is_internal) return; // clients don't see internal notes
+
+      const isStaff = m.role === 'admin' || m.role === 'support';
+      const div = document.createElement('div');
+      div.className = `chat-msg ${isStaff ? 'staff' : ''}`;
+      div.setAttribute('data-msg-id', m.id);
+      div.innerHTML = `
+        <div class="chat-msg-head">
+          <span class="chat-msg-author">${escapeHtml(m.display_name || m.username)}${isStaff ? ' (Soporte)' : ''}</span>
+          <span class="chat-msg-time">${new Date(m.created_at).toLocaleString('es-MX')}</span>
+        </div>
+        <div class="chat-msg-body">${escapeHtml(m.message)}</div>
+      `;
+
+      const empty = container.querySelector('div[style*="text-align:center"]');
+      if (empty) empty.remove();
+
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
     function closeTicketDetail() {
-      document.getElementById('ticketDetailModal').classList.remove('is-visible');
+      document.getElementById('chatOverlay').classList.remove('is-visible');
+      if (socket && currentTicketId) {
+        socket.emit('leave-ticket', currentTicketId);
+      }
       currentTicketId = null;
     }
 
     async function sendReply() {
-      const message = document.getElementById('replyMessage').value.trim();
-      if (!message) return alert('Escribe un mensaje');
+      const textarea = document.getElementById('chatTextarea');
+      const message = textarea.value.trim();
+      if (!message || !currentTicketId) return;
 
       try {
-        const res = await fetch(`./api/tickets/${currentTicketId}/respond`, {
+        const res = await fetch(`./api/tickets/${currentTicketId}/messages`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message })
@@ -602,9 +1186,9 @@
         const data = await res.json();
 
         if (data.ok) {
-          document.getElementById('replyMessage').value = '';
-          openTicketDetail(currentTicketId);
+          textarea.value = '';
           loadTickets();
+          loadStats();
         } else {
           alert(data.error || 'Error al enviar');
         }
@@ -619,7 +1203,8 @@
       const body = {
         subject: document.getElementById('ticketSubject').value,
         priority: document.getElementById('ticketPriority').value,
-        message: document.getElementById('ticketMessage').value
+        message: document.getElementById('ticketMessage').value,
+        service_id: document.getElementById('ticketService').value || null
       };
 
       try {
@@ -633,6 +1218,7 @@
         if (data.ok) {
           closeNewTicket();
           loadTickets();
+          loadStats();
         } else {
           alert(data.error || 'Error al crear ticket');
         }
@@ -641,16 +1227,275 @@
       }
     };
 
+    // ===== Storage Request Functions =====
+    let selectedStorageAmount = null;
+
+    function openStorageRequest(serviceId, serviceName, used, limit, pct) {
+      selectedStorageAmount = null;
+      document.getElementById('storageServiceId').value = serviceId;
+      document.getElementById('storageServiceName').textContent = serviceName;
+      document.getElementById('storageCurrentUsed').textContent = used + ' MB usados';
+      document.getElementById('storageCurrentLimit').textContent = 'de ' + limit + ' MB';
+
+      const fill = document.getElementById('storageCurrentFill');
+      fill.style.width = pct + '%';
+      fill.className = 'storage-current-fill';
+      if (pct >= 85) fill.classList.add('high');
+      else if (pct >= 60) fill.classList.add('medium');
+      else fill.classList.add('low');
+      fill.style.background = pct >= 85 ? 'linear-gradient(90deg, #ef4444, #f87171)' :
+                               pct >= 60 ? 'linear-gradient(90deg, #eab308, #facc15)' :
+                               'linear-gradient(90deg, #22c55e, #4ade80)';
+
+      // Reset form
+      document.querySelectorAll('.storage-option').forEach(opt => opt.classList.remove('selected'));
+      document.getElementById('storageCustomAmount').value = '';
+      document.getElementById('storageReason').value = '';
+
+      document.getElementById('storageRequestModal').classList.add('is-visible');
+    }
+
+    function closeStorageRequest() {
+      document.getElementById('storageRequestModal').classList.remove('is-visible');
+    }
+
+    // Storage option selection
+    document.querySelectorAll('.storage-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.storage-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        selectedStorageAmount = parseInt(opt.dataset.value);
+        document.getElementById('storageCustomAmount').value = '';
+      });
+    });
+
+    document.getElementById('storageCustomAmount').addEventListener('input', function() {
+      if (this.value) {
+        selectedStorageAmount = null;
+        document.querySelectorAll('.storage-option').forEach(o => o.classList.remove('selected'));
+      }
+    });
+
+    document.getElementById('storageRequestForm').onsubmit = async (e) => {
+      e.preventDefault();
+
+      const serviceId = document.getElementById('storageServiceId').value;
+      const customAmount = document.getElementById('storageCustomAmount').value;
+      const reason = document.getElementById('storageReason').value.trim();
+
+      const amount = customAmount ? parseInt(customAmount) : selectedStorageAmount;
+
+      if (!amount || amount < 100) {
+        alert('Por favor selecciona o ingresa la cantidad de espacio adicional (minimo 100 MB)');
+        return;
+      }
+
+      const service = services.find(s => s.id == serviceId);
+      const serviceName = service ? service.service_name : 'Servicio #' + serviceId;
+      const currentUsed = service ? (Number(service.storage_used_mb) || 0) : 0;
+      const currentLimit = service ? (Number(service.storage_limit_mb) || 0) : 0;
+
+      // Create ticket with storage request
+      const subject = `Solicitud de espacio adicional: +${amount >= 1000 ? (amount/1000) + ' GB' : amount + ' MB'}`;
+      const message = `**Solicitud de Aumento de Espacio**
+
+Servicio: ${serviceName}
+Espacio actual: ${currentUsed} MB / ${currentLimit} MB
+Espacio adicional solicitado: ${amount} MB (${(amount/1000).toFixed(1)} GB)
+Nuevo limite solicitado: ${currentLimit + amount} MB (${((currentLimit + amount)/1000).toFixed(1)} GB)
+
+${reason ? 'Motivo: ' + reason : 'Sin motivo especificado'}
+
+---
+Solicitud generada automaticamente desde el portal del cliente.`;
+
+      try {
+        const res = await fetch('./api/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            subject: subject,
+            priority: 'medium',
+            message: message,
+            service_id: serviceId,
+            ticket_type: 'storage_request'
+          })
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          closeStorageRequest();
+          loadTickets();
+          loadStats();
+          alert('Solicitud enviada correctamente. Recibiras una respuesta pronto.');
+        } else {
+          alert(data.error || 'Error al enviar la solicitud');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        alert('Error de conexion');
+      }
+    };
+
+    // Close modals on backdrop click
     document.getElementById('newTicketModal').onclick = (e) => {
       if (e.target === e.currentTarget) closeNewTicket();
     };
-
-    document.getElementById('ticketDetailModal').onclick = (e) => {
+    document.getElementById('storageRequestModal').onclick = (e) => {
+      if (e.target === e.currentTarget) closeStorageRequest();
+    };
+    document.getElementById('chatOverlay').onclick = (e) => {
       if (e.target === e.currentTarget) closeTicketDetail();
     };
 
+    // Textarea auto-resize
+    document.getElementById('chatTextarea').addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+
+    // Enter to send (Shift+Enter for new line)
+    document.getElementById('chatTextarea').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendReply();
+      }
+    });
+
+    // Escape key to close modals
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (document.getElementById('chatOverlay').classList.contains('is-visible')) {
+          closeTicketDetail();
+        } else if (document.getElementById('storageRequestModal').classList.contains('is-visible')) {
+          closeStorageRequest();
+        } else if (document.getElementById('newTicketModal').classList.contains('is-visible')) {
+          closeNewTicket();
+        }
+      }
+    });
+
+    // Socket.IO
+    function initSocket() {
+      const adminBase = new URL('./', window.location.href).pathname;
+      const script = document.createElement('script');
+      script.src = adminBase + 'socket.io/socket.io.js';
+      script.onload = () => {
+        socket = io({ path: adminBase + 'socket.io/' });
+
+        socket.on('connect', () => {
+          if (currentTicketId) socket.emit('join-ticket', currentTicketId);
+        });
+
+        socket.on('new-message', (msg) => {
+          if (currentTicketId === msg.ticket_id) {
+            appendChatMessage(msg);
+          }
+          loadStats();
+          loadTickets();
+        });
+      };
+      script.onerror = () => {
+        console.warn('Socket.IO not available');
+      };
+      document.head.appendChild(script);
+    }
+
+    // ===== Notifications =====
+    function fmtTimeAgo(dateStr) {
+      const d = new Date(dateStr);
+      const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+      if (diff < 60) return 'Ahora';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+      return Math.floor(diff / 86400) + 'd';
+    }
+
+    const notifIcons = { lead: '&#x1F4E9;', comment: '&#x1F4AC;', ticket: '&#x1F3AB;', ticket_reply: '&#x1F4AC;', ticket_internal: '&#x1F4E8;' };
+
+    async function loadNotifications() {
+      try {
+        const res = await fetch('./api/notifications');
+        const data = await res.json();
+        const notifs = data.notifications || [];
+        const unread = notifs.filter(n => !Number(n.is_read));
+
+        const bdg = document.getElementById('notifBadge');
+        if (unread.length > 0) {
+          bdg.style.display = '';
+          bdg.textContent = unread.length > 99 ? '99+' : unread.length;
+        } else {
+          bdg.style.display = 'none';
+        }
+
+        const list = document.getElementById('notifList');
+        if (notifs.length === 0) {
+          list.innerHTML = '<div class="notif-empty">Sin notificaciones</div>';
+        } else {
+          list.innerHTML = notifs.slice(0, 20).map(n => `
+            <div class="notif-item ${Number(n.is_read) ? '' : 'is-unread'}" data-type="${n.type}" data-ref="${n.ref_id || ''}" style="cursor:pointer;">
+              <div class="notif-item-icon">${notifIcons[n.type] || '&#x1F514;'}</div>
+              <div class="notif-item-body">
+                <div class="notif-item-title">${escapeHtml(n.title)}</div>
+                <div class="notif-item-text">${escapeHtml(n.body || '')}</div>
+                <div class="notif-item-time">${fmtTimeAgo(n.created_at)}</div>
+              </div>
+              <button class="notif-item-delete" onclick="event.stopPropagation();deleteNotif(${n.id})" title="Eliminar">&#x2715;</button>
+            </div>
+          `).join('');
+
+          // Attach click handlers for navigation
+          list.querySelectorAll('.notif-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+              if (e.target.closest('.notif-item-delete')) return;
+              const type = item.dataset.type;
+              const refId = item.dataset.ref;
+              if ((type === 'ticket' || type === 'ticket_reply') && refId) {
+                document.getElementById('notifDropdown').classList.remove('is-open');
+                openChatModal(parseInt(refId));
+              }
+            });
+          });
+        }
+      } catch (err) {
+        console.warn('Notifications error:', err);
+      }
+    }
+
+    async function deleteNotif(id) {
+      try {
+        await fetch(`./api/notifications/${id}/delete`, { method: 'POST' });
+        loadNotifications();
+      } catch (err) {}
+    }
+
+    document.getElementById('notifBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('notifDropdown').classList.toggle('is-open');
+    });
+    document.addEventListener('click', (e) => {
+      const dd = document.getElementById('notifDropdown');
+      if (!dd.contains(e.target) && !document.getElementById('notifBtn').contains(e.target)) {
+        dd.classList.remove('is-open');
+      }
+    });
+    document.getElementById('markAllRead').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try {
+        await fetch('./api/notifications/read-all', { method: 'POST' });
+        loadNotifications();
+      } catch (err) {}
+    });
+
+    // Init
     loadSession();
+    loadStats();
+    loadServices();
     loadTickets();
+    loadNotifications();
+    // Refresh notifications periodically
+    setInterval(loadNotifications, 30000);
+    initSocket();
   </script>
 </body>
 </html>

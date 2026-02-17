@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <title>FAQ Admin - Cerberus</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+  <link rel="stylesheet" href="/assets/css/admin.css"/>
+  <style>
+    .admin-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #fff; }
+
+    .faq-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+    .faq-card.draft { opacity: 0.6; border-style: dashed; }
+    .faq-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .faq-question { font-size: 16px; font-weight: 600; color: #fff; flex: 1; }
+    .faq-category {
+      padding: 3px 10px; border-radius: 10px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      background: rgba(255,122,24,0.15); color: #FF7A18;
+      margin-left: 10px;
+    }
+    .faq-answer {
+      margin-top: 12px; color: rgba(255,255,255,0.6);
+      font-size: 14px; line-height: 1.6;
+      padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;
+      white-space: pre-wrap;
+    }
+    .faq-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    .modal-overlay.is-visible { opacity: 1; visibility: visible; }
+    .modal-content {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;
+    }
+    .modal-title { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 6px; }
+    .form-input, .form-textarea, .form-select {
+      width: 100%; padding: 10px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; color: #fff; font-size: 14px;
+    }
+    .form-textarea { min-height: 150px; resize: vertical; font-family: monospace; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-checkbox { display: flex; align-items: center; gap: 8px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions .btn { flex: 1; }
+    .help-text { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+    .empty-state { text-align: center; padding: 60px; color: rgba(255,255,255,0.5); }
+  </style>
+</head>
+<body>
+  <main class="admin-wrap">
+    <div class="admin-bg"></div>
+    <header class="admin-top">
+      <div class="dashboard-header">
+        <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
+        <div class="admin-brand">
+          <div class="admin-title">Preguntas Frecuentes</div>
+          <div class="admin-sub">Administrar FAQ para clientes</div>
+        </div>
+        <div class="header-right">
+          <a class="btn btn--ghost" href="./faq" target="_blank">Ver FAQ Publico</a>
+          <a class="btn btn--ghost" href="./dashboard">Volver</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-container">
+      <div class="page-header">
+        <div class="page-title">Administrar FAQ</div>
+        <button class="btn btn--primary" onclick="openModal()">+ Nueva Pregunta</button>
+      </div>
+
+      <div id="faqList">
+        <div class="empty-state">Cargando...</div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="faqModal">
+    <div class="modal-content">
+      <div class="modal-title" id="modalTitle">Nueva Pregunta</div>
+      <form id="faqForm">
+        <input type="hidden" id="faqId">
+        <div class="form-group">
+          <label class="form-label">Pregunta *</label>
+          <input type="text" class="form-input" id="faqQuestion" required placeholder="Ej: Como puedo solicitar mas espacio?">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Respuesta (Markdown) *</label>
+          <textarea class="form-textarea" id="faqAnswer" required placeholder="Puedes usar **negritas**, *cursivas*, listas, etc."></textarea>
+          <div class="help-text">Soporta formato Markdown: **negrita**, *cursiva*, - listas, etc.</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Categoria</label>
+            <select class="form-select" id="faqCategory">
+              <option value="general">General</option>
+              <option value="storage">Almacenamiento</option>
+              <option value="support">Soporte</option>
+              <option value="billing">Facturacion</option>
+              <option value="technical">Tecnico</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Orden</label>
+            <input type="number" class="form-input" id="faqOrder" value="0" min="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-checkbox">
+            <input type="checkbox" id="faqPublished" checked>
+            <span>Publicado (visible para clientes)</span>
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn--ghost" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn btn--primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let faqs = [];
+    const categoryLabels = {
+      general: 'General',
+      storage: 'Almacenamiento',
+      support: 'Soporte',
+      billing: 'Facturacion',
+      technical: 'Tecnico'
+    };
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    async function loadFaqs() {
+      try {
+        const res = await fetch('./api/faq/admin');
+        const data = await res.json();
+        faqs = data.faqs || [];
+        renderFaqs();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderFaqs() {
+      const container = document.getElementById('faqList');
+      if (faqs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No hay preguntas frecuentes. Crea la primera!</div>';
+        return;
+      }
+
+      container.innerHTML = faqs.map(f => `
+        <div class="faq-card ${f.isPublished ? '' : 'draft'}">
+          <div class="faq-header">
+            <div class="faq-question">${escapeHtml(f.question)}</div>
+            <span class="faq-category">${categoryLabels[f.category] || f.category}</span>
+          </div>
+          <div class="faq-answer">${escapeHtml(f.answer)}</div>
+          <div class="faq-actions">
+            <button class="btn btn--ghost btn--sm" onclick="editFaq(${f.id})">Editar</button>
+            <button class="btn btn--ghost btn--sm" onclick="deleteFaq(${f.id})" style="color:#f87171;">Eliminar</button>
+            ${!f.isPublished ? '<span style="font-size:11px;color:rgba(255,255,255,0.4);margin-left:auto;">Borrador</span>' : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openModal() {
+      document.getElementById('modalTitle').textContent = 'Nueva Pregunta';
+      document.getElementById('faqForm').reset();
+      document.getElementById('faqId').value = '';
+      document.getElementById('faqPublished').checked = true;
+      document.getElementById('faqModal').classList.add('is-visible');
+    }
+
+    function closeModal() {
+      document.getElementById('faqModal').classList.remove('is-visible');
+    }
+
+    function editFaq(id) {
+      const f = faqs.find(x => x.id === id);
+      if (!f) return;
+
+      document.getElementById('modalTitle').textContent = 'Editar Pregunta';
+      document.getElementById('faqId').value = id;
+      document.getElementById('faqQuestion').value = f.question;
+      document.getElementById('faqAnswer').value = f.answer;
+      document.getElementById('faqCategory').value = f.category;
+      document.getElementById('faqOrder').value = f.sortOrder || 0;
+      document.getElementById('faqPublished').checked = f.isPublished;
+      document.getElementById('faqModal').classList.add('is-visible');
+    }
+
+    async function deleteFaq(id) {
+      if (!confirm('Eliminar esta pregunta?')) return;
+      try {
+        await fetch(`./api/faq/${id}`, { method: 'DELETE' });
+        loadFaqs();
+      } catch (err) {
+        alert('Error al eliminar');
+      }
+    }
+
+    document.getElementById('faqForm').onsubmit = async (e) => {
+      e.preventDefault();
+
+      const body = {
+        question: document.getElementById('faqQuestion').value,
+        answer: document.getElementById('faqAnswer').value,
+        category: document.getElementById('faqCategory').value,
+        sort_order: parseInt(document.getElementById('faqOrder').value) || 0,
+        is_published: document.getElementById('faqPublished').checked
+      };
+
+      const id = document.getElementById('faqId').value;
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `./api/faq/${id}` : './api/faq';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.ok) {
+          closeModal();
+          loadFaqs();
+        } else {
+          alert(data.error || 'Error');
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+    };
+
+    document.getElementById('faqModal').onclick = (e) => {
+      if (e.target === e.currentTarget) closeModal();
+    };
+
+    loadFaqs();
+  </script>
+</body>
+</html>
