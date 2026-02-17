@@ -111,7 +111,15 @@ if (ADMIN_PATH) {
   });
   app.use(ADMIN_PATH, require("./routes/admin"));
   app.use(ADMIN_PATH, require("./routes/tickets"));
+  app.use(ADMIN_PATH, require("./routes/v4")); // v4 features
 }
+
+// Internal API routes (v4) - accessible only from localhost
+app.use(require("./routes/v4"));
+
+// Initialize Storage Agent cron job
+const { initStorageAgent } = require("./services/storageAgent");
+initStorageAgent();
 
 // Fallback – serve the matching HTML page or index.html for clean URLs
 app.get("*", (req, res) => {

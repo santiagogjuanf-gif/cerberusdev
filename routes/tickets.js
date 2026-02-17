@@ -441,7 +441,7 @@ router.post("/api/tickets", requireAuth, async (req, res) => {
   try {
     const userId = req.session.user.id;
     const role = req.session.user.role;
-    const { subject, message, service_id, priority, client_id, ticket_type } = req.body;
+    const { subject, message, service_id, priority, client_id, ticket_type, category } = req.body;
 
     // Determine the client_id
     let ticketClientId = userId;
@@ -452,6 +452,9 @@ router.post("/api/tickets", requireAuth, async (req, res) => {
     // ticket_type: 'internal' only for staff
     const type = (role === 'admin' || role === 'support') && ticket_type === 'internal' ? 'internal' : 'client';
 
+    // category: support, improvement, storage_request
+    const ticketCategory = ['support', 'improvement', 'storage_request'].includes(category) ? category : 'support';
+
     // Create ticket
     const ticket = await prisma.ticket.create({
       data: {
@@ -460,7 +463,9 @@ router.post("/api/tickets", requireAuth, async (req, res) => {
         status: 'new',
         priority: priority || 'medium',
         serviceId: service_id ? Number(service_id) : null,
-        ticketType: type
+        ticketType: type,
+        category: ticketCategory,
+        improvementStatus: ticketCategory === 'improvement' ? 'pending' : null
       }
     });
 
@@ -853,6 +858,194 @@ router.get("/api/clients", requireAuth, requireRole(['admin', 'support']), async
     res.json({ ok: true, clients: rows });
   } catch (err) {
     console.error("[CLIENTS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ============================================
+// Improvement Tickets API (v4)
+// ============================================
+
+// Get improvement tickets (for client portal)
+router.get("/api/tickets/improvements", requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const role = req.session.user.role;
+
+    let where = { category: 'improvement' };
+    if (role === 'client') {
+      where.clientId = userId;
+    }
+
+    const tickets = await prisma.ticket.findMany({
+      where,
+      include: {
+        client: {
+          select: {
+            username: true,
+            fullName: true,
+            name: true
+          }
+        },
+        service: {
+          select: {
+            serviceName: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const rows = tickets.map(t => ({
+      id: t.id,
+      subject: t.subject,
+      status: t.status,
+      improvementStatus: t.improvementStatus,
+      priority: t.priority,
+      serviceName: t.service?.serviceName,
+      clientName: getDisplayName(t.client),
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt
+    }));
+
+    res.json({ ok: true, improvements: rows });
+  } catch (err) {
+    console.error("[IMPROVEMENTS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Update improvement status (admin/support only)
+router.post("/api/tickets/:id/improvement-status", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { improvement_status } = req.body;
+
+    if (!['pending', 'in_progress', 'completed'].includes(improvement_status)) {
+      return res.status(400).json({ ok: false, error: 'Invalid improvement status' });
+    }
+
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: Number(id) },
+      include: {
+        client: { select: { email: true, name: true, fullName: true } }
+      }
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ ok: false, error: 'Ticket not found' });
+    }
+
+    if (ticket.category !== 'improvement') {
+      return res.status(400).json({ ok: false, error: 'Ticket is not an improvement request' });
+    }
+
+    const oldStatus = ticket.improvementStatus;
+
+    await prisma.ticket.update({
+      where: { id: Number(id) },
+      data: { improvementStatus: improvement_status }
+    });
+
+    // Create notification for client
+    await prisma.adminNotification.create({
+      data: {
+        type: 'improvement_update',
+        userId: ticket.clientId,
+        refId: ticket.id,
+        title: `Mejora actualizada: ${improvement_status}`,
+        body: ticket.subject
+      }
+    });
+
+    // TODO: Send email notification when email service is configured
+    // const emailService = require('../services/emailService');
+    // await emailService.sendEmail('improvement-status', ticket.client.email, {...});
+
+    res.json({ ok: true, oldStatus, newStatus: improvement_status });
+  } catch (err) {
+    console.error("[IMPROVEMENTS]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ============================================
+// Storage Request (v4)
+// ============================================
+
+// Request more storage (creates a ticket)
+router.post("/api/storage/request", requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { service_id, requested_mb, message } = req.body;
+
+    // Get service info
+    const service = await prisma.clientService.findUnique({
+      where: { id: Number(service_id) }
+    });
+
+    if (!service) {
+      return res.status(404).json({ ok: false, error: 'Service not found' });
+    }
+
+    // Verify ownership
+    if (service.clientId !== userId) {
+      return res.status(403).json({ ok: false, error: 'Access denied' });
+    }
+
+    // Create storage request ticket
+    const ticket = await prisma.ticket.create({
+      data: {
+        clientId: userId,
+        subject: `Solicitud de ampliacion de almacenamiento - ${service.serviceName}`,
+        status: 'new',
+        priority: 'medium',
+        serviceId: service.id,
+        ticketType: 'client',
+        category: 'storage_request'
+      }
+    });
+
+    // Add message with details
+    const requestMsg = `Solicitud de ampliacion de almacenamiento:
+
+Servicio: ${service.serviceName}
+Almacenamiento actual: ${service.storageUsedMb} MB de ${service.storageLimitMb} MB
+Espacio adicional solicitado: ${requested_mb || 'A definir'} MB
+
+Mensaje del cliente:
+${message || 'Sin mensaje adicional'}`;
+
+    await prisma.ticketMessage.create({
+      data: {
+        ticketId: ticket.id,
+        userId,
+        message: requestMsg,
+        isInternal: false
+      }
+    });
+
+    // Notify admins
+    const admins = await prisma.adminUser.findMany({
+      where: { role: 'admin', isActive: true },
+      select: { id: true }
+    });
+
+    for (const admin of admins) {
+      await prisma.adminNotification.create({
+        data: {
+          type: 'storage_warning',
+          userId: admin.id,
+          refId: ticket.id,
+          title: 'Solicitud de almacenamiento',
+          body: `${service.serviceName} solicita mas espacio`
+        }
+      });
+    }
+
+    res.json({ ok: true, ticketId: ticket.id });
+  } catch (err) {
+    console.error("[STORAGE REQUEST]", err);
     res.status(500).json({ ok: false, error: err.message });
   }
 });

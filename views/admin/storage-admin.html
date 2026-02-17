@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <title>Storage Admin - Cerberus</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+  <link rel="stylesheet" href="/assets/css/admin.css"/>
+  <style>
+    .admin-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #fff; }
+    .header-actions { display: flex; gap: 10px; }
+
+    .storage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 16px;
+    }
+
+    .storage-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .storage-card.warning { border-color: rgba(234,179,8,0.4); }
+    .storage-card.danger { border-color: rgba(249,115,22,0.4); }
+    .storage-card.critical { border-color: rgba(239,68,68,0.4); animation: criticalPulse 2s infinite; }
+
+    @keyframes criticalPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.2); }
+      50% { box-shadow: 0 0 15px 2px rgba(239,68,68,0.15); }
+    }
+
+    .storage-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .storage-name { font-size: 16px; font-weight: 600; color: #fff; }
+    .storage-client { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+    .storage-status {
+      padding: 4px 10px; border-radius: 10px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+    }
+    .storage-status.ok { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .storage-status.warning { background: rgba(234,179,8,0.2); color: #facc15; }
+    .storage-status.danger { background: rgba(249,115,22,0.2); color: #fb923c; }
+    .storage-status.critical { background: rgba(239,68,68,0.2); color: #f87171; }
+
+    .storage-bar-container { margin: 12px 0; }
+    .storage-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .storage-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .storage-fill.ok { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .storage-fill.warning { background: linear-gradient(90deg, #eab308, #facc15); }
+    .storage-fill.danger { background: linear-gradient(90deg, #ea580c, #fb923c); }
+    .storage-fill.critical { background: linear-gradient(90deg, #dc2626, #f87171); }
+
+    .storage-info {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: rgba(255,255,255,0.5);
+      margin-top: 6px;
+    }
+    .storage-percent {
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .storage-meta {
+      font-size: 11px; color: rgba(255,255,255,0.4);
+      margin-top: 10px; padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .storage-meta-item { margin-bottom: 4px; }
+
+    .storage-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    .modal-overlay.is-visible { opacity: 1; visibility: visible; }
+    .modal-content {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%; max-width: 500px;
+    }
+    .modal-title { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 6px; }
+    .form-input {
+      width: 100%; padding: 10px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; color: #fff; font-size: 14px;
+    }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions .btn { flex: 1; }
+
+    .empty-state { text-align: center; padding: 60px; color: rgba(255,255,255,0.5); }
+    .scanning-indicator {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: rgba(255,255,255,0.6); font-size: 13px;
+    }
+    .scanning-indicator::before {
+      content: '';
+      width: 12px; height: 12px;
+      border: 2px solid rgba(255,122,24,0.3);
+      border-top-color: #FF7A18;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <main class="admin-wrap">
+    <div class="admin-bg"></div>
+    <header class="admin-top">
+      <div class="dashboard-header">
+        <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
+        <div class="admin-brand">
+          <div class="admin-title">Gestion de Almacenamiento</div>
+          <div class="admin-sub">Monitoreo y configuracion</div>
+        </div>
+        <div class="header-right">
+          <a class="btn btn--ghost" href="./dashboard">Volver</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-container">
+      <div class="page-header">
+        <div class="page-title">Almacenamiento de Servicios</div>
+        <div class="header-actions">
+          <span class="scanning-indicator" id="scanIndicator" style="display:none;">Escaneando...</span>
+          <button class="btn btn--ghost" onclick="scanAll()">Escanear Todo</button>
+        </div>
+      </div>
+
+      <div class="storage-grid" id="storageGrid">
+        <div class="empty-state">Cargando...</div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="configModal">
+    <div class="modal-content">
+      <div class="modal-title">Configurar Almacenamiento</div>
+      <form id="configForm">
+        <input type="hidden" id="configServiceId">
+        <div class="form-group">
+          <label class="form-label">Servicio</label>
+          <input type="text" class="form-input" id="configServiceName" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ruta de carpeta</label>
+          <input type="text" class="form-input" id="configFolderPath" placeholder="C:\hosting-web\proyecto1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Limite (MB)</label>
+          <input type="number" class="form-input" id="configLimit" min="100" value="5000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Umbral de alerta (%)</label>
+          <input type="number" class="form-input" id="configThreshold" min="50" max="99" value="80">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn--ghost" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn btn--primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let services = [];
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function formatBytes(mb) {
+      if (mb >= 1000) return (mb / 1000).toFixed(2) + ' GB';
+      return mb.toFixed(2) + ' MB';
+    }
+
+    function formatDate(d) {
+      if (!d) return 'Nunca';
+      return new Date(d).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    async function loadOverview() {
+      try {
+        const res = await fetch('./api/storage/overview');
+        const data = await res.json();
+        services = data.services || [];
+        renderServices();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('storageGrid').innerHTML = '<div class="empty-state">Error cargando datos</div>';
+      }
+    }
+
+    function renderServices() {
+      const grid = document.getElementById('storageGrid');
+      if (services.length === 0) {
+        grid.innerHTML = '<div class="empty-state">No hay servicios con carpeta configurada</div>';
+        return;
+      }
+
+      grid.innerHTML = services.map(s => `
+        <div class="storage-card ${s.status}">
+          <div class="storage-header">
+            <div>
+              <div class="storage-name">${escapeHtml(s.serviceName)}</div>
+              <div class="storage-client">${escapeHtml(s.clientName)}</div>
+            </div>
+            <span class="storage-status ${s.status}">${s.status.toUpperCase()}</span>
+          </div>
+
+          <div class="storage-bar-container">
+            <div class="storage-bar">
+              <div class="storage-fill ${s.status}" style="width:${Math.min(s.percentage, 100)}%;background:${s.color}"></div>
+            </div>
+            <div class="storage-info">
+              <span>${formatBytes(s.usedMb)} / ${formatBytes(s.limitMb)}</span>
+              <span class="storage-percent">${s.percentage}%</span>
+            </div>
+          </div>
+
+          <div class="storage-meta">
+            <div class="storage-meta-item"><strong>Carpeta:</strong> ${escapeHtml(s.folderPath)}</div>
+            <div class="storage-meta-item"><strong>Ultimo escaneo:</strong> ${formatDate(s.lastScanAt)}</div>
+            ${s.lastScanResult ? `<div class="storage-meta-item"><strong>Archivos:</strong> ${s.lastScanResult.fileCount || 0} | <strong>Excluidos:</strong> ${s.lastScanResult.excludedCount || 0}</div>` : ''}
+          </div>
+
+          <div class="storage-actions">
+            <button class="btn btn--ghost btn--sm" onclick="scanService(${s.id})">Escanear</button>
+            <button class="btn btn--ghost btn--sm" onclick="openConfig(${s.id})">Configurar</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function scanService(id) {
+      document.getElementById('scanIndicator').style.display = '';
+      try {
+        const res = await fetch(`./api/storage/scan/${id}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.ok) {
+          loadOverview();
+        } else {
+          alert(data.error || 'Error al escanear');
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+      document.getElementById('scanIndicator').style.display = 'none';
+    }
+
+    async function scanAll() {
+      if (!confirm('Escanear todos los servicios? Esto puede tardar unos minutos.')) return;
+
+      document.getElementById('scanIndicator').style.display = '';
+      try {
+        const res = await fetch('./api/storage/scan-all', { method: 'POST' });
+        const data = await res.json();
+        if (data.ok) {
+          loadOverview();
+          alert(`Escaneo completado: ${data.scanned} servicios`);
+        } else {
+          alert(data.error || 'Error al escanear');
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+      document.getElementById('scanIndicator').style.display = 'none';
+    }
+
+    function openConfig(id) {
+      const s = services.find(x => x.id === id);
+      if (!s) return;
+
+      document.getElementById('configServiceId').value = id;
+      document.getElementById('configServiceName').value = s.serviceName;
+      document.getElementById('configFolderPath').value = s.folderPath || '';
+      document.getElementById('configLimit').value = s.limitMb || 5000;
+      document.getElementById('configThreshold').value = 80;
+      document.getElementById('configModal').classList.add('is-visible');
+    }
+
+    function closeModal() {
+      document.getElementById('configModal').classList.remove('is-visible');
+    }
+
+    document.getElementById('configForm').onsubmit = async (e) => {
+      e.preventDefault();
+
+      const id = document.getElementById('configServiceId').value;
+      const body = {
+        folder_path: document.getElementById('configFolderPath').value,
+        storage_limit_mb: parseInt(document.getElementById('configLimit').value),
+        alert_threshold: parseInt(document.getElementById('configThreshold').value)
+      };
+
+      try {
+        const res = await fetch(`./api/storage/configure/${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.ok) {
+          closeModal();
+          loadOverview();
+        } else {
+          alert(data.error || 'Error');
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+    };
+
+    document.getElementById('configModal').onclick = (e) => {
+      if (e.target === e.currentTarget) closeModal();
+    };
+
+    loadOverview();
+  </script>
+</body>
+</html>

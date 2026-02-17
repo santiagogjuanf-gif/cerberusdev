@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <title>Mantenimiento - Cerberus Admin</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+  <link rel="stylesheet" href="/assets/css/admin.css"/>
+  <style>
+    .admin-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #fff; }
+
+    .notice-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .notice-card.active { border-color: rgba(255,122,24,0.4); }
+    .notice-card.expired { opacity: 0.6; }
+    .notice-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .notice-title { font-size: 18px; font-weight: 600; color: #fff; }
+    .notice-status {
+      padding: 4px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+    }
+    .notice-status.active { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .notice-status.inactive { background: rgba(239,68,68,0.2); color: #f87171; }
+    .notice-message { color: rgba(255,255,255,0.7); margin-bottom: 12px; line-height: 1.6; }
+    .notice-dates { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
+    .notice-actions { display: flex; gap: 8px; }
+
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    .modal-overlay.is-visible { opacity: 1; visibility: visible; }
+    .modal-content {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%; max-width: 500px;
+    }
+    .modal-title { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 6px; }
+    .form-input, .form-textarea, .form-select {
+      width: 100%; padding: 10px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; color: #fff; font-size: 14px;
+    }
+    .form-textarea { min-height: 100px; resize: vertical; }
+    .form-checkbox { display: flex; align-items: center; gap: 8px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions .btn { flex: 1; }
+
+    .empty-state { text-align: center; padding: 60px; color: rgba(255,255,255,0.5); }
+  </style>
+</head>
+<body>
+  <main class="admin-wrap">
+    <div class="admin-bg"></div>
+    <header class="admin-top">
+      <div class="dashboard-header">
+        <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
+        <div class="admin-brand">
+          <div class="admin-title">Avisos de Mantenimiento</div>
+          <div class="admin-sub">Gestionar avisos para clientes</div>
+        </div>
+        <div class="header-right">
+          <a class="btn btn--ghost" href="./dashboard">Volver al Dashboard</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-container">
+      <div class="page-header">
+        <div class="page-title">Avisos de Mantenimiento</div>
+        <button class="btn btn--primary" onclick="openModal()">+ Nuevo Aviso</button>
+      </div>
+
+      <div id="noticesList">
+        <div class="empty-state">Cargando...</div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="noticeModal">
+    <div class="modal-content">
+      <div class="modal-title" id="modalTitle">Nuevo Aviso</div>
+      <form id="noticeForm">
+        <input type="hidden" id="noticeId">
+        <div class="form-group">
+          <label class="form-label">Titulo *</label>
+          <input type="text" class="form-input" id="noticeTitle" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mensaje *</label>
+          <textarea class="form-textarea" id="noticeMessage" required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha de inicio *</label>
+          <input type="datetime-local" class="form-input" id="noticeStartAt" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha de fin (opcional)</label>
+          <input type="datetime-local" class="form-input" id="noticeEndAt">
+        </div>
+        <div class="form-group">
+          <label class="form-checkbox">
+            <input type="checkbox" id="noticeActive" checked>
+            <span>Activo</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label class="form-checkbox">
+            <input type="checkbox" id="noticeSendEmail">
+            <span>Enviar email a todos los clientes</span>
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn--ghost" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn btn--primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let notices = [];
+    let editingId = null;
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function formatDate(d) {
+      return new Date(d).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' });
+    }
+
+    async function loadNotices() {
+      try {
+        const res = await fetch('./api/maintenance');
+        const data = await res.json();
+        notices = data.notices || [];
+        renderNotices();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderNotices() {
+      const container = document.getElementById('noticesList');
+      if (notices.length === 0) {
+        container.innerHTML = '<div class="empty-state">No hay avisos de mantenimiento</div>';
+        return;
+      }
+
+      container.innerHTML = notices.map(n => {
+        const now = new Date();
+        const start = new Date(n.startAt);
+        const end = n.endAt ? new Date(n.endAt) : null;
+        const isActive = n.isActive && start <= now && (!end || end >= now);
+        const isExpired = end && end < now;
+
+        return `
+          <div class="notice-card ${isActive ? 'active' : ''} ${isExpired ? 'expired' : ''}">
+            <div class="notice-header">
+              <div class="notice-title">${escapeHtml(n.title)}</div>
+              <span class="notice-status ${n.isActive ? 'active' : 'inactive'}">${n.isActive ? 'Activo' : 'Inactivo'}</span>
+            </div>
+            <div class="notice-message">${escapeHtml(n.message)}</div>
+            <div class="notice-dates">
+              <strong>Inicio:</strong> ${formatDate(n.startAt)}
+              ${n.endAt ? ` | <strong>Fin:</strong> ${formatDate(n.endAt)}` : ''}
+              | <strong>Creado por:</strong> ${escapeHtml(n.creatorName || 'Admin')}
+            </div>
+            <div class="notice-actions">
+              <button class="btn btn--ghost btn--sm" onclick="editNotice(${n.id})">Editar</button>
+              <button class="btn btn--ghost btn--sm" onclick="deleteNotice(${n.id})" style="color:#f87171;">Eliminar</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openModal() {
+      editingId = null;
+      document.getElementById('modalTitle').textContent = 'Nuevo Aviso';
+      document.getElementById('noticeForm').reset();
+      document.getElementById('noticeId').value = '';
+      document.getElementById('noticeActive').checked = true;
+      document.getElementById('noticeModal').classList.add('is-visible');
+    }
+
+    function closeModal() {
+      document.getElementById('noticeModal').classList.remove('is-visible');
+    }
+
+    function editNotice(id) {
+      const n = notices.find(x => x.id === id);
+      if (!n) return;
+
+      editingId = id;
+      document.getElementById('modalTitle').textContent = 'Editar Aviso';
+      document.getElementById('noticeId').value = id;
+      document.getElementById('noticeTitle').value = n.title;
+      document.getElementById('noticeMessage').value = n.message;
+      document.getElementById('noticeStartAt').value = n.startAt.slice(0, 16);
+      document.getElementById('noticeEndAt').value = n.endAt ? n.endAt.slice(0, 16) : '';
+      document.getElementById('noticeActive').checked = n.isActive;
+      document.getElementById('noticeSendEmail').checked = false;
+      document.getElementById('noticeModal').classList.add('is-visible');
+    }
+
+    async function deleteNotice(id) {
+      if (!confirm('Eliminar este aviso?')) return;
+      try {
+        await fetch(`./api/maintenance/${id}`, { method: 'DELETE' });
+        loadNotices();
+      } catch (err) {
+        alert('Error al eliminar');
+      }
+    }
+
+    document.getElementById('noticeForm').onsubmit = async (e) => {
+      e.preventDefault();
+
+      const body = {
+        title: document.getElementById('noticeTitle').value,
+        message: document.getElementById('noticeMessage').value,
+        start_at: document.getElementById('noticeStartAt').value,
+        end_at: document.getElementById('noticeEndAt').value || null,
+        is_active: document.getElementById('noticeActive').checked,
+        send_email: document.getElementById('noticeSendEmail').checked
+      };
+
+      const id = document.getElementById('noticeId').value;
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `./api/maintenance/${id}` : './api/maintenance';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.ok) {
+          closeModal();
+          loadNotices();
+        } else {
+          alert(data.error || 'Error');
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+    };
+
+    document.getElementById('noticeModal').onclick = (e) => {
+      if (e.target === e.currentTarget) closeModal();
+    };
+
+    loadNotices();
+  </script>
+</body>
+</html>
