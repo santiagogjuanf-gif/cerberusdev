@@ -1149,9 +1149,9 @@ router.get("/api/services/:id/logs", requireAuth, requireRole(['admin', 'support
 
 // ── Monitor API (Admin/Support) ──
 
-// Monitor page
+// Monitor page - redirect to unified services page
 router.get("/monitor", requireAuth, requireRole(['admin', 'support']), (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "views", "admin", "monitor.html"));
+  res.redirect(process.env.ADMIN_PATH + "/services");
 });
 
 // System stats endpoint - Enhanced with CPU %, multiple disks, network

@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
-  <title>Servicios - Cerberus Control</title>
+  <title>Servicios & Monitor - Cerberus Control</title>
   <link rel="stylesheet" href="/assets/css/styles.css"/>
   <link rel="stylesheet" href="/assets/css/admin.css"/>
   <style>
@@ -166,16 +166,52 @@
       font-size: 14px !important;
     }
 
-    /* Service cards */
+    /* ===== TABS ===== */
+    .tabs-container {
+      width: min(1400px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 20px 0;
+    }
+    .tabs-nav {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 4px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px 20px;
+      background: transparent;
+      border: none;
+      border-radius: 10px;
+      color: rgba(255,255,255,0.5);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .tab-btn:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.03); }
+    .tab-btn.active {
+      background: rgba(255,122,24,0.15);
+      color: #FF7A18;
+      border: 1px solid rgba(255,122,24,0.3);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ===== SERVICES TAB STYLES ===== */
     .services-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
       gap: 20px;
-      padding: 20px;
-      width: min(1400px, calc(100% - 40px));
-      margin: 0 auto;
     }
-
     .service-card {
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.08);
@@ -198,84 +234,23 @@
     .service-card::before { top: -1px; left: -1px; border-right: none; border-bottom: none; border-radius: 16px 0 0 0; }
     .service-card::after { bottom: -1px; right: -1px; border-left: none; border-top: none; border-radius: 0 0 16px 0; }
 
-    .service-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 16px;
-    }
-    .service-name {
-      font-size: 18px;
-      font-weight: 700;
-      color: #fff;
-    }
-    .service-pm2 {
-      font-size: 12px;
-      color: rgba(255,255,255,0.4);
-      font-family: monospace;
-    }
-
+    .service-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+    .service-name { font-size: 18px; font-weight: 700; color: #fff; }
+    .service-pm2 { font-size: 12px; color: rgba(255,255,255,0.4); font-family: monospace; }
     .service-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
     }
-    .service-status.online {
-      background: rgba(34,197,94,0.2);
-      color: #4ade80;
-      border: 1px solid rgba(34,197,94,0.3);
-    }
-    .service-status.stopped {
-      background: rgba(239,68,68,0.2);
-      color: #f87171;
-      border: 1px solid rgba(239,68,68,0.3);
-    }
-    .service-status.unknown {
-      background: rgba(156,163,175,0.2);
-      color: #9ca3af;
-      border: 1px solid rgba(156,163,175,0.3);
-    }
-    .service-status-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-      box-shadow: 0 0 6px currentColor;
-    }
-
-    .service-desc {
-      font-size: 13px;
-      color: rgba(255,255,255,0.5);
-      margin-bottom: 16px;
-      line-height: 1.5;
-    }
-
-    .service-meta {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 20px;
-      font-size: 12px;
-      color: rgba(255,255,255,0.4);
-    }
-    .service-meta-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .service-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .service-actions .btn {
-      padding: 8px 14px;
-      font-size: 12px;
-    }
+    .service-status.online { background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+    .service-status.stopped { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .service-status.unknown { background: rgba(156,163,175,0.2); color: #9ca3af; border: 1px solid rgba(156,163,175,0.3); }
+    .service-status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+    .service-desc { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 16px; line-height: 1.5; }
+    .service-meta { display: flex; gap: 16px; margin-bottom: 20px; font-size: 12px; color: rgba(255,255,255,0.4); }
+    .service-meta-item { display: flex; align-items: center; gap: 6px; }
+    .service-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .service-actions .btn { padding: 8px 14px; font-size: 12px; }
     .btn--success { background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.4); color: #4ade80; }
     .btn--success:hover { background: rgba(34,197,94,0.3); }
     .btn--danger { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4); color: #f87171; }
@@ -283,19 +258,163 @@
     .btn--warning { background: rgba(234,179,8,0.2); border-color: rgba(234,179,8,0.4); color: #facc15; }
     .btn--warning:hover { background: rgba(234,179,8,0.3); }
 
-    /* Modal */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 10000;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(8px);
+    .section-header {
       display: flex;
       align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    /* ===== MONITOR TAB STYLES ===== */
+    .monitor-container { padding: 0; }
+
+    .donut-chart { position: relative; width: 120px; height: 120px; margin: 0 auto 16px; }
+    .donut-ring { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 12; }
+    .donut-segment {
+      fill: none; stroke-width: 12; stroke-linecap: round;
+      transform: rotate(-90deg); transform-origin: 50% 50%;
+      transition: stroke-dasharray 0.5s ease;
+    }
+    .donut-segment.green { stroke: #22c55e; }
+    .donut-segment.orange { stroke: #FF7A18; }
+    .donut-segment.red { stroke: #ef4444; }
+    .donut-segment.blue { stroke: #3b82f6; }
+    .donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+    .donut-value { font-size: 24px; font-weight: 800; color: #fff; }
+    .donut-label { font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+    .stat-card::before, .stat-card::after {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,122,24,0.3);
+      pointer-events: none;
+    }
+    .stat-card::before { top: -1px; left: -1px; border-right: none; border-bottom: none; border-radius: 16px 0 0 0; }
+    .stat-card::after { bottom: -1px; right: -1px; border-left: none; border-top: none; border-radius: 0 0 16px 0; }
+    .stat-card-title {
+      font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .stat-card-title-icon { font-size: 16px; }
+    .stat-card-info { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 8px; }
+    .stat-card-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+
+    .network-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+    .network-stat { text-align: center; }
+    .network-stat-icon { font-size: 20px; margin-bottom: 4px; }
+    .network-stat-value { font-size: 18px; font-weight: 700; color: #fff; }
+    .network-stat-label { font-size: 10px; color: rgba(255,255,255,0.4); }
+    .network-stat.download .network-stat-value { color: #22c55e; }
+    .network-stat.upload .network-stat-value { color: #3b82f6; }
+
+    .disks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+    .disk-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; }
+    .disk-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .disk-name { font-size: 13px; font-weight: 600; color: #fff; }
+    .disk-mount { font-size: 11px; color: rgba(255,255,255,0.4); font-family: monospace; }
+    .disk-progress { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+    .disk-progress-bar { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+    .disk-progress-bar.green { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .disk-progress-bar.orange { background: linear-gradient(90deg, #FF7A18, #FF9A45); }
+    .disk-progress-bar.red { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .disk-info { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.5); }
+
+    .section-title {
+      font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .section-title::before { content: ''; width: 4px; height: 24px; background: linear-gradient(180deg, #FF7A18, #FF9A45); border-radius: 2px; }
+
+    .processes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .process-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 16px;
       transition: all 0.3s ease;
+    }
+    .process-card:hover { border-color: rgba(255,122,24,0.3); }
+    .process-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .process-name { font-weight: 600; color: #fff; font-size: 14px; }
+    .process-id { font-size: 10px; color: rgba(255,255,255,0.4); font-family: monospace; }
+    .process-status {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+    }
+    .process-status.online { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .process-status.stopped { background: rgba(239,68,68,0.2); color: #f87171; }
+    .process-status.errored { background: rgba(234,179,8,0.2); color: #facc15; }
+    .process-status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .process-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .process-stat { background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; text-align: center; }
+    .process-stat-label { font-size: 9px; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 4px; }
+    .process-stat-value { font-size: 14px; font-weight: 700; color: #fff; }
+
+    .hostname-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px; background: rgba(255,122,24,0.1);
+      border: 1px solid rgba(255,122,24,0.3); border-radius: 20px;
+      font-size: 13px; color: #FF7A18; margin-bottom: 20px;
+    }
+    .refresh-indicator {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 20px;
+    }
+    .refresh-dot {
+      width: 8px; height: 8px; background: #22c55e; border-radius: 50%;
+      animation: refreshPulse 1s ease-in-out infinite;
+    }
+    @keyframes refreshPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .loading {
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px; padding: 40px; color: rgba(255,255,255,0.5);
+    }
+    .loading-spinner {
+      width: 24px; height: 24px;
+      border: 3px solid rgba(255,122,24,0.2);
+      border-top-color: #FF7A18;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== MODALS ===== */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
     }
     .modal-overlay.is-visible { opacity: 1; visibility: visible; }
     .modal-content {
@@ -303,37 +422,25 @@
       border: 1px solid rgba(255,122,24,0.3);
       border-radius: 20px;
       padding: 30px;
-      width: 90%;
-      max-width: 500px;
-      transform: translateY(20px);
-      transition: transform 0.3s ease;
+      width: 90%; max-width: 500px;
+      transform: translateY(20px); transition: transform 0.3s ease;
     }
     .modal-overlay.is-visible .modal-content { transform: translateY(0); }
     .modal-title {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 24px;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      font-size: 20px; font-weight: 700; margin-bottom: 24px; color: #fff;
+      display: flex; align-items: center; gap: 12px;
     }
     .modal-title::before {
-      content: '';
-      width: 4px; height: 24px;
-      background: linear-gradient(180deg, #FF7A18, #FF9A45);
-      border-radius: 2px;
+      content: ''; width: 4px; height: 24px;
+      background: linear-gradient(180deg, #FF7A18, #FF9A45); border-radius: 2px;
     }
     .form-group { margin-bottom: 20px; }
     .form-label { display: block; font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
     .form-input, .form-select, .form-textarea {
-      width: 100%;
-      padding: 12px 16px;
+      width: 100%; padding: 12px 16px;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      color: #fff;
-      font-size: 14px;
+      border-radius: 10px; color: #fff; font-size: 14px;
       transition: all 0.3s ease;
     }
     .form-textarea { resize: vertical; min-height: 80px; font-family: inherit; }
@@ -347,10 +454,7 @@
     .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
     .modal-actions .btn { flex: 1; padding: 12px 20px; }
 
-    /* Logs modal */
-    .logs-modal .modal-content {
-      max-width: 800px;
-    }
+    .logs-modal .modal-content { max-width: 800px; }
     .logs-container {
       background: #0d0d0d;
       border: 1px solid rgba(255,255,255,0.1);
@@ -366,30 +470,19 @@
       word-break: break-all;
     }
 
-    /* Confirm modal */
     .confirm-modal {
-      position: fixed;
-      inset: 0;
-      z-index: 10001;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
+      position: fixed; inset: 0; z-index: 10001;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
     }
     .confirm-modal.is-visible { opacity: 1; visibility: visible; }
     .confirm-box {
       background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
       border: 1px solid rgba(255,122,24,0.4);
-      border-radius: 20px;
-      padding: 30px;
-      text-align: center;
+      border-radius: 20px; padding: 30px; text-align: center;
       max-width: 400px;
-      transform: scale(0.9);
-      transition: transform 0.3s ease;
+      transform: scale(0.9); transition: transform 0.3s ease;
       box-shadow: 0 0 40px rgba(255,122,24,0.2);
     }
     .confirm-modal.is-visible .confirm-box { transform: scale(1); }
@@ -398,16 +491,6 @@
     .confirm-text { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 24px; line-height: 1.5; }
     .confirm-actions { display: flex; gap: 12px; justify-content: center; }
     .confirm-actions .btn { min-width: 100px; }
-
-    /* Header section */
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px;
-      width: min(1400px, calc(100% - 40px));
-      margin: 0 auto;
-    }
 
     /* Mobile responsive */
     @media (max-width: 768px) {
@@ -418,52 +501,34 @@
       .header-logo { width: 44px !important; height: 44px !important; padding: 8px !important; }
       .admin-title { font-size: 16px !important; }
       .admin-sub { font-size: 11px !important; }
-      .services-grid {
-        grid-template-columns: 1fr;
-        padding: 12px;
-      }
-      .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 16px 12px;
-      }
-      .section-header .btn {
-        width: 100%;
-      }
-      .service-card {
-        padding: 16px;
-      }
+
+      .tabs-container { width: calc(100% - 24px); padding: 12px 0; }
+      .tab-btn { font-size: 12px; padding: 10px 12px; }
+
+      .services-grid { grid-template-columns: 1fr; }
+      .service-card { padding: 16px; }
       .service-actions {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 6px;
       }
-      .service-actions .btn {
-        padding: 8px 6px;
-        font-size: 10px;
-        justify-content: center;
-      }
-      .modal-content {
-        width: calc(100% - 24px);
-        padding: 20px;
-        max-height: 90vh;
-      }
-      .logs-modal .modal-content {
-        max-width: calc(100% - 24px);
-      }
-      .logs-container {
-        max-height: 300px;
-        font-size: 10px;
-      }
+      .service-actions .btn { padding: 8px 6px; font-size: 10px; justify-content: center; }
+      .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .section-header .btn { width: 100%; }
+
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .donut-chart { width: 100px; height: 100px; }
+      .donut-value { font-size: 20px; }
+      .processes-grid { grid-template-columns: 1fr; }
+      .disks-grid { grid-template-columns: 1fr; }
+
+      .modal-content { width: calc(100% - 24px); padding: 20px; max-height: 90vh; }
+      .logs-modal .modal-content { max-width: calc(100% - 24px); }
+      .logs-container { max-height: 300px; font-size: 10px; }
     }
     @media (max-width: 480px) {
-      .service-actions {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .admin-actions {
-        grid-template-columns: 1fr;
-      }
+      .service-actions { grid-template-columns: repeat(2, 1fr); }
+      .stats-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -475,8 +540,8 @@
       <div class="dashboard-header">
         <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
         <div class="admin-brand">
-          <div class="admin-title">Gestion de Servicios</div>
-          <div class="admin-sub">Control de aplicaciones PM2</div>
+          <div class="admin-title">Servicios & Monitor</div>
+          <div class="admin-sub">Gestion de aplicaciones y metricas del sistema</div>
         </div>
       </div>
 
@@ -490,12 +555,16 @@
       <div class="admin-actions">
         <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
         <a class="btn btn--ghost" href="./users" id="navUsers" style="display:none;">&#x1F465; Usuarios</a>
-        <a class="btn btn--ghost" href="./monitor">&#x1F4CA; Monitor</a>
         <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
         <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
         <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
         <a class="btn btn--ghost" href="./tech-admin" id="navTech" style="display:none;">&#x1F527; Tecnologias</a>
         <a class="btn btn--ghost" href="./support" id="navSupport" style="display:none;">&#x1F3AB; Soporte</a>
+        <a class="btn btn--ghost" href="./maintenance-admin" id="navMaintenance" style="display:none;">&#x1F6A7; Mantenimiento</a>
+        <a class="btn btn--ghost" href="./faq-admin" id="navFaq" style="display:none;">&#x2753; FAQ</a>
+        <a class="btn btn--ghost" href="./requirements-admin" id="navRequirements" style="display:none;">&#x1F4CB; Requerimientos</a>
+        <a class="btn btn--ghost" href="./storage-admin" id="navStorage" style="display:none;">&#x1F4E6; Storage</a>
+        <a class="btn btn--ghost" href="./email-admin" id="navEmail" style="display:none;">&#x1F4E7; Email</a>
       </div>
     </header>
 
@@ -505,25 +574,62 @@
       <button class="mobile-menu-close" id="mobileMenuClose">&#x2715;</button>
       <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
       <a class="btn btn--ghost" href="./users" id="navUsersMobile" style="display:none;">&#x1F465; Usuarios</a>
-      <a class="btn btn--ghost" href="./monitor">&#x1F4CA; Monitor</a>
       <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
       <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
       <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
       <a class="btn btn--ghost" href="./tech-admin" id="navTechMobile" style="display:none;">&#x1F527; Tecnologias</a>
       <a class="btn btn--ghost" href="./support" id="navSupportMobile" style="display:none;">&#x1F3AB; Soporte</a>
+      <a class="btn btn--ghost" href="./maintenance-admin" id="navMaintenanceMobile" style="display:none;">&#x1F6A7; Mantenimiento</a>
+      <a class="btn btn--ghost" href="./faq-admin" id="navFaqMobile" style="display:none;">&#x2753; FAQ</a>
+      <a class="btn btn--ghost" href="./requirements-admin" id="navRequirementsMobile" style="display:none;">&#x1F4CB; Requerimientos</a>
+      <a class="btn btn--ghost" href="./storage-admin" id="navStorageMobile" style="display:none;">&#x1F4E6; Storage</a>
+      <a class="btn btn--ghost" href="./email-admin" id="navEmailMobile" style="display:none;">&#x1F4E7; Email</a>
       <a class="btn btn--ghost" href="./logout" style="margin-top: auto;">Cerrar sesion</a>
     </div>
 
-    <div class="section-header">
-      <div>
-        <h2 style="color:#fff;margin:0;">Servicios Registrados</h2>
-        <p style="color:rgba(255,255,255,0.5);margin:4px 0 0;font-size:13px;">Gestiona tus aplicaciones y servicios</p>
+    <!-- TABS -->
+    <div class="tabs-container">
+      <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="services">&#x2699; Servicios</button>
+        <button class="tab-btn" data-tab="monitor">&#x1F4CA; Monitor del Sistema</button>
       </div>
-      <button class="btn btn--primary" onclick="openModal()">&#x2795; Nuevo Servicio</button>
-    </div>
 
-    <div class="services-grid" id="servicesGrid">
-      <!-- Services will be loaded here -->
+      <!-- ===== TAB: SERVICIOS ===== -->
+      <div class="tab-panel active" id="tab-services">
+        <div class="section-header">
+          <div>
+            <h2 style="color:#fff;margin:0;">Servicios Registrados</h2>
+            <p style="color:rgba(255,255,255,0.5);margin:4px 0 0;font-size:13px;">Gestiona tus aplicaciones y servicios</p>
+          </div>
+          <button class="btn btn--primary" onclick="openModal()">&#x2795; Nuevo Servicio</button>
+        </div>
+        <div class="services-grid" id="servicesGrid"></div>
+      </div>
+
+      <!-- ===== TAB: MONITOR ===== -->
+      <div class="tab-panel" id="tab-monitor">
+        <div class="monitor-container">
+          <div class="hostname-badge" id="hostname">&#x1F5A5; Cargando...</div>
+          <div class="refresh-indicator">
+            <span class="refresh-dot"></span>
+            <span>Actualizacion automatica cada 3 segundos</span>
+          </div>
+
+          <div class="stats-grid" id="statsGrid">
+            <div class="loading"><div class="loading-spinner"></div> Cargando estadisticas...</div>
+          </div>
+
+          <div class="section-title">&#x1F4C0; Discos</div>
+          <div class="disks-grid" id="disksGrid">
+            <div class="loading"><div class="loading-spinner"></div> Cargando discos...</div>
+          </div>
+
+          <div class="section-title">&#x2699; Procesos PM2</div>
+          <div class="processes-grid" id="processesGrid">
+            <div class="loading"><div class="loading-spinner"></div> Cargando procesos...</div>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -589,6 +695,27 @@
   </div>
 
   <script>
+    // ===== TABS LOGIC =====
+    let monitorInterval = null;
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+
+        // Start/stop monitor auto-refresh based on active tab
+        if (btn.dataset.tab === 'monitor') {
+          refreshMonitor();
+          monitorInterval = setInterval(refreshMonitor, 3000);
+        } else {
+          if (monitorInterval) { clearInterval(monitorInterval); monitorInterval = null; }
+        }
+      });
+    });
+
+    // ===== SERVICES TAB LOGIC =====
     const API = './api/services';
     let services = [];
     let users = [];
@@ -656,7 +783,7 @@
         users.map(u => `<option value="${u.id}">${u.username} (${u.role})</option>`).join('');
     }
 
-    function openModal(service = null) {
+    function openModal(service) {
       document.getElementById('serviceModal').classList.add('is-visible');
       document.getElementById('serviceForm').reset();
 
@@ -674,9 +801,7 @@
       }
     }
 
-    function closeModal() {
-      document.getElementById('serviceModal').classList.remove('is-visible');
-    }
+    function closeModal() { document.getElementById('serviceModal').classList.remove('is-visible'); }
 
     function editService(id) {
       const service = services.find(s => s.id === id);
@@ -687,13 +812,9 @@
       try {
         const res = await fetch(`${API}/${id}/${action}`, { method: 'POST' });
         const data = await res.json();
-        if (!data.ok) {
-          alert(data.error || `Error en ${action}`);
-        }
+        if (!data.ok) alert(data.error || `Error en ${action}`);
         loadData();
-      } catch (err) {
-        console.error('Error:', err);
-      }
+      } catch (err) { console.error('Error:', err); }
     }
 
     function startService(id) { pm2Action(id, 'start'); }
@@ -716,9 +837,7 @@
         const res = await fetch(`${API}/${currentLogsId}/logs?lines=100`);
         const data = await res.json();
         document.getElementById('logsContainer').textContent = data.logs || 'Sin logs disponibles';
-      } catch (err) {
-        document.getElementById('logsContainer').textContent = 'Error cargando logs';
-      }
+      } catch (err) { document.getElementById('logsContainer').textContent = 'Error cargando logs'; }
     }
 
     function closeLogsModal() {
@@ -733,9 +852,7 @@
           const data = await res.json();
           if (data.ok) loadData();
           else alert(data.error || 'Error al eliminar');
-        } catch (err) {
-          console.error('Error:', err);
-        }
+        } catch (err) { console.error('Error:', err); }
       });
     }
 
@@ -745,12 +862,10 @@
       confirmCallback = callback;
       document.getElementById('confirmModal').classList.add('is-visible');
     }
-
     function closeConfirm() {
       document.getElementById('confirmModal').classList.remove('is-visible');
       confirmCallback = null;
     }
-
     document.getElementById('confirmBtn').onclick = () => {
       if (confirmCallback) confirmCallback();
       closeConfirm();
@@ -766,7 +881,6 @@
         port: document.getElementById('servicePort').value || null,
         user_id: document.getElementById('serviceUser').value || null
       };
-
       try {
         const url = id ? `${API}/${id}` : API;
         const res = await fetch(url, {
@@ -775,25 +889,214 @@
           body: JSON.stringify(body)
         });
         const data = await res.json();
+        if (data.ok) { closeModal(); loadData(); }
+        else alert(data.error || 'Error al guardar');
+      } catch (err) { console.error('Error:', err); }
+    };
+
+    document.getElementById('serviceModal').onclick = (e) => { if (e.target === e.currentTarget) closeModal(); };
+    document.getElementById('logsModal').onclick = (e) => { if (e.target === e.currentTarget) closeLogsModal(); };
+
+    // ===== MONITOR TAB LOGIC =====
+    let lastNetwork = { rx: 0, tx: 0, time: Date.now() };
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function formatBytesRate(bytes) {
+      if (bytes === 0) return '0 B/s';
+      const k = 1024;
+      const sizes = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    function formatUptime(ms) {
+      const seconds = Math.floor(ms / 1000);
+      const days = Math.floor(seconds / 86400);
+      const hours = Math.floor((seconds % 86400) / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      if (days > 0) return `${days}d ${hours}h`;
+      if (hours > 0) return `${hours}h ${minutes}m`;
+      return `${minutes}m`;
+    }
+
+    function getColor(percent) {
+      const num = parseFloat(percent);
+      if (num >= 80) return 'red';
+      if (num >= 60) return 'orange';
+      return 'green';
+    }
+
+    function createDonutSVG(percent, color, size) {
+      size = size || 120;
+      const radius = (size - 24) / 2;
+      const circumference = 2 * Math.PI * radius;
+      const offset = circumference - (percent / 100) * circumference;
+      return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+          <circle class="donut-ring" cx="${size/2}" cy="${size/2}" r="${radius}"/>
+          <circle class="donut-segment ${color}" cx="${size/2}" cy="${size/2}" r="${radius}"
+            stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
+        </svg>`;
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('./api/monitor/stats');
+        const data = await res.json();
         if (data.ok) {
-          closeModal();
-          loadData();
-        } else {
-          alert(data.error || 'Error al guardar');
+          const stats = data.stats;
+          document.getElementById('hostname').innerHTML = `&#x1F5A5; ${stats.hostname}`;
+
+          const now = Date.now();
+          const timeDiff = (now - lastNetwork.time) / 1000;
+          const rxRate = timeDiff > 0 ? (stats.network.rx_bytes - lastNetwork.rx) / timeDiff : 0;
+          const txRate = timeDiff > 0 ? (stats.network.tx_bytes - lastNetwork.tx) / timeDiff : 0;
+          lastNetwork = { rx: stats.network.rx_bytes, tx: stats.network.tx_bytes, time: now };
+
+          const cpuPercent = parseFloat(stats.cpu.percent) || 0;
+          const memPercent = parseFloat(stats.memory.percent) || 0;
+
+          document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card">
+              <div class="stat-card-title"><span class="stat-card-title-icon">&#x1F4BB;</span> CPU</div>
+              <div class="donut-chart">
+                ${createDonutSVG(cpuPercent, getColor(cpuPercent))}
+                <div class="donut-center">
+                  <div class="donut-value">${cpuPercent}%</div>
+                  <div class="donut-label">uso</div>
+                </div>
+              </div>
+              <div class="stat-card-info">${stats.cpu.cores} nucleos</div>
+              <div class="stat-card-sub">${stats.cpu.model.substring(0, 30)}...</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-title"><span class="stat-card-title-icon">&#x1F4BE;</span> Memoria</div>
+              <div class="donut-chart">
+                ${createDonutSVG(memPercent, getColor(memPercent))}
+                <div class="donut-center">
+                  <div class="donut-value">${memPercent}%</div>
+                  <div class="donut-label">uso</div>
+                </div>
+              </div>
+              <div class="stat-card-info">${stats.memory.used} / ${stats.memory.total}</div>
+              <div class="stat-card-sub">${stats.memory.free} libres</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-title"><span class="stat-card-title-icon">&#x1F310;</span> Red</div>
+              <div class="network-stats">
+                <div class="network-stat download">
+                  <div class="network-stat-icon">&#x2B07;</div>
+                  <div class="network-stat-value">${formatBytesRate(Math.max(0, rxRate))}</div>
+                  <div class="network-stat-label">Descarga</div>
+                </div>
+                <div class="network-stat upload">
+                  <div class="network-stat-icon">&#x2B06;</div>
+                  <div class="network-stat-value">${formatBytesRate(Math.max(0, txRate))}</div>
+                  <div class="network-stat-label">Subida</div>
+                </div>
+              </div>
+              <div class="stat-card-info" style="margin-top:12px;">Total: ${formatBytes(stats.network.rx_bytes + stats.network.tx_bytes)}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-title"><span class="stat-card-title-icon">&#x23F1;</span> Uptime</div>
+              <div class="donut-chart">
+                ${createDonutSVG(100, 'blue')}
+                <div class="donut-center">
+                  <div class="donut-value" style="font-size:16px;">${stats.uptime}</div>
+                  <div class="donut-label">activo</div>
+                </div>
+              </div>
+              <div class="stat-card-info">Servidor encendido</div>
+            </div>`;
+
+          if (stats.disks && stats.disks.length > 0) {
+            document.getElementById('disksGrid').innerHTML = stats.disks.map(disk => {
+              const percent = parseInt(disk.percent) || 0;
+              return `
+                <div class="disk-card">
+                  <div class="disk-header">
+                    <div>
+                      <div class="disk-name">${disk.device}</div>
+                      <div class="disk-mount">${disk.mount}</div>
+                    </div>
+                    <div style="font-size:20px;font-weight:800;color:${percent >= 80 ? '#ef4444' : percent >= 60 ? '#FF7A18' : '#22c55e'}">${disk.percent}</div>
+                  </div>
+                  <div class="disk-progress">
+                    <div class="disk-progress-bar ${getColor(percent)}" style="width:${percent}%"></div>
+                  </div>
+                  <div class="disk-info">
+                    <span>Usado: ${disk.used}</span>
+                    <span>Libre: ${disk.free}</span>
+                    <span>Total: ${disk.total}</span>
+                  </div>
+                </div>`;
+            }).join('');
+          } else {
+            document.getElementById('disksGrid').innerHTML = '<div style="color:rgba(255,255,255,0.5);padding:20px;">No se detectaron discos</div>';
+          }
         }
-      } catch (err) {
-        console.error('Error:', err);
-      }
-    };
+      } catch (err) { console.error('Error loading stats:', err); }
+    }
 
-    document.getElementById('serviceModal').onclick = (e) => {
-      if (e.target === e.currentTarget) closeModal();
-    };
+    async function loadProcesses() {
+      try {
+        const res = await fetch('./api/monitor/pm2');
+        const data = await res.json();
+        const grid = document.getElementById('processesGrid');
+        if (data.ok && data.processes.length > 0) {
+          grid.innerHTML = data.processes.map(p => {
+            const cpuPercent = Math.min(100, p.cpu || 0);
+            const memMB = (p.memory / 1024 / 1024).toFixed(1);
+            return `
+              <div class="process-card">
+                <div class="process-header">
+                  <div>
+                    <div class="process-name">${p.name}</div>
+                    <div class="process-id">PID: ${p.pm_id}</div>
+                  </div>
+                  <div class="process-status ${p.status}">
+                    <span class="process-status-dot"></span>
+                    ${p.status}
+                  </div>
+                </div>
+                <div class="process-stats">
+                  <div class="process-stat">
+                    <div class="process-stat-label">CPU</div>
+                    <div class="process-stat-value" style="color:${getColor(cpuPercent) === 'red' ? '#ef4444' : getColor(cpuPercent) === 'orange' ? '#FF7A18' : '#22c55e'}">${cpuPercent.toFixed(1)}%</div>
+                  </div>
+                  <div class="process-stat">
+                    <div class="process-stat-label">Memoria</div>
+                    <div class="process-stat-value">${memMB} MB</div>
+                  </div>
+                  <div class="process-stat">
+                    <div class="process-stat-label">Uptime</div>
+                    <div class="process-stat-value">${p.uptime ? formatUptime(Date.now() - p.uptime) : '-'}</div>
+                  </div>
+                  <div class="process-stat">
+                    <div class="process-stat-label">Total TX</div>
+                    <div class="process-stat-value" style="color:#3b82f6;">${formatBytes(p.memory)}</div>
+                  </div>
+                </div>
+              </div>`;
+          }).join('');
+        } else {
+          grid.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.5);padding:40px;grid-column:1/-1;">No hay procesos PM2 en ejecucion</div>';
+        }
+      } catch (err) { console.error('Error loading processes:', err); }
+    }
 
-    document.getElementById('logsModal').onclick = (e) => {
-      if (e.target === e.currentTarget) closeLogsModal();
-    };
+    async function refreshMonitor() {
+      await Promise.all([loadStats(), loadProcesses()]);
+    }
 
+    // ===== INIT =====
     loadData();
 
     // Show admin navigation based on role
@@ -807,17 +1110,28 @@
             document.getElementById('navUsers').style.display = '';
             document.getElementById('navTech').style.display = '';
             document.getElementById('navSupport').style.display = '';
+            document.getElementById('navMaintenance').style.display = '';
+            document.getElementById('navFaq').style.display = '';
+            document.getElementById('navRequirements').style.display = '';
+            document.getElementById('navStorage').style.display = '';
+            document.getElementById('navEmail').style.display = '';
+            // Mobile
             document.getElementById('navUsersMobile').style.display = '';
             document.getElementById('navTechMobile').style.display = '';
             document.getElementById('navSupportMobile').style.display = '';
+            document.getElementById('navMaintenanceMobile').style.display = '';
+            document.getElementById('navFaqMobile').style.display = '';
+            document.getElementById('navRequirementsMobile').style.display = '';
+            document.getElementById('navStorageMobile').style.display = '';
+            document.getElementById('navEmailMobile').style.display = '';
           } else if (role === 'support') {
             document.getElementById('navSupport').style.display = '';
+            document.getElementById('navRequirements').style.display = '';
             document.getElementById('navSupportMobile').style.display = '';
+            document.getElementById('navRequirementsMobile').style.display = '';
           }
         }
-      } catch (err) {
-        console.warn('Could not load session:', err);
-      }
+      } catch (err) { console.warn('Could not load session:', err); }
     })();
 
     // Mobile menu toggle
@@ -827,7 +1141,6 @@
       const backdrop = document.getElementById('mobileMenuBackdrop');
       const closeBtn = document.getElementById('mobileMenuClose');
       if (!toggle || !panel) return;
-
       function openMenu() {
         toggle.classList.add('is-open');
         panel.classList.add('is-open');
@@ -840,7 +1153,6 @@
         backdrop.classList.remove('is-open');
         document.body.style.overflow = '';
       }
-
       toggle.addEventListener('click', () => {
         if (panel.classList.contains('is-open')) closeMenu();
         else openMenu();

@@ -812,13 +812,17 @@
       <!-- Desktop navigation -->
       <div class="admin-actions">
         <a class="btn btn--ghost" href="./users" id="navUsers" style="display:none;">&#x1F465; Usuarios</a>
-        <a class="btn btn--ghost" href="./services" id="navServices" style="display:none;">&#x2699; Servicios</a>
-        <a class="btn btn--ghost" href="./monitor" id="navMonitor" style="display:none;">&#x1F4CA; Monitor</a>
+        <a class="btn btn--ghost" href="./services" id="navServices" style="display:none;">&#x2699; Servicios & Monitor</a>
         <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
         <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
         <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
         <a class="btn btn--ghost" href="./tech-admin" id="navTech" style="display:none;">&#x1F527; Tecnologias</a>
         <a class="btn btn--ghost" href="./support" id="navSupport" style="display:none;">&#x1F3AB; Soporte</a>
+        <a class="btn btn--ghost" href="./maintenance-admin" id="navMaintenance" style="display:none;">&#x1F6A7; Mantenimiento</a>
+        <a class="btn btn--ghost" href="./faq-admin" id="navFaq" style="display:none;">&#x2753; FAQ</a>
+        <a class="btn btn--ghost" href="./requirements-admin" id="navRequirements" style="display:none;">&#x1F4CB; Requerimientos</a>
+        <a class="btn btn--ghost" href="./storage-admin" id="navStorage" style="display:none;">&#x1F4E6; Storage</a>
+        <a class="btn btn--ghost" href="./email-admin" id="navEmail" style="display:none;">&#x1F4E7; Email</a>
       </div>
     </header>
 
@@ -827,13 +831,17 @@
     <div class="mobile-menu-panel" id="mobileMenuPanel">
       <button class="mobile-menu-close" id="mobileMenuClose">&#x2715;</button>
       <a class="btn btn--ghost" href="./users" id="navUsersMobile" style="display:none;">&#x1F465; Usuarios</a>
-      <a class="btn btn--ghost" href="./services" id="navServicesMobile" style="display:none;">&#x2699; Servicios</a>
-      <a class="btn btn--ghost" href="./monitor" id="navMonitorMobile" style="display:none;">&#x1F4CA; Monitor</a>
+      <a class="btn btn--ghost" href="./services" id="navServicesMobile" style="display:none;">&#x2699; Servicios & Monitor</a>
       <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
       <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
       <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
       <a class="btn btn--ghost" href="./tech-admin" id="navTechMobile" style="display:none;">&#x1F527; Tecnologias</a>
       <a class="btn btn--ghost" href="./support" id="navSupportMobile" style="display:none;">&#x1F3AB; Soporte</a>
+      <a class="btn btn--ghost" href="./maintenance-admin" id="navMaintenanceMobile" style="display:none;">&#x1F6A7; Mantenimiento</a>
+      <a class="btn btn--ghost" href="./faq-admin" id="navFaqMobile" style="display:none;">&#x2753; FAQ</a>
+      <a class="btn btn--ghost" href="./requirements-admin" id="navRequirementsMobile" style="display:none;">&#x1F4CB; Requerimientos</a>
+      <a class="btn btn--ghost" href="./storage-admin" id="navStorageMobile" style="display:none;">&#x1F4E6; Storage</a>
+      <a class="btn btn--ghost" href="./email-admin" id="navEmailMobile" style="display:none;">&#x1F4E7; Email</a>
       <a class="btn btn--ghost" href="./logout" style="margin-top: auto;">Cerrar sesion</a>
     </div>
 
@@ -1130,26 +1138,34 @@
           if (role === 'admin') {
             document.getElementById('navUsers').style.display = '';
             document.getElementById('navServices').style.display = '';
-            document.getElementById('navMonitor').style.display = '';
             document.getElementById('navTech').style.display = '';
             document.getElementById('navSupport').style.display = '';
+            document.getElementById('navMaintenance').style.display = '';
+            document.getElementById('navFaq').style.display = '';
+            document.getElementById('navRequirements').style.display = '';
+            document.getElementById('navStorage').style.display = '';
+            document.getElementById('navEmail').style.display = '';
             document.getElementById('kpiTechWrap').style.display = '';
             document.getElementById('kpiTicketsWrap').style.display = '';
             // Mobile menu
             document.getElementById('navUsersMobile').style.display = '';
             document.getElementById('navServicesMobile').style.display = '';
-            document.getElementById('navMonitorMobile').style.display = '';
             document.getElementById('navTechMobile').style.display = '';
             document.getElementById('navSupportMobile').style.display = '';
+            document.getElementById('navMaintenanceMobile').style.display = '';
+            document.getElementById('navFaqMobile').style.display = '';
+            document.getElementById('navRequirementsMobile').style.display = '';
+            document.getElementById('navStorageMobile').style.display = '';
+            document.getElementById('navEmailMobile').style.display = '';
           } else if (role === 'support') {
             document.getElementById('navServices').style.display = '';
-            document.getElementById('navMonitor').style.display = '';
             document.getElementById('navSupport').style.display = '';
+            document.getElementById('navRequirements').style.display = '';
             document.getElementById('kpiTicketsWrap').style.display = '';
             // Mobile menu
             document.getElementById('navServicesMobile').style.display = '';
-            document.getElementById('navMonitorMobile').style.display = '';
             document.getElementById('navSupportMobile').style.display = '';
+            document.getElementById('navRequirementsMobile').style.display = '';
           }
         }
       } catch (err) {
