@@ -191,6 +191,121 @@
       border-color: rgba(255,122,24,0.4);
       color: var(--orange);
     }
+    /* ===== DROPDOWN NAVIGATION ===== */
+    .nav-dropdowns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .nav-dropdown { position: relative; }
+    .nav-dropdown-btn {
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: rgba(255,255,255,0.8);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.3s ease;
+    }
+    .nav-dropdown-btn:hover {
+      border-color: rgba(255,122,24,0.4);
+      background: rgba(255,122,24,0.1);
+      color: #FF7A18;
+      box-shadow: 0 0 15px rgba(255,122,24,0.15);
+    }
+    .nav-dropdown-arrow { font-size: 8px; transition: transform 0.3s ease; }
+    .nav-dropdown:hover .nav-dropdown-arrow { transform: rotate(180deg); }
+    .nav-dropdown-menu {
+      position: absolute; top: calc(100% + 8px); left: 0;
+      min-width: 200px;
+      background: rgba(18,18,18,0.98);
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 12px; padding: 8px;
+      opacity: 0; visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(255,122,24,0.1);
+    }
+    .nav-dropdown:hover .nav-dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+    .nav-dropdown-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none; font-size: 13px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    .nav-dropdown-item:hover { background: rgba(255,122,24,0.15); color: #FF7A18; }
+    .nav-dropdown-item.active { background: rgba(255,122,24,0.2); color: #FF7A18; }
+
+    /* Notification bell */
+    .notif-wrapper { position: relative; }
+    .notif-btn {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
+      font-size: 18px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .notif-btn:hover { border-color: rgba(255,122,24,0.4); color: #FF7A18; }
+    .notif-badge {
+      position: absolute; top: -4px; right: -4px;
+      min-width: 18px; height: 18px;
+      background: #ef4444;
+      border-radius: 9px;
+      font-size: 10px; font-weight: 700;
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 4px;
+    }
+    .notif-dropdown {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      width: 320px; max-height: 400px;
+      background: rgba(18,18,18,0.98);
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 12px;
+      opacity: 0; visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 1001;
+      overflow: hidden;
+    }
+    .notif-dropdown.is-open { opacity: 1; visibility: visible; transform: translateY(0); }
+    .notif-dropdown-header { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; }
+    .notif-dropdown-title { font-weight: 600; color: #fff; font-size: 14px; }
+    .notif-clear-btn { background: none; border: none; color: rgba(255,122,24,0.8); font-size: 12px; cursor: pointer; }
+    .notif-dropdown-list { max-height: 300px; overflow-y: auto; }
+    .notif-item { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 12px; transition: background 0.2s; cursor: pointer; }
+    .notif-item:hover { background: rgba(255,255,255,0.03); }
+    .notif-item.is-unread { background: rgba(255,122,24,0.05); }
+    .notif-item-icon { font-size: 20px; flex-shrink: 0; }
+    .notif-item-body { flex: 1; min-width: 0; }
+    .notif-item-title { font-size: 13px; color: #fff; margin-bottom: 2px; }
+    .notif-item-text { font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .notif-item-time { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+    .notif-item-delete { background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer; padding: 4px; font-size: 12px; opacity: 0; transition: opacity 0.2s; }
+    .notif-item:hover .notif-item-delete { opacity: 1; }
+    .notif-item-delete:hover { color: #ef4444; }
+    .notif-empty { padding: 30px; text-align: center; color: rgba(255,255,255,0.4); font-size: 13px; }
+
+    /* Mobile menu sections */
+    .mobile-menu-section { margin-bottom: 16px; }
+    .mobile-menu-section-title { font-size: 10px; text-transform: uppercase; color: rgba(255,255,255,0.4); padding: 8px 16px 4px; letter-spacing: 1px; }
+    .mobile-menu-close {
+      align-self: flex-end;
+      width: 36px; height: 36px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
     @media (max-width: 768px) {
       .admin-actions { display: none !important; }
       .header-right .btn-logout { display: none; }
@@ -263,6 +378,18 @@
           <p class="admin-sub">Gestiona los contactos recibidos</p>
         </div>
         <div class="header-right">
+          <div class="notif-wrapper">
+            <button class="notif-btn" id="notifBtn" title="Notificaciones">&#x1F514;<span class="notif-badge" id="notifBadge" style="display:none;">0</span></button>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-dropdown-header">
+                <span class="notif-dropdown-title">Notificaciones</span>
+                <button class="notif-clear-btn" id="markAllRead" title="Marcar todo leido">&#x2713; Leido</button>
+              </div>
+              <div class="notif-dropdown-list" id="notifList">
+                <div class="notif-empty">Sin notificaciones</div>
+              </div>
+            </div>
+          </div>
           <a class="btn btn--ghost btn-logout" href="./logout">Cerrar sesion</a>
           <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menu">
             <span></span><span></span><span></span>
@@ -271,29 +398,72 @@
       </div>
       <div class="admin-actions">
         <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
-        <a class="btn btn--ghost" href="./users" id="navUsers" style="display:none;">&#x1F465; Usuarios</a>
-        <a class="btn btn--ghost" href="./services" id="navServices" style="display:none;">&#x2699; Servicios</a>
-        <a class="btn btn--ghost" href="./monitor" id="navMonitor" style="display:none;">&#x1F4CA; Monitor</a>
-        <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
-        <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
-        <a class="btn btn--ghost is-active" href="./leads">&#x1F4E9; Leads</a>
-        <a class="btn btn--ghost" href="./tech-admin" id="navTech" style="display:none;">&#x1F527; Tecnologias</a>
-        <a class="btn btn--ghost" href="./support" id="navSupport" style="display:none;">&#x1F3AB; Soporte</a>
+        <div class="nav-dropdowns">
+          <!-- Contenido -->
+          <div class="nav-dropdown">
+            <button class="nav-dropdown-btn">&#x1F4DD; Contenido <span class="nav-dropdown-arrow">&#x25BC;</span></button>
+            <div class="nav-dropdown-menu">
+              <a href="./projects-admin" class="nav-dropdown-item">&#x1F4C1; Proyectos</a>
+              <a href="./blog-admin" class="nav-dropdown-item">&#x270F; Blog</a>
+              <a href="./tech-admin" class="nav-dropdown-item" id="navTech" style="display:none;">&#x1F527; Tecnologias</a>
+              <a href="./faq-admin" class="nav-dropdown-item" id="navFaq" style="display:none;">&#x2753; FAQ</a>
+            </div>
+          </div>
+          <!-- Clientes -->
+          <div class="nav-dropdown">
+            <button class="nav-dropdown-btn">&#x1F465; Clientes <span class="nav-dropdown-arrow">&#x25BC;</span></button>
+            <div class="nav-dropdown-menu">
+              <a href="./leads" class="nav-dropdown-item active">&#x1F4E9; Leads</a>
+              <a href="./users" class="nav-dropdown-item" id="navUsers" style="display:none;">&#x1F465; Usuarios</a>
+              <a href="./support" class="nav-dropdown-item" id="navSupport" style="display:none;">&#x1F3AB; Soporte</a>
+              <a href="./requirements-admin" class="nav-dropdown-item" id="navRequirements" style="display:none;">&#x1F4CB; Requerimientos</a>
+            </div>
+          </div>
+          <!-- Sistema -->
+          <div class="nav-dropdown" id="dropdownSistema" style="display:none;">
+            <button class="nav-dropdown-btn">&#x2699; Sistema <span class="nav-dropdown-arrow">&#x25BC;</span></button>
+            <div class="nav-dropdown-menu">
+              <a href="./services" class="nav-dropdown-item">&#x1F5A5; Servicios</a>
+              <a href="./maintenance-admin" class="nav-dropdown-item">&#x1F6A7; Mantenimiento</a>
+              <a href="./storage-admin" class="nav-dropdown-item">&#x1F4E6; Storage</a>
+              <a href="./email-admin" class="nav-dropdown-item">&#x1F4E7; Email</a>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
 
     <!-- Mobile menu backdrop and panel -->
     <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
     <div class="mobile-menu-panel" id="mobileMenuPanel">
+      <button class="mobile-menu-close" id="mobileMenuClose">&#x2715;</button>
+
       <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
-      <a class="btn btn--ghost" href="./users" id="navUsersMobile" style="display:none;">&#x1F465; Usuarios</a>
-      <a class="btn btn--ghost" href="./services" id="navServicesMobile" style="display:none;">&#x2699; Servicios</a>
-      <a class="btn btn--ghost" href="./monitor" id="navMonitorMobile" style="display:none;">&#x1F4CA; Monitor</a>
-      <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
-      <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
-      <a class="btn btn--ghost is-active" href="./leads">&#x1F4E9; Leads</a>
-      <a class="btn btn--ghost" href="./tech-admin" id="navTechMobile" style="display:none;">&#x1F527; Tecnologias</a>
-      <a class="btn btn--ghost" href="./support" id="navSupportMobile" style="display:none;">&#x1F3AB; Soporte</a>
+
+      <div class="mobile-menu-section">
+        <div class="mobile-menu-section-title">Contenido</div>
+        <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
+        <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+        <a class="btn btn--ghost" href="./tech-admin" id="navTechMobile" style="display:none;">&#x1F527; Tecnologias</a>
+        <a class="btn btn--ghost" href="./faq-admin" id="navFaqMobile" style="display:none;">&#x2753; FAQ</a>
+      </div>
+
+      <div class="mobile-menu-section">
+        <div class="mobile-menu-section-title">Clientes</div>
+        <a class="btn btn--ghost" href="./leads" style="background:rgba(255,122,24,0.15);border-color:rgba(255,122,24,0.3);">&#x1F4E9; Leads</a>
+        <a class="btn btn--ghost" href="./users" id="navUsersMobile" style="display:none;">&#x1F465; Usuarios</a>
+        <a class="btn btn--ghost" href="./support" id="navSupportMobile" style="display:none;">&#x1F3AB; Soporte</a>
+        <a class="btn btn--ghost" href="./requirements-admin" id="navRequirementsMobile" style="display:none;">&#x1F4CB; Requerimientos</a>
+      </div>
+
+      <div class="mobile-menu-section" id="mobileSistemaSection" style="display:none;">
+        <div class="mobile-menu-section-title">Sistema</div>
+        <a class="btn btn--ghost" href="./services">&#x1F5A5; Servicios</a>
+        <a class="btn btn--ghost" href="./maintenance-admin">&#x1F6A7; Mantenimiento</a>
+        <a class="btn btn--ghost" href="./storage-admin">&#x1F4E6; Storage</a>
+        <a class="btn btn--ghost" href="./email-admin">&#x1F4E7; Email</a>
+      </div>
+
       <a class="btn btn--ghost" href="./logout" style="margin-top: auto;">Cerrar sesion</a>
     </div>
 
@@ -499,16 +669,26 @@
         if (data.ok && data.user) {
           const role = data.user.role;
           // Show admin/support only buttons
-          if (role === 'admin' || role === 'support') {
-            document.querySelectorAll('#navUsers, #navUsersMobile, #navServices, #navServicesMobile, #navMonitor, #navMonitorMobile, #navSupport, #navSupportMobile').forEach(el => {
-              el.style.display = '';
-            });
-          }
-          // Show admin only buttons
           if (role === 'admin') {
-            document.querySelectorAll('#navTech, #navTechMobile').forEach(el => {
-              el.style.display = '';
-            });
+            // Desktop dropdowns
+            document.getElementById('navUsers').style.display = '';
+            document.getElementById('navTech').style.display = '';
+            document.getElementById('navFaq').style.display = '';
+            document.getElementById('navSupport').style.display = '';
+            document.getElementById('navRequirements').style.display = '';
+            document.getElementById('dropdownSistema').style.display = '';
+            // Mobile
+            document.getElementById('navUsersMobile').style.display = '';
+            document.getElementById('navTechMobile').style.display = '';
+            document.getElementById('navFaqMobile').style.display = '';
+            document.getElementById('navSupportMobile').style.display = '';
+            document.getElementById('navRequirementsMobile').style.display = '';
+            document.getElementById('mobileSistemaSection').style.display = '';
+          } else if (role === 'support') {
+            document.getElementById('navSupport').style.display = '';
+            document.getElementById('navRequirements').style.display = '';
+            document.getElementById('navSupportMobile').style.display = '';
+            document.getElementById('navRequirementsMobile').style.display = '';
           }
         }
       } catch (e) {
@@ -516,6 +696,83 @@
       }
     }
     checkRole();
+
+    // Mobile menu close button
+    const closeBtn = document.getElementById('mobileMenuClose');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        document.getElementById('mobileMenuPanel').classList.remove('is-open');
+        document.getElementById('mobileMenuBackdrop').classList.remove('is-open');
+      });
+    }
+
+    // ===== Notifications =====
+    function fmtTimeAgo(dateStr) {
+      const d = new Date(dateStr);
+      const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+      if (diff < 60) return 'Ahora';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+      return Math.floor(diff / 86400) + 'd';
+    }
+    const notifIcons = { lead: '&#x1F4E9;', comment: '&#x1F4AC;', ticket: '&#x1F3AB;', ticket_reply: '&#x1F4AC;' };
+
+    async function loadNotifications() {
+      try {
+        const res = await fetch('./api/notifications');
+        const data = await res.json();
+        const notifs = data.notifications || [];
+        const unread = notifs.filter(n => !Number(n.is_read));
+        const bdg = document.getElementById('notifBadge');
+        if (unread.length > 0) {
+          bdg.style.display = '';
+          bdg.textContent = unread.length > 99 ? '99+' : unread.length;
+        } else {
+          bdg.style.display = 'none';
+        }
+        const list = document.getElementById('notifList');
+        if (notifs.length === 0) {
+          list.innerHTML = '<div class="notif-empty">Sin notificaciones</div>';
+        } else {
+          list.innerHTML = notifs.slice(0, 20).map(n => `
+            <div class="notif-item ${Number(n.is_read) ? '' : 'is-unread'}">
+              <div class="notif-item-icon">${notifIcons[n.type] || '&#x1F514;'}</div>
+              <div class="notif-item-body">
+                <div class="notif-item-title">${escapeHtml(n.title)}</div>
+                <div class="notif-item-text">${escapeHtml(n.body || '')}</div>
+                <div class="notif-item-time">${fmtTimeAgo(n.created_at)}</div>
+              </div>
+              <button class="notif-item-delete" onclick="event.stopPropagation();deleteNotif(${n.id})" title="Eliminar">&#x2715;</button>
+            </div>
+          `).join('');
+        }
+      } catch (err) { console.warn('Notifications error:', err); }
+    }
+    async function deleteNotif(id) {
+      try {
+        await fetch(`./api/notifications/${id}/delete`, { method: 'POST' });
+        loadNotifications();
+      } catch (err) {}
+    }
+    document.getElementById('notifBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('notifDropdown').classList.toggle('is-open');
+    });
+    document.addEventListener('click', (e) => {
+      const dd = document.getElementById('notifDropdown');
+      if (!dd.contains(e.target) && !document.getElementById('notifBtn').contains(e.target)) {
+        dd.classList.remove('is-open');
+      }
+    });
+    document.getElementById('markAllRead').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try {
+        await fetch('./api/notifications/read-all', { method: 'POST' });
+        loadNotifications();
+      } catch (err) {}
+    });
+    loadNotifications();
+    setInterval(loadNotifications, 30000);
   })();
   </script>
 </body>
