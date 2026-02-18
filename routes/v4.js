@@ -283,6 +283,79 @@ router.get("/api/faq/categories", async (req, res) => {
 // PROJECT REQUIREMENTS (Internal)
 // ============================================
 
+// Get requirement options (for form dropdowns) - MUST be before :id route
+router.get("/api/requirements/options", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  const options = {
+    businessTypes: [
+      'Restaurante',
+      'Tienda/Comercio',
+      'Servicios Profesionales',
+      'Consultoria',
+      'Educacion',
+      'Salud',
+      'Tecnologia',
+      'Manufactura',
+      'Inmobiliaria',
+      'Otro'
+    ],
+    projectTypes: [
+      'Pagina Web Informativa',
+      'Tienda en Linea (E-commerce)',
+      'Sistema Web (Aplicacion)',
+      'API/Backend',
+      'Landing Page',
+      'Blog/Portal de Noticias',
+      'Otro'
+    ],
+    sections: [
+      'Inicio',
+      'Nosotros',
+      'Servicios',
+      'Productos',
+      'Galeria',
+      'Blog',
+      'Contacto',
+      'Login/Registro',
+      'Panel de Administracion',
+      'Carrito de Compras',
+      'Pasarela de Pagos'
+    ],
+    technologies: [
+      'HTML/CSS/JS',
+      'React',
+      'Vue.js',
+      'Next.js',
+      'Node.js',
+      'Express',
+      'PHP',
+      'Laravel',
+      'WordPress',
+      'MySQL',
+      'PostgreSQL',
+      'MongoDB',
+      'SQLite'
+    ],
+    budgetRanges: [
+      'Menos de $5,000 MXN',
+      '$5,000 - $15,000 MXN',
+      '$15,000 - $30,000 MXN',
+      '$30,000 - $50,000 MXN',
+      'Mas de $50,000 MXN',
+      'A definir'
+    ],
+    timelines: [
+      '1-2 semanas',
+      '2-4 semanas',
+      '1-2 meses',
+      '2-3 meses',
+      'Mas de 3 meses',
+      'Flexible'
+    ]
+  };
+
+  res.json({ ok: true, options });
+});
+
 // Get all requirements (admin/support)
 router.get("/api/requirements", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
   try {
@@ -543,79 +616,6 @@ router.delete("/api/requirements/:id", requireAuth, requireRole(['admin']), asyn
     console.error("[REQUIREMENTS]", err);
     res.status(500).json({ ok: false, error: err.message });
   }
-});
-
-// Get requirement options (for form dropdowns)
-router.get("/api/requirements/options", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
-  const options = {
-    businessTypes: [
-      'Restaurante',
-      'Tienda/Comercio',
-      'Servicios Profesionales',
-      'Consultoria',
-      'Educacion',
-      'Salud',
-      'Tecnologia',
-      'Manufactura',
-      'Inmobiliaria',
-      'Otro'
-    ],
-    projectTypes: [
-      'Pagina Web Informativa',
-      'Tienda en Linea (E-commerce)',
-      'Sistema Web (Aplicacion)',
-      'API/Backend',
-      'Landing Page',
-      'Blog/Portal de Noticias',
-      'Otro'
-    ],
-    sections: [
-      'Inicio',
-      'Nosotros',
-      'Servicios',
-      'Productos',
-      'Galeria',
-      'Blog',
-      'Contacto',
-      'Login/Registro',
-      'Panel de Administracion',
-      'Carrito de Compras',
-      'Pasarela de Pagos'
-    ],
-    technologies: [
-      'HTML/CSS/JS',
-      'React',
-      'Vue.js',
-      'Next.js',
-      'Node.js',
-      'Express',
-      'PHP',
-      'Laravel',
-      'WordPress',
-      'MySQL',
-      'PostgreSQL',
-      'MongoDB',
-      'SQLite'
-    ],
-    budgetRanges: [
-      'Menos de $5,000 MXN',
-      '$5,000 - $15,000 MXN',
-      '$15,000 - $30,000 MXN',
-      '$30,000 - $50,000 MXN',
-      'Mas de $50,000 MXN',
-      'A definir'
-    ],
-    timelines: [
-      '1-2 semanas',
-      '2-4 semanas',
-      '1-2 meses',
-      '2-3 meses',
-      'Mas de 3 meses',
-      'Flexible'
-    ]
-  };
-
-  res.json({ ok: true, options });
 });
 
 // ============================================
