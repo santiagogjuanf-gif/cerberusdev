@@ -889,4 +889,248 @@ router.get("/faq", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "admin", "faq.html"));
 });
 
+// ============================================
+// EMAIL TEMPLATES API
+// ============================================
+
+// Default templates with variables info
+const defaultTemplates = [
+  {
+    code: 'user-created',
+    name: 'Bienvenida - Usuario Creado',
+    subject: 'Bienvenido a Cerberus Dev',
+    variables: ['{{name}}', '{{username}}', '{{password}}', '{{loginUrl}}'],
+    description: 'Se envía cuando se crea un nuevo usuario'
+  },
+  {
+    code: 'ticket-created',
+    name: 'Ticket Creado',
+    subject: 'Ticket #{{ticketId}} creado: {{subject}}',
+    variables: ['{{ticketId}}', '{{subject}}', '{{category}}', '{{priority}}', '{{message}}', '{{ticketUrl}}'],
+    description: 'Se envía al crear un nuevo ticket'
+  },
+  {
+    code: 'ticket-response',
+    name: 'Respuesta en Ticket',
+    subject: 'Respuesta en Ticket #{{ticketId}}: {{subject}}',
+    variables: ['{{ticketId}}', '{{subject}}', '{{responderName}}', '{{message}}', '{{ticketUrl}}'],
+    description: 'Se envía cuando hay una nueva respuesta'
+  },
+  {
+    code: 'ticket-closed',
+    name: 'Ticket Cerrado',
+    subject: 'Ticket #{{ticketId}} cerrado',
+    variables: ['{{ticketId}}', '{{subject}}', '{{ticketUrl}}'],
+    description: 'Se envía cuando se cierra un ticket'
+  },
+  {
+    code: 'storage-warning',
+    name: 'Alerta de Almacenamiento (80%)',
+    subject: 'Aviso: Tu almacenamiento está al {{percentage}}%',
+    variables: ['{{clientName}}', '{{serviceName}}', '{{percentage}}', '{{usedMb}}', '{{limitMb}}', '{{portalUrl}}'],
+    description: 'Alerta cuando el storage llega al 80%'
+  },
+  {
+    code: 'storage-danger',
+    name: 'Alerta de Almacenamiento (90%)',
+    subject: 'Urgente: Tu almacenamiento está al {{percentage}}%',
+    variables: ['{{clientName}}', '{{serviceName}}', '{{percentage}}', '{{usedMb}}', '{{limitMb}}', '{{portalUrl}}'],
+    description: 'Alerta urgente cuando el storage llega al 90%'
+  },
+  {
+    code: 'storage-critical',
+    name: 'Almacenamiento Crítico (95%+)',
+    subject: 'CRÍTICO: Tu almacenamiento está al {{percentage}}%',
+    variables: ['{{clientName}}', '{{serviceName}}', '{{percentage}}', '{{usedMb}}', '{{limitMb}}', '{{portalUrl}}'],
+    description: 'Alerta crítica cuando el storage supera el 95%'
+  },
+  {
+    code: 'maintenance-notice',
+    name: 'Aviso de Mantenimiento',
+    subject: 'Aviso de Mantenimiento: {{title}}',
+    variables: ['{{title}}', '{{message}}', '{{startAt}}', '{{endAt}}'],
+    description: 'Notificación de mantenimiento programado'
+  },
+  {
+    code: 'password-reset',
+    name: 'Restablecer Contraseña',
+    subject: 'Restablece tu contraseña - Cerberus Dev',
+    variables: ['{{name}}', '{{resetUrl}}', '{{expiresIn}}'],
+    description: 'Email para restablecer contraseña'
+  }
+];
+
+// Get all email templates
+router.get("/api/email-templates", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const templates = await prisma.emailTemplate.findMany({
+      orderBy: { name: 'asc' }
+    });
+
+    // Add variable info to each template
+    const templatesWithInfo = templates.map(t => {
+      const defaultTpl = defaultTemplates.find(d => d.code === t.code);
+      return {
+        ...t,
+        variables: defaultTpl?.variables || [],
+        description: defaultTpl?.description || ''
+      };
+    });
+
+    // If no templates exist, return defaults info
+    if (templates.length === 0) {
+      return res.json({
+        ok: true,
+        templates: defaultTemplates.map(d => ({
+          code: d.code,
+          name: d.name,
+          subject: d.subject,
+          htmlContent: '',
+          isActive: true,
+          variables: d.variables,
+          description: d.description,
+          isDefault: true
+        }))
+      });
+    }
+
+    res.json({ ok: true, templates: templatesWithInfo });
+  } catch (err) {
+    console.error("[EMAIL-TEMPLATES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Get single template
+router.get("/api/email-templates/:code", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const { code } = req.params;
+
+    let template = await prisma.emailTemplate.findUnique({
+      where: { code }
+    });
+
+    const defaultTpl = defaultTemplates.find(d => d.code === code);
+
+    if (!template && defaultTpl) {
+      // Return default info without saved content
+      return res.json({
+        ok: true,
+        template: {
+          code: defaultTpl.code,
+          name: defaultTpl.name,
+          subject: defaultTpl.subject,
+          htmlContent: '',
+          isActive: true,
+          variables: defaultTpl.variables,
+          description: defaultTpl.description,
+          isDefault: true
+        }
+      });
+    }
+
+    if (!template) {
+      return res.status(404).json({ ok: false, error: 'Template no encontrado' });
+    }
+
+    res.json({
+      ok: true,
+      template: {
+        ...template,
+        variables: defaultTpl?.variables || [],
+        description: defaultTpl?.description || ''
+      }
+    });
+  } catch (err) {
+    console.error("[EMAIL-TEMPLATES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Update or create template
+router.put("/api/email-templates/:code", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const { code } = req.params;
+    const { name, subject, html_content, is_active } = req.body;
+
+    const defaultTpl = defaultTemplates.find(d => d.code === code);
+    if (!defaultTpl) {
+      return res.status(400).json({ ok: false, error: 'Código de template inválido' });
+    }
+
+    const template = await prisma.emailTemplate.upsert({
+      where: { code },
+      update: {
+        name: name || defaultTpl.name,
+        subject: subject || defaultTpl.subject,
+        htmlContent: html_content || '',
+        isActive: is_active !== false
+      },
+      create: {
+        code,
+        name: name || defaultTpl.name,
+        subject: subject || defaultTpl.subject,
+        htmlContent: html_content || '',
+        isActive: is_active !== false
+      }
+    });
+
+    res.json({ ok: true, template });
+  } catch (err) {
+    console.error("[EMAIL-TEMPLATES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Send test email with template
+router.post("/api/email-templates/:code/test", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const { code } = req.params;
+    const { to_email } = req.body;
+
+    if (!to_email) {
+      return res.status(400).json({ ok: false, error: 'Email requerido' });
+    }
+
+    const emailService = require('../services/emailService');
+
+    // Sample data for testing
+    const testData = {
+      name: 'Usuario de Prueba',
+      username: 'usuario_test',
+      password: 'Password123!',
+      loginUrl: 'https://cerberusdev.pro/login',
+      ticketId: '12345',
+      subject: 'Asunto de prueba',
+      category: 'support',
+      priority: 'medium',
+      message: 'Este es un mensaje de prueba para verificar el template.',
+      ticketUrl: 'https://cerberusdev.pro/ticket/12345',
+      responderName: 'Soporte Cerberus',
+      clientName: 'Cliente de Prueba',
+      serviceName: 'Hosting Premium',
+      percentage: 85,
+      usedMb: 850,
+      limitMb: 1000,
+      portalUrl: 'https://cerberusdev.pro/portal',
+      title: 'Mantenimiento Programado',
+      startAt: new Date().toLocaleString('es-MX'),
+      endAt: new Date(Date.now() + 3600000).toLocaleString('es-MX'),
+      resetUrl: 'https://cerberusdev.pro/reset?token=abc123',
+      expiresIn: '24 horas'
+    };
+
+    const result = await emailService.sendEmail(code, to_email, testData);
+
+    if (result.success) {
+      res.json({ ok: true, message: 'Email de prueba enviado' });
+    } else {
+      res.status(500).json({ ok: false, error: result.error });
+    }
+  } catch (err) {
+    console.error("[EMAIL-TEMPLATES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
