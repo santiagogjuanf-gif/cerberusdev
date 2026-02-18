@@ -47,9 +47,9 @@ function getTransporter() {
 }
 
 /**
- * Base HTML template
+ * Professional Cerberus-styled HTML email template
  */
-function getBaseTemplate(content, title = 'Cerberus Dev') {
+function getCerberusTemplate(content, title = 'Cerberus Dev') {
   return `
 <!DOCTYPE html>
 <html>
@@ -57,151 +57,140 @@ function getBaseTemplate(content, title = 'Cerberus Dev') {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #f5f5f5;
-    }
-    .container {
-      background: white;
-      border-radius: 8px;
-      padding: 30px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .header {
-      text-align: center;
-      padding-bottom: 20px;
-      border-bottom: 2px solid #3b82f6;
-      margin-bottom: 20px;
-    }
-    .header h1 {
-      color: #1e3a5f;
-      margin: 0;
-      font-size: 24px;
-    }
-    .content {
-      padding: 20px 0;
-    }
-    .button {
-      display: inline-block;
-      padding: 12px 24px;
-      background-color: #3b82f6;
-      color: white !important;
-      text-decoration: none;
-      border-radius: 6px;
-      font-weight: 500;
-      margin: 10px 0;
-    }
-    .button:hover {
-      background-color: #2563eb;
-    }
-    .footer {
-      text-align: center;
-      padding-top: 20px;
-      border-top: 1px solid #e5e7eb;
-      color: #6b7280;
-      font-size: 12px;
-    }
-    .alert-box {
-      padding: 15px;
-      border-radius: 6px;
-      margin: 15px 0;
-    }
-    .alert-warning {
-      background-color: #fef3c7;
-      border-left: 4px solid #f59e0b;
-    }
-    .alert-danger {
-      background-color: #fee2e2;
-      border-left: 4px solid #ef4444;
-    }
-    .alert-success {
-      background-color: #d1fae5;
-      border-left: 4px solid #10b981;
-    }
-    .alert-info {
-      background-color: #dbeafe;
-      border-left: 4px solid #3b82f6;
-    }
-    .storage-bar {
-      width: 100%;
-      height: 20px;
-      background-color: #e5e7eb;
-      border-radius: 10px;
-      overflow: hidden;
-      margin: 10px 0;
-    }
-    .storage-fill {
-      height: 100%;
-      border-radius: 10px;
-      transition: width 0.3s;
-    }
-    .storage-ok { background-color: #16a34a; }
-    .storage-warning { background-color: #ca8a04; }
-    .storage-danger { background-color: #ea580c; }
-    .storage-critical { background-color: #dc2626; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 15px 0;
-    }
-    th, td {
-      padding: 10px;
-      text-align: left;
-      border-bottom: 1px solid #e5e7eb;
-    }
-    th {
-      background-color: #f9fafb;
-      font-weight: 600;
-    }
-  </style>
 </head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>Cerberus Dev</h1>
-    </div>
-    <div class="content">
-      ${content}
-    </div>
-    <div class="footer">
-      <p>&copy; ${new Date().getFullYear()} Cerberus Dev. Todos los derechos reservados.</p>
-      <p>Este es un correo automatico, por favor no responda directamente.</p>
-    </div>
-  </div>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #0a0a0f;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #0a0a0f;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" style="width: 100%; max-width: 600px; border-collapse: collapse;">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 30px 40px; border-radius: 16px 16px 0 0; text-align: center; border-bottom: 3px solid #FF7A18;">
+              <h1 style="color: #FF7A18; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 1px;">CERBERUS DEV</h1>
+              <p style="color: rgba(255,255,255,0.6); margin: 8px 0 0; font-size: 12px; letter-spacing: 2px; text-transform: uppercase;">Servicios Web Administrados</p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="background-color: #12121a; padding: 40px; color: #e0e0e0; line-height: 1.7; font-size: 15px;">
+              ${content}
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 25px 40px; border-radius: 0 0 16px 16px; text-align: center; border-top: 1px solid rgba(255,122,24,0.3);">
+              <p style="color: rgba(255,255,255,0.5); margin: 0 0 10px; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} Cerberus Dev. Todos los derechos reservados.
+              </p>
+              <p style="color: rgba(255,255,255,0.4); margin: 0; font-size: 11px;">
+                Este es un correo automatico, por favor no responda directamente.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
   `;
 }
 
 /**
+ * Base HTML template (legacy - kept for compatibility)
+ */
+function getBaseTemplate(content, title = 'Cerberus Dev') {
+  return getCerberusTemplate(content, title);
+}
+
+/**
  * Email templates
  */
 const templates = {
-  // User created
+  // User created - Professional welcome email
   'user-created': (data) => ({
-    subject: 'Bienvenido a Cerberus Dev',
-    html: getBaseTemplate(`
-      <h2>Bienvenido, ${data.name}!</h2>
-      <p>Tu cuenta ha sido creada exitosamente. Aqui estan tus credenciales de acceso:</p>
+    subject: 'Bienvenido a Cerberus Dev - Tu acceso esta listo',
+    html: getCerberusTemplate(`
+      <h2 style="color: #FF7A18; margin: 0 0 20px; font-size: 22px; font-weight: 600;">Hola ${data.name},</h2>
 
-      <div class="alert-box alert-info">
-        <p><strong>Usuario:</strong> ${data.username}</p>
-        <p><strong>Contrasena temporal:</strong> ${data.password}</p>
+      <p style="margin: 0 0 15px; color: #e0e0e0;">Bienvenido a <strong style="color: #FF7A18;">Cerberus Dev</strong>.</p>
+      <p style="margin: 0 0 20px; color: #b0b0b0;">Es un gusto darte la bienvenida y comenzar a trabajar juntos en tu proyecto.</p>
+
+      <p style="margin: 0 0 25px; color: #b0b0b0;">En Cerberus Dev nos especializamos en ofrecer <strong style="color: #fff;">servicios web administrados</strong>, enfocados en estabilidad, seguridad y acompañamiento continuo. Nuestro objetivo es que tu servicio funcione correctamente, este monitoreado y cuente con un canal claro de comunicacion para cualquier necesidad futura.</p>
+
+      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
+
+      <h3 style="color: #fff; margin: 0 0 15px; font-size: 16px; display: flex; align-items: center;">
+        <span style="color: #FF7A18; margin-right: 10px;">&#x1F510;</span> Acceso a tu panel de cliente
+      </h3>
+
+      <p style="margin: 0 0 15px; color: #b0b0b0;">Hemos creado tu acceso inicial a nuestro <strong style="color: #fff;">portal de clientes</strong>, desde donde podras gestionar y dar seguimiento a tu servicio.</p>
+
+      <!-- Credentials Box -->
+      <div style="background: linear-gradient(135deg, rgba(255,122,24,0.15), rgba(255,122,24,0.05)); border: 1px solid rgba(255,122,24,0.3); border-radius: 12px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 0 0 5px; font-size: 13px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px;">Credenciales iniciales</p>
+        <table role="presentation" style="width: 100%; margin-top: 10px;">
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0; width: 140px;">Usuario:</td>
+            <td style="padding: 8px 0; color: #fff; font-weight: 600;">${data.username}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0;">Contraseña temporal:</td>
+            <td style="padding: 8px 0; color: #FF7A18; font-weight: 600; font-family: monospace; font-size: 14px;">${data.password}</td>
+          </tr>
+        </table>
       </div>
 
-      <p>Por seguridad, deberas cambiar tu contrasena en tu primer inicio de sesion.</p>
-
-      <p style="text-align: center;">
-        <a href="${data.loginUrl}" class="button">Iniciar Sesion</a>
+      <p style="margin: 15px 0 25px; color: #f59e0b; font-size: 13px;">
+        <strong>&#x1F449; Por motivos de seguridad, te recomendamos cambiar tu contraseña en tu primer inicio de sesion.</strong>
       </p>
 
-      <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+      <!-- CTA Button -->
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${data.loginUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #FF7A18, #FF9A45); color: #fff; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(255,122,24,0.3);">Acceder al Panel</a>
+      </div>
+
+      <p style="text-align: center; margin: 0 0 25px; color: rgba(255,255,255,0.5); font-size: 12px; font-style: italic;">
+        Este enlace es exclusivo para clientes y no se encuentra disponible en nuestra pagina publica.
+      </p>
+
+      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
+
+      <h3 style="color: #fff; margin: 0 0 15px; font-size: 16px;">
+        <span style="color: #FF7A18; margin-right: 10px;">&#x1F4CA;</span> ¿Que puedes hacer desde tu panel?
+      </h3>
+
+      <ul style="margin: 0 0 25px; padding-left: 0; list-style: none; color: #b0b0b0;">
+        <li style="padding: 8px 0; padding-left: 25px; position: relative;"><span style="position: absolute; left: 0; color: #FF7A18;">&#x2714;</span> Ver el <strong style="color: #fff;">estado de tus servicios</strong></li>
+        <li style="padding: 8px 0; padding-left: 25px; position: relative;"><span style="position: absolute; left: 0; color: #FF7A18;">&#x2714;</span> Consultar <strong style="color: #fff;">avisos de mantenimiento</strong></li>
+        <li style="padding: 8px 0; padding-left: 25px; position: relative;"><span style="position: absolute; left: 0; color: #FF7A18;">&#x2714;</span> Crear y dar seguimiento a <strong style="color: #fff;">tickets de soporte</strong></li>
+        <li style="padding: 8px 0; padding-left: 25px; position: relative;"><span style="position: absolute; left: 0; color: #FF7A18;">&#x2714;</span> Solicitar <strong style="color: #fff;">mejoras o actualizaciones</strong></li>
+        <li style="padding: 8px 0; padding-left: 25px; position: relative;"><span style="position: absolute; left: 0; color: #FF7A18;">&#x2714;</span> Mantener comunicacion directa con nuestro equipo</li>
+      </ul>
+
+      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
+
+      <h3 style="color: #fff; margin: 0 0 15px; font-size: 16px;">
+        <span style="color: #FF7A18; margin-right: 10px;">&#x1F6E0;</span> Soporte y comunicacion
+      </h3>
+
+      <p style="margin: 0 0 15px; color: #b0b0b0;">Contamos con un <strong style="color: #fff;">sistema de tickets</strong> dentro del panel para atender solicitudes tecnicas o mejoras de forma organizada.</p>
+
+      <p style="margin: 0 0 25px; color: #b0b0b0;">Te recomendamos utilizar <strong style="color: #fff;">tickets</strong> para soporte tecnico, cambios o solicitudes formales.</p>
+
+      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
+
+      <p style="margin: 0 0 15px; color: #b0b0b0;">Gracias por confiar en <strong style="color: #FF7A18;">Cerberus Dev</strong>.</p>
+      <p style="margin: 0; color: #b0b0b0;">Estamos listos para acompañarte y hacer crecer tu proyecto.</p>
+
+      <p style="margin: 25px 0 0; color: #fff;">
+        Saludos cordiales,<br>
+        <strong style="color: #FF7A18;">Equipo Cerberus Dev</strong>
+      </p>
     `, 'Bienvenido a Cerberus Dev')
   }),
 
