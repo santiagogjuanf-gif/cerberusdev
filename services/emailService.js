@@ -12,28 +12,35 @@ const { prisma } = require('../lib/prisma');
 let transporter = null;
 
 /**
+ * Reset the transporter (force reconnection with new config)
+ */
+function resetTransporter() {
+  transporter = null;
+  console.log('[Email] Transporter reset - will reconnect on next send');
+}
+
+/**
  * Get or create the email transporter
  */
 function getTransporter() {
   if (transporter) return transporter;
 
+  // Use Hostinger SMTP configuration
   const config = {
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    host: process.env.SMTP_HOST || 'smtp.hostinger.com',
     port: parseInt(process.env.SMTP_PORT) || 465,
     secure: process.env.SMTP_SECURE !== 'false',
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
+    },
+    // Additional settings for better compatibility
+    tls: {
+      rejectUnauthorized: false
     }
   };
 
-  // Fallback for old SMTP_SERVICE config
-  if (process.env.SMTP_SERVICE && !process.env.SMTP_HOST) {
-    config.service = process.env.SMTP_SERVICE;
-    delete config.host;
-    delete config.port;
-    delete config.secure;
-  }
+  console.log(`[Email] Creating transporter: ${config.host}:${config.port} (user: ${config.auth.user})`);
 
   transporter = nodemailer.createTransport(config);
   return transporter;
@@ -587,5 +594,6 @@ module.exports = {
   sendAdminEmail,
   sendBulkToClients,
   verifyConnection,
+  resetTransporter,
   templates
 };

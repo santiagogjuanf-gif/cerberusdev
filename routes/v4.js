@@ -884,6 +884,11 @@ router.get("/email-admin", requireAuth, requireRole(['admin']), (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "admin", "email-admin.html"));
 });
 
+// Email templates page
+router.get("/email-templates", requireAuth, requireRole(['admin']), (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "email-templates.html"));
+});
+
 // FAQ public page (for clients)
 router.get("/faq", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "admin", "faq.html"));
@@ -963,38 +968,29 @@ const defaultTemplates = [
 // Get all email templates
 router.get("/api/email-templates", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
-    const templates = await prisma.emailTemplate.findMany({
-      orderBy: { name: 'asc' }
-    });
+    // Get saved templates from database
+    const savedTemplates = await prisma.emailTemplate.findMany();
 
-    // Add variable info to each template
-    const templatesWithInfo = templates.map(t => {
-      const defaultTpl = defaultTemplates.find(d => d.code === t.code);
+    // Create a map for quick lookup
+    const savedMap = {};
+    savedTemplates.forEach(t => { savedMap[t.code] = t; });
+
+    // Always return ALL default templates, merged with saved data
+    const allTemplates = defaultTemplates.map(d => {
+      const saved = savedMap[d.code];
       return {
-        ...t,
-        variables: defaultTpl?.variables || [],
-        description: defaultTpl?.description || ''
+        code: d.code,
+        name: saved?.name || d.name,
+        subject: saved?.subject || d.subject,
+        htmlContent: saved?.htmlContent || '',
+        isActive: saved?.isActive ?? true,
+        variables: d.variables,
+        description: d.description,
+        isSaved: !!saved
       };
     });
 
-    // If no templates exist, return defaults info
-    if (templates.length === 0) {
-      return res.json({
-        ok: true,
-        templates: defaultTemplates.map(d => ({
-          code: d.code,
-          name: d.name,
-          subject: d.subject,
-          htmlContent: '',
-          isActive: true,
-          variables: d.variables,
-          description: d.description,
-          isDefault: true
-        }))
-      });
-    }
-
-    res.json({ ok: true, templates: templatesWithInfo });
+    res.json({ ok: true, templates: allTemplates });
   } catch (err) {
     console.error("[EMAIL-TEMPLATES]", err);
     res.status(500).json({ ok: false, error: err.message });
