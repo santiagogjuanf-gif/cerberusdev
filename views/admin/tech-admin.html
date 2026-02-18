@@ -47,156 +47,215 @@
 
     /* ========== Header Styles ========== */
     .admin-top {
-      flex-direction: column !important;
-      align-items: stretch !important;
-      gap: 16px !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      flex-wrap: wrap;
+      gap: 12px !important;
     }
-    .dashboard-header {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
+    .dashboard-header { flex: 1; display: flex; align-items: center; gap: 20px; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
     .header-logo {
-      width: 56px;
-      height: 56px;
+      width: 56px; height: 56px;
       border-radius: 16px;
       background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
       border: 1px solid rgba(255,122,24,0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1);
-      animation: logoPulse 3s ease-in-out infinite;
       padding: 10px;
-      flex-shrink: 0;
     }
-    .header-logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      filter: drop-shadow(0 0 8px rgba(255,122,24,0.4));
-    }
-    @keyframes logoPulse {
-      0%, 100% { box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1); }
-      50% { box-shadow: 0 0 40px rgba(255,122,24,0.35), inset 0 0 25px rgba(255,122,24,0.15); }
-    }
-    .admin-brand { flex: 1; }
-    .admin-title {
-      position: relative;
-      font-size: 22px;
-      font-weight: 700;
-    }
+    .header-logo img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255,122,24,0.4)); }
+    .admin-title { position: relative; }
     .admin-title::after {
       content: '';
       position: absolute;
-      bottom: -4px;
-      left: 0;
-      width: 60px;
-      height: 3px;
+      bottom: -4px; left: 0;
+      width: 60px; height: 3px;
       background: linear-gradient(90deg, #FF7A18, transparent);
       border-radius: 2px;
     }
-    .admin-sub {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: 6px;
-    }
+    .admin-sub { display: flex; align-items: center; gap: 8px; }
     .admin-sub::before {
       content: '';
-      width: 6px;
-      height: 6px;
+      width: 6px; height: 6px;
       background: #22c55e;
       border-radius: 50%;
-      animation: statusBlink 2s ease-in-out infinite;
       box-shadow: 0 0 8px #22c55e;
     }
-    @keyframes statusBlink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-left: auto;
-    }
+
+    /* Navigation dropdowns */
     .admin-actions {
+      width: 100%;
+      order: 3;
+      margin-top: 8px;
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
       padding-top: 12px;
       border-top: 1px solid rgba(255,255,255,0.08);
     }
-    .btn--ghost.is-active {
-      background: rgba(255,122,24,0.15);
-      border-color: rgba(255,122,24,0.4);
-      color: var(--orange);
-    }
-
-    /* ========== Mobile Menu ========== */
-    .mobile-menu-toggle {
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      gap: 5px;
-      width: 40px;
-      height: 40px;
-      padding: 10px;
-      background: rgba(255,255,255,0.05);
+    .nav-item { position: relative; }
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 10px;
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      font-weight: 500;
       cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .nav-btn:hover {
+      background: rgba(255,122,24,0.15);
+      border-color: rgba(255,122,24,0.3);
+      color: #fff;
+      box-shadow: 0 0 20px rgba(255,122,24,0.15);
+    }
+    .nav-btn.active, .nav-item.is-open .nav-btn {
+      background: rgba(255,122,24,0.2);
+      border-color: rgba(255,122,24,0.4);
+      color: #FF7A18;
+      box-shadow: 0 0 25px rgba(255,122,24,0.2);
+    }
+    .nav-btn-icon { font-size: 16px; }
+    .nav-btn-arrow { font-size: 10px; transition: transform 0.2s ease; margin-left: 4px; }
+    .nav-item.is-open .nav-btn-arrow { transform: rotate(180deg); }
+    .nav-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 200px;
+      background: rgba(18,18,24,0.98);
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 12px;
+      padding: 8px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.2s ease;
+      z-index: 1000;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 30px rgba(255,122,24,0.1);
+    }
+    .nav-item.is-open .nav-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+    .nav-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 13px;
+      transition: all 0.2s ease;
+    }
+    .nav-dropdown-item:hover {
+      background: rgba(255,122,24,0.15);
+      color: #FF7A18;
+      box-shadow: inset 0 0 20px rgba(255,122,24,0.1);
+    }
+    .nav-dropdown-item-icon { font-size: 16px; width: 20px; text-align: center; }
+    .nav-dropdown-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 6px 0; }
+
+    /* Mobile */
+    .mobile-menu-toggle {
+      display: none;
+      width: 44px; height: 40px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      cursor: pointer;
+      position: relative;
     }
     .mobile-menu-toggle span {
-      width: 100%;
+      position: absolute;
+      left: 12px; right: 12px;
       height: 2px;
-      background: var(--text);
-      border-radius: 1px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 2px;
       transition: all 0.3s ease;
     }
+    .mobile-menu-toggle span:nth-child(1) { top: 13px; }
+    .mobile-menu-toggle span:nth-child(2) { top: 19px; }
+    .mobile-menu-toggle span:nth-child(3) { top: 25px; }
+    .mobile-menu-toggle.is-open span:nth-child(1) { top: 19px; transform: rotate(45deg); }
+    .mobile-menu-toggle.is-open span:nth-child(2) { opacity: 0; }
+    .mobile-menu-toggle.is-open span:nth-child(3) { top: 19px; transform: rotate(-45deg); }
+    .mobile-menu-panel {
+      display: none;
+      position: fixed;
+      top: 0; right: 0;
+      width: min(300px, 90vw);
+      height: 100%;
+      background: rgba(12,15,24,0.98);
+      border-left: 1px solid rgba(255,122,24,0.3);
+      padding: 20px;
+      z-index: 9999;
+      flex-direction: column;
+      gap: 6px;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+    .mobile-menu-panel.is-open { display: flex; transform: translateX(0); }
     .mobile-menu-backdrop {
       display: none;
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.7);
-      z-index: 998;
+      backdrop-filter: blur(4px);
+      z-index: 9998;
     }
     .mobile-menu-backdrop.is-open { display: block; }
-    .mobile-menu-panel {
-      position: fixed;
-      top: 0;
-      right: -300px;
-      width: 300px;
-      height: 100vh;
-      background: var(--bg);
-      border-left: 1px solid var(--border);
-      z-index: 999;
-      padding: 24px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      transition: right 0.3s ease;
-    }
-    .mobile-menu-panel.is-open { right: 0; }
     .mobile-menu-close {
       align-self: flex-end;
-      width: 40px;
-      height: 40px;
+      width: 36px; height: 36px;
+      border: 1px solid rgba(255,255,255,0.15);
       background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      color: var(--text);
-      font-size: 18px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
       cursor: pointer;
-      margin-bottom: 10px;
+      margin-bottom: 16px;
     }
-    @media (max-width: 768px) {
+    .mobile-nav-section { margin-bottom: 16px; }
+    .mobile-nav-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255,122,24,0.7);
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255,122,24,0.2);
+      margin-bottom: 6px;
+    }
+    .mobile-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+    .mobile-nav-item:hover { background: rgba(255,122,24,0.15); color: #FF7A18; }
+    .mobile-nav-item-icon { font-size: 18px; width: 24px; text-align: center; }
+
+    @media (max-width: 900px) {
+      .mobile-menu-toggle { display: block; }
       .admin-actions { display: none !important; }
       .header-right .btn-logout { display: none; }
-      .mobile-menu-toggle { display: flex; }
+    }
+    @media (max-width: 768px) {
+      .admin-top { padding: 12px 16px !important; }
+      .header-logo { width: 44px !important; height: 44px !important; padding: 8px !important; }
+      .admin-title { font-size: 16px !important; }
+      .admin-sub { font-size: 11px !important; }
     }
 
     /* ========== Card Styles ========== */
@@ -441,40 +500,80 @@
           <div class="admin-title">Tecnologias</div>
           <div class="admin-sub">Gestiona el catalogo de tecnologias</div>
         </div>
-        <div class="header-right">
-          <a class="btn btn--ghost btn-logout" href="./logout">Cerrar sesion</a>
-          <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menu">
-            <span></span><span></span><span></span>
-          </button>
+      </div>
+      <div class="header-right">
+        <div class="notif-wrapper">
+          <button class="notif-btn" id="notifBtn" title="Notificaciones">&#x1F514;<span class="notif-badge" id="notifBadge" style="display:none;">0</span></button>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown-header">
+              <span class="notif-dropdown-title">Notificaciones</span>
+              <button class="notif-clear-btn" id="markAllRead" title="Marcar todo leido">&#x2713;</button>
+            </div>
+            <div class="notif-dropdown-list" id="notifList"><div class="notif-empty">Sin notificaciones</div></div>
+          </div>
         </div>
+        <a class="btn btn--ghost btn-logout" href="./logout">Cerrar sesion</a>
+        <button class="mobile-menu-toggle" id="mobileMenuToggle"><span></span><span></span><span></span></button>
       </div>
-      <div class="admin-actions">
-        <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
-        <a class="btn btn--ghost" href="./users" id="navUsers" style="display:none;">&#x1F465; Usuarios</a>
-        <a class="btn btn--ghost" href="./services" id="navServices" style="display:none;">&#x2699; Servicios</a>
-        <a class="btn btn--ghost" href="./monitor" id="navMonitor" style="display:none;">&#x1F4CA; Monitor</a>
-        <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
-        <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
-        <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
-        <a class="btn btn--ghost is-active" href="./tech-admin">&#x1F527; Tecnologias</a>
-        <a class="btn btn--ghost" href="./support" id="navSupport" style="display:none;">&#x1F3AB; Soporte</a>
-      </div>
+      <nav class="admin-actions" id="navDesktop">
+        <a href="./dashboard" class="nav-btn"><span class="nav-btn-icon">&#x1F3E0;</span><span>Dashboard</span></a>
+        <div class="nav-item" id="navContenido">
+          <button class="nav-btn active" onclick="toggleDropdown('navContenido')"><span class="nav-btn-icon">&#x1F4C4;</span><span>Contenido</span><span class="nav-btn-arrow">&#x25BC;</span></button>
+          <div class="nav-dropdown">
+            <a href="./projects-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F4C1;</span><span>Proyectos</span></a>
+            <a href="./blog-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x270F;</span><span>Blog</span></a>
+            <a href="./leads" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F4E9;</span><span>Leads</span></a>
+            <a href="./tech-admin" class="nav-dropdown-item" style="background:rgba(255,122,24,0.15);color:#FF7A18;"><span class="nav-dropdown-item-icon">&#x1F527;</span><span>Tecnologias</span></a>
+          </div>
+        </div>
+        <div class="nav-item" id="navClientes" style="display:none;">
+          <button class="nav-btn" onclick="toggleDropdown('navClientes')"><span class="nav-btn-icon">&#x1F465;</span><span>Clientes</span><span class="nav-btn-arrow">&#x25BC;</span></button>
+          <div class="nav-dropdown">
+            <a href="./users" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F464;</span><span>Usuarios</span></a>
+            <a href="./requirements-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F4CB;</span><span>Requerimientos</span></a>
+            <a href="./faq-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x2753;</span><span>FAQ</span></a>
+            <a href="./support" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F3AB;</span><span>Soporte</span></a>
+          </div>
+        </div>
+        <div class="nav-item" id="navSistema" style="display:none;">
+          <button class="nav-btn" onclick="toggleDropdown('navSistema')"><span class="nav-btn-icon">&#x2699;</span><span>Sistema</span><span class="nav-btn-arrow">&#x25BC;</span></button>
+          <div class="nav-dropdown">
+            <a href="./services" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F4CA;</span><span>Servicios & Monitor</span></a>
+            <a href="./storage-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F4E6;</span><span>Storage</span></a>
+            <a href="./email-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F4E7;</span><span>Email</span></a>
+            <div class="nav-dropdown-divider"></div>
+            <a href="./maintenance-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F6A7;</span><span>Mantenimiento</span></a>
+          </div>
+        </div>
+      </nav>
     </header>
 
-    <!-- Mobile Menu -->
     <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
     <div class="mobile-menu-panel" id="mobileMenuPanel">
       <button class="mobile-menu-close" id="mobileMenuClose">&#x2715;</button>
-      <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
-      <a class="btn btn--ghost" href="./users" id="navUsersMobile" style="display:none;">&#x1F465; Usuarios</a>
-      <a class="btn btn--ghost" href="./services" id="navServicesMobile" style="display:none;">&#x2699; Servicios</a>
-      <a class="btn btn--ghost" href="./monitor" id="navMonitorMobile" style="display:none;">&#x1F4CA; Monitor</a>
-      <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
-      <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
-      <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
-      <a class="btn btn--ghost is-active" href="./tech-admin">&#x1F527; Tecnologias</a>
-      <a class="btn btn--ghost" href="./support" id="navSupportMobile" style="display:none;">&#x1F3AB; Soporte</a>
-      <a class="btn btn--ghost" href="./logout" style="margin-top: auto;">Cerrar sesion</a>
+      <a href="./dashboard" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F3E0;</span><span>Dashboard</span></a>
+      <div class="mobile-nav-section">
+        <div class="mobile-nav-title">Contenido</div>
+        <a href="./projects-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4C1;</span><span>Proyectos</span></a>
+        <a href="./blog-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x270F;</span><span>Blog</span></a>
+        <a href="./leads" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4E9;</span><span>Leads</span></a>
+        <a href="./tech-admin" class="mobile-nav-item" style="background:rgba(255,122,24,0.15);color:#FF7A18;"><span class="mobile-nav-item-icon">&#x1F527;</span><span>Tecnologias</span></a>
+      </div>
+      <div class="mobile-nav-section" id="mobileNavClientes" style="display:none;">
+        <div class="mobile-nav-title">Clientes</div>
+        <a href="./users" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F464;</span><span>Usuarios</span></a>
+        <a href="./requirements-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4CB;</span><span>Requerimientos</span></a>
+        <a href="./faq-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x2753;</span><span>FAQ</span></a>
+        <a href="./support" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F3AB;</span><span>Soporte</span></a>
+      </div>
+      <div class="mobile-nav-section" id="mobileNavSistema" style="display:none;">
+        <div class="mobile-nav-title">Sistema</div>
+        <a href="./services" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4CA;</span><span>Servicios & Monitor</span></a>
+        <a href="./storage-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4E6;</span><span>Storage</span></a>
+        <a href="./email-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4E7;</span><span>Email</span></a>
+        <a href="./maintenance-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F6A7;</span><span>Mantenimiento</span></a>
+      </div>
+      <a href="./logout" class="mobile-nav-item" style="margin-top:auto;border-top:1px solid rgba(255,255,255,0.1);padding-top:16px;"><span class="mobile-nav-item-icon">&#x1F6AA;</span><span>Cerrar sesion</span></a>
     </div>
 
     <!-- Main Content -->
@@ -485,7 +584,6 @@
           <div class="admin-card-sub">Agrega o elimina tecnologias del catalogo</div>
         </div>
         <div style="display:flex;gap:10px;">
-          <button class="btn btn--outline" id="btnActivateAll">Activar todas</button>
           <button class="btn" id="btnAdd">+ Nueva</button>
         </div>
       </div>
@@ -583,40 +681,51 @@
       devops: 'DevOps'
     };
 
-    // ========== Mobile Menu ==========
-    const mobileToggle = $('#mobileMenuToggle');
-    const mobileBackdrop = $('#mobileMenuBackdrop');
-    const mobilePanel = $('#mobileMenuPanel');
-    const mobileClose = $('#mobileMenuClose');
-
-    function openMobileMenu() {
-      mobileBackdrop.classList.add('is-open');
-      mobilePanel.classList.add('is-open');
-      document.body.style.overflow = 'hidden';
+    // Navigation
+    function toggleDropdown(id) {
+      const item = document.getElementById(id);
+      const wasOpen = item.classList.contains('is-open');
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('is-open'));
+      if (!wasOpen) item.classList.add('is-open');
     }
-    function closeMobileMenu() {
-      mobileBackdrop.classList.remove('is-open');
-      mobilePanel.classList.remove('is-open');
-      document.body.style.overflow = '';
-    }
-    if (mobileToggle) mobileToggle.addEventListener('click', openMobileMenu);
-    if (mobileBackdrop) mobileBackdrop.addEventListener('click', closeMobileMenu);
-    if (mobileClose) mobileClose.addEventListener('click', closeMobileMenu);
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.nav-item')) document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('is-open'));
+    });
 
-    // ========== Role-based Navigation ==========
-    async function checkRole() {
+    // Mobile menu
+    (function() {
+      const toggle = document.getElementById('mobileMenuToggle');
+      const panel = document.getElementById('mobileMenuPanel');
+      const backdrop = document.getElementById('mobileMenuBackdrop');
+      const closeBtn = document.getElementById('mobileMenuClose');
+      function openMenu() { toggle.classList.add('is-open'); panel.classList.add('is-open'); backdrop.classList.add('is-open'); document.body.style.overflow = 'hidden'; }
+      function closeMenu() { toggle.classList.remove('is-open'); panel.classList.remove('is-open'); backdrop.classList.remove('is-open'); document.body.style.overflow = ''; }
+      toggle?.addEventListener('click', () => panel.classList.contains('is-open') ? closeMenu() : openMenu());
+      closeBtn?.addEventListener('click', closeMenu);
+      backdrop?.addEventListener('click', closeMenu);
+    })();
+
+    // Role-based nav
+    (async function() {
       try {
         const res = await fetch('./api/session');
         const data = await res.json();
-        if (data.ok && data.user) {
+        if (data.ok) {
           const role = data.user.role;
-          if (role === 'admin' || role === 'support') {
-            $$('#navUsers, #navUsersMobile, #navServices, #navServicesMobile, #navMonitor, #navMonitorMobile, #navSupport, #navSupportMobile').forEach(el => el.style.display = '');
+          if (role === 'admin') {
+            document.getElementById('navClientes').style.display = '';
+            document.getElementById('navSistema').style.display = '';
+            document.getElementById('mobileNavClientes').style.display = '';
+            document.getElementById('mobileNavSistema').style.display = '';
+          } else if (role === 'support') {
+            document.getElementById('navClientes').style.display = '';
+            document.getElementById('navSistema').style.display = '';
+            document.getElementById('mobileNavClientes').style.display = '';
+            document.getElementById('mobileNavSistema').style.display = '';
           }
         }
-      } catch (e) { console.error('Role check error:', e); }
-    }
-    checkRole();
+      } catch (err) {}
+    })();
 
     // ========== API Helper ==========
     async function api(url, opts = {}) {
@@ -775,25 +884,6 @@
       pendingConfirmAction = onConfirm;
       $('#confirmModal').classList.add('is-visible');
     }
-
-    $('#btnActivateAll').addEventListener('click', () => {
-      showConfirm(
-        'Activar todas',
-        '¿Activar todas las tecnologias para que sean visibles en la pagina publica?',
-        '&#x26A1;',
-        'rgba(34,197,94,0.15)',
-        '#22c55e',
-        async () => {
-          const res = await api('./api/technologies/activate-all', { method: 'POST' });
-          if (res.ok) {
-            showResult(true, 'Activadas', `${res.updated} tecnologia(s) activada(s).`);
-            await loadTechs();
-          } else {
-            showResult(false, 'Error', res.error || 'No se pudieron activar.');
-          }
-        }
-      );
-    });
 
     function deleteTech(id) {
       const tech = allTechs.find(t => t.id === id);
