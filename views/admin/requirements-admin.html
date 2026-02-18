@@ -337,14 +337,31 @@
     .form-label { display: block; font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 5px; }
     .form-input, .form-textarea, .form-select {
       width: 100%; padding: 10px 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(30,30,30,0.95);
+      border: 1px solid rgba(255,255,255,0.15);
       border-radius: 8px; color: #fff; font-size: 13px;
       transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    .form-input::placeholder, .form-textarea::placeholder {
+      color: rgba(255,255,255,0.4);
     }
     .form-input:focus, .form-textarea:focus, .form-select:focus {
       outline: none;
       border-color: rgba(255,122,24,0.5);
+      background: rgba(40,40,40,0.95);
+    }
+    .form-input:-webkit-autofill,
+    .form-input:-webkit-autofill:hover,
+    .form-input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #fff;
+      -webkit-box-shadow: 0 0 0px 1000px rgba(30,30,30,0.95) inset;
+      box-shadow: 0 0 0px 1000px rgba(30,30,30,0.95) inset;
+      border-color: rgba(255,122,24,0.3);
+    }
+    .form-select option {
+      background: #1a1a1a;
+      color: #fff;
     }
     .form-textarea { min-height: 80px; resize: vertical; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
