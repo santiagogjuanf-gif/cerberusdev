@@ -5,6 +5,7 @@ const multer = require("multer");
 const { prisma } = require("../lib/prisma");
 const requireAuth = require("../middleware/requireAuth");
 const requireRole = require("../middleware/requireRole");
+const emailService = require("../services/emailService");
 
 // Multer config for ticket attachments
 const attachmentStorage = multer.diskStorage({
@@ -523,6 +524,31 @@ router.post("/api/tickets", requireAuth, async (req, res) => {
       console.error("[NOTIF]", notifErr);
     }
 
+    // Send email notification for new ticket
+    try {
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const ticketUrl = `${baseUrl}/admin/support`;
+
+      if (role === 'client') {
+        // Notify admin about new client ticket
+        const adminEmail = process.env.ADMIN_EMAIL;
+        if (adminEmail) {
+          const client = await prisma.adminUser.findUnique({ where: { id: ticketClientId }, select: { name: true, username: true } });
+          await emailService.sendEmail('ticket-created', adminEmail, {
+            ticketId: ticket.id,
+            subject,
+            category: ticketCategory,
+            priority: priority || 'medium',
+            message,
+            ticketUrl,
+            clientName: client?.name || client?.username || 'Cliente'
+          });
+        }
+      }
+    } catch (emailErr) {
+      console.error("[TICKET EMAIL]", emailErr.message);
+    }
+
     res.json({ ok: true, ticketId: ticket.id });
   } catch (err) {
     console.error("[TICKETS]", err);
@@ -668,6 +694,45 @@ router.post("/api/tickets/:id/messages", requireAuth, async (req, res) => {
       console.error("[NOTIF]", notifErr);
     }
 
+    // Send email notification for ticket response
+    try {
+      if (!isInternalNote) {
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const senderName = getDisplayName(senderInfo) || 'Usuario';
+
+        if (role === 'client') {
+          // Client replied → email admin
+          const adminEmail = process.env.ADMIN_EMAIL;
+          if (adminEmail) {
+            await emailService.sendEmail('ticket-response', adminEmail, {
+              ticketId,
+              subject: ticket.subject,
+              responderName: senderName,
+              message,
+              ticketUrl: `${baseUrl}/admin/support`
+            });
+          }
+        } else {
+          // Staff replied → email client
+          const client = await prisma.adminUser.findUnique({
+            where: { id: ticket.clientId },
+            select: { email: true, name: true, username: true }
+          });
+          if (client?.email) {
+            await emailService.sendEmail('ticket-response', client.email, {
+              ticketId,
+              subject: ticket.subject,
+              responderName: senderName,
+              message,
+              ticketUrl: `${baseUrl}/portal`
+            });
+          }
+        }
+      }
+    } catch (emailErr) {
+      console.error("[TICKET RESPONSE EMAIL]", emailErr.message);
+    }
+
     res.json({ ok: true, messageId: newMessage.id });
   } catch (err) {
     console.error("[TICKETS]", err);
@@ -713,13 +778,42 @@ router.put("/api/tickets/:id", requireAuth, requireRole(['admin']), async (req, 
 router.post("/api/tickets/:id/close", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
   try {
     const { id } = req.params;
+    const ticketId = Number(id);
+
+    // Get ticket info before closing
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: ticketId },
+      select: { subject: true, clientId: true }
+    });
+
     await prisma.ticket.update({
-      where: { id: Number(id) },
+      where: { id: ticketId },
       data: {
         status: 'closed',
         closedAt: new Date()
       }
     });
+
+    // Send email to client that ticket was closed
+    if (ticket) {
+      try {
+        const client = await prisma.adminUser.findUnique({
+          where: { id: ticket.clientId },
+          select: { email: true }
+        });
+        if (client?.email) {
+          const baseUrl = `${req.protocol}://${req.get('host')}`;
+          await emailService.sendEmail('ticket-closed', client.email, {
+            ticketId,
+            subject: ticket.subject,
+            ticketUrl: `${baseUrl}/portal`
+          });
+        }
+      } catch (emailErr) {
+        console.error("[TICKET CLOSE EMAIL]", emailErr.message);
+      }
+    }
+
     res.json({ ok: true });
   } catch (err) {
     console.error("[TICKETS]", err);
