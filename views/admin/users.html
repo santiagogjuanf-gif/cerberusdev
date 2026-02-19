@@ -436,6 +436,110 @@
     }
     .search-input::placeholder { color: rgba(255,255,255,0.35); }
 
+    /* Pagination */
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .pagination-info {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+    }
+    .pagination-info strong {
+      color: rgba(255,255,255,0.8);
+    }
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pagination-select {
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .pagination-select:focus {
+      outline: none;
+      border-color: rgba(255,122,24,0.4);
+    }
+    .pagination-select option {
+      background: #1a1a1a;
+    }
+    .pagination-btn {
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pagination-btn:hover:not(:disabled) {
+      background: rgba(255,122,24,0.15);
+      border-color: rgba(255,122,24,0.3);
+      color: #FF7A18;
+    }
+    .pagination-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .pagination-pages {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pagination-page {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.6);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pagination-page:hover {
+      background: rgba(255,122,24,0.1);
+      border-color: rgba(255,122,24,0.3);
+      color: #fff;
+    }
+    .pagination-page.active {
+      background: rgba(255,122,24,0.2);
+      border-color: rgba(255,122,24,0.5);
+      color: #FF7A18;
+      font-weight: 600;
+    }
+    .pagination-ellipsis {
+      color: rgba(255,255,255,0.3);
+      padding: 0 4px;
+    }
+    @media (max-width: 600px) {
+      .pagination-bar {
+        justify-content: center;
+      }
+      .pagination-info {
+        width: 100%;
+        text-align: center;
+      }
+    }
+
     /* Client services modal */
     .services-modal .modal-content { max-width: 700px; max-height: 85vh; overflow-y: auto; }
     .svc-list { margin-bottom: 20px; }
@@ -595,6 +699,22 @@
           <tbody id="usersTable"></tbody>
         </table>
       </div>
+      <div class="pagination-bar">
+        <div class="pagination-info">
+          Mostrando <strong id="paginationFrom">0</strong>-<strong id="paginationTo">0</strong> de <strong id="paginationTotal">0</strong> usuarios
+        </div>
+        <div class="pagination-controls">
+          <select class="pagination-select" id="pageSizeSelect" onchange="changePageSize()">
+            <option value="10">10 por pagina</option>
+            <option value="20" selected>20 por pagina</option>
+            <option value="50">50 por pagina</option>
+            <option value="100">100 por pagina</option>
+          </select>
+          <button class="pagination-btn" id="prevPageBtn" onclick="prevPage()" disabled>&#x25C0; Anterior</button>
+          <div class="pagination-pages" id="paginationPages"></div>
+          <button class="pagination-btn" id="nextPageBtn" onclick="nextPage()">Siguiente &#x25B6;</button>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -746,6 +866,10 @@
     let currentRoleFilter = 'all';
     let searchQuery = '';
 
+    // Pagination state
+    let currentPage = 1;
+    let pageSize = 20;
+
     function toggleClientFields() {
       const role = document.getElementById('role').value;
       document.getElementById('clientFields').style.display = role === 'client' ? 'block' : 'none';
@@ -787,12 +911,35 @@
         );
       }
 
-      if (filtered.length === 0) {
+      // Calculate pagination
+      const totalItems = filtered.length;
+      const totalPages = Math.ceil(totalItems / pageSize);
+
+      // Ensure current page is valid
+      if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, totalItems);
+      const paginatedUsers = filtered.slice(startIndex, endIndex);
+
+      // Update pagination info
+      document.getElementById('paginationFrom').textContent = totalItems > 0 ? startIndex + 1 : 0;
+      document.getElementById('paginationTo').textContent = endIndex;
+      document.getElementById('paginationTotal').textContent = totalItems;
+
+      // Update pagination buttons
+      document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+      document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+
+      // Render page numbers
+      renderPaginationPages(totalPages);
+
+      if (paginatedUsers.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:rgba(255,255,255,0.4);padding:40px;">No se encontraron usuarios</td></tr>';
         return;
       }
 
-      tbody.innerHTML = filtered.map(u => `
+      tbody.innerHTML = paginatedUsers.map(u => `
         <tr>
           <td>${u.id}</td>
           <td><strong>${u.username}</strong></td>
@@ -807,6 +954,62 @@
           </td>
         </tr>
       `).join('');
+    }
+
+    function renderPaginationPages(totalPages) {
+      const container = document.getElementById('paginationPages');
+      if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+      const maxVisible = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+      if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+      }
+
+      if (startPage > 1) {
+        html += `<button class="pagination-page" onclick="goToPage(1)">1</button>`;
+        if (startPage > 2) html += `<span class="pagination-ellipsis">...</span>`;
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        html += `<button class="pagination-page ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<span class="pagination-ellipsis">...</span>`;
+        html += `<button class="pagination-page" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      renderUsers();
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderUsers();
+      }
+    }
+
+    function nextPage() {
+      currentPage++;
+      renderUsers();
+    }
+
+    function changePageSize() {
+      pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+      currentPage = 1;
+      renderUsers();
     }
 
     function openModal(user = null) {
@@ -933,6 +1136,7 @@
         document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
         currentRoleFilter = chip.dataset.role;
+        currentPage = 1; // Reset to first page on filter change
         renderUsers();
       });
     });
@@ -940,6 +1144,7 @@
     // Search input
     document.getElementById('searchInput').addEventListener('input', function() {
       searchQuery = this.value.trim();
+      currentPage = 1; // Reset to first page on search
       renderUsers();
     });
 

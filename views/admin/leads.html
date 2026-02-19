@@ -350,6 +350,110 @@
       margin: 0 auto;
     }
 
+    /* Pagination */
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .pagination-info {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+    }
+    .pagination-info strong {
+      color: rgba(255,255,255,0.8);
+    }
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pagination-select {
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .pagination-select:focus {
+      outline: none;
+      border-color: rgba(255,122,24,0.4);
+    }
+    .pagination-select option {
+      background: #1a1a1a;
+    }
+    .pagination-btn {
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pagination-btn:hover:not(:disabled) {
+      background: rgba(255,122,24,0.15);
+      border-color: rgba(255,122,24,0.3);
+      color: #FF7A18;
+    }
+    .pagination-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .pagination-pages {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pagination-page {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.6);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pagination-page:hover {
+      background: rgba(255,122,24,0.1);
+      border-color: rgba(255,122,24,0.3);
+      color: #fff;
+    }
+    .pagination-page.active {
+      background: rgba(255,122,24,0.2);
+      border-color: rgba(255,122,24,0.5);
+      color: #FF7A18;
+      font-weight: 600;
+    }
+    .pagination-ellipsis {
+      color: rgba(255,255,255,0.3);
+      padding: 0 4px;
+    }
+    @media (max-width: 600px) {
+      .pagination-bar {
+        justify-content: center;
+      }
+      .pagination-info {
+        width: 100%;
+        text-align: center;
+      }
+    }
+
     @media (max-width: 768px) {
       .header-logo {
         width: 44px;
@@ -515,6 +619,22 @@
             <tbody id="leadsTbody"></tbody>
           </table>
         </div>
+        <div class="pagination-bar">
+          <div class="pagination-info">
+            Mostrando <strong id="paginationFrom">0</strong>-<strong id="paginationTo">0</strong> de <strong id="paginationTotal">0</strong> leads
+          </div>
+          <div class="pagination-controls">
+            <select class="pagination-select" id="pageSizeSelect">
+              <option value="10">10 por pagina</option>
+              <option value="20" selected>20 por pagina</option>
+              <option value="50">50 por pagina</option>
+              <option value="100">100 por pagina</option>
+            </select>
+            <button class="pagination-btn" id="prevPageBtn" disabled>&#x25C0; Anterior</button>
+            <div class="pagination-pages" id="paginationPages"></div>
+            <button class="pagination-btn" id="nextPageBtn">Siguiente &#x25B6;</button>
+          </div>
+        </div>
       </section>
     </div>
   </main>
@@ -523,6 +643,8 @@
   (function() {
     let ALL = [];
     let filter = "all";
+    let currentPage = 1;
+    let pageSize = 20;
     const $ = (q) => document.querySelector(q);
 
     function fmtDate(iso) {
@@ -555,6 +677,7 @@
       const chip = e.target.closest?.(".chip");
       if (chip && chip.dataset.filter) {
         filter = chip.dataset.filter;
+        currentPage = 1; // Reset to first page on filter change
         setChips();
         render();
       }
@@ -591,12 +714,35 @@
         return (l.status || "new") === filter;
       });
 
-      if (rows.length === 0) {
+      // Calculate pagination
+      const totalItems = rows.length;
+      const totalPages = Math.ceil(totalItems / pageSize);
+
+      // Ensure current page is valid
+      if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, totalItems);
+      const paginatedRows = rows.slice(startIndex, endIndex);
+
+      // Update pagination info
+      $("#paginationFrom").textContent = totalItems > 0 ? startIndex + 1 : 0;
+      $("#paginationTo").textContent = endIndex;
+      $("#paginationTotal").textContent = totalItems;
+
+      // Update pagination buttons
+      $("#prevPageBtn").disabled = currentPage <= 1;
+      $("#nextPageBtn").disabled = currentPage >= totalPages;
+
+      // Render page numbers
+      renderPaginationPages(totalPages);
+
+      if (paginatedRows.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:40px;">No hay leads en esta categoria</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = rows.map(l => {
+      tbody.innerHTML = paginatedRows.map(l => {
         const isOn = Number(l.is_important) === 1;
         return `
           <tr class="${isOn ? "is-starred" : ""}">
@@ -623,6 +769,66 @@
         btn.addEventListener("click", onAction);
       });
     }
+
+    function renderPaginationPages(totalPages) {
+      const container = $("#paginationPages");
+      if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+      const maxVisible = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+      if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+      }
+
+      if (startPage > 1) {
+        html += `<button class="pagination-page" data-page="1">1</button>`;
+        if (startPage > 2) html += `<span class="pagination-ellipsis">...</span>`;
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        html += `<button class="pagination-page ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<span class="pagination-ellipsis">...</span>`;
+        html += `<button class="pagination-page" data-page="${totalPages}">${totalPages}</button>`;
+      }
+
+      container.innerHTML = html;
+
+      // Add click handlers
+      container.querySelectorAll('.pagination-page').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentPage = parseInt(btn.dataset.page);
+          render();
+        });
+      });
+    }
+
+    // Pagination controls
+    $("#prevPageBtn").addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        render();
+      }
+    });
+
+    $("#nextPageBtn").addEventListener('click', () => {
+      currentPage++;
+      render();
+    });
+
+    $("#pageSizeSelect").addEventListener('change', function() {
+      pageSize = parseInt(this.value);
+      currentPage = 1;
+      render();
+    });
 
     async function onAction(e) {
       const btn = e.currentTarget;
