@@ -454,6 +454,18 @@ const templates = {
 };
 
 /**
+ * Replace template variables with actual data
+ * @param {string} content - Template content with {{variable}} placeholders
+ * @param {object} data - Data object with values
+ */
+function replaceVariables(content, data) {
+  if (!content) return '';
+  return content.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+    return data[key] !== undefined ? data[key] : match;
+  });
+}
+
+/**
  * Send an email using a template
  * @param {string} templateCode - Template identifier
  * @param {string} toEmail - Recipient email
@@ -462,12 +474,30 @@ const templates = {
  */
 async function sendEmail(templateCode, toEmail, data) {
   try {
-    const template = templates[templateCode];
-    if (!template) {
-      throw new Error(`Unknown template: ${templateCode}`);
-    }
+    let subject, html;
 
-    const { subject, html } = template(data);
+    // First, check if there's a saved template in the database
+    const savedTemplate = await prisma.emailTemplate.findUnique({
+      where: { code: templateCode }
+    });
+
+    if (savedTemplate && savedTemplate.htmlContent && savedTemplate.isActive) {
+      // Use the saved template from database
+      subject = replaceVariables(savedTemplate.subject, data);
+      const content = replaceVariables(savedTemplate.htmlContent, data);
+      html = getCerberusTemplate(content, subject);
+      console.log(`[Email] Using saved template: ${templateCode}`);
+    } else {
+      // Fall back to default hardcoded template
+      const template = templates[templateCode];
+      if (!template) {
+        throw new Error(`Unknown template: ${templateCode}`);
+      }
+      const templateResult = template(data);
+      subject = templateResult.subject;
+      html = templateResult.html;
+      console.log(`[Email] Using default template: ${templateCode}`);
+    }
 
     const fromName = process.env.EMAIL_FROM_NAME || 'Cerberus Dev';
     const fromEmail = process.env.SMTP_USER;

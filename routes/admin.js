@@ -7,6 +7,7 @@ const { prisma } = require("../lib/prisma");
 const requireAuth = require("../middleware/requireAuth");
 const requireRole = require("../middleware/requireRole");
 const rateLimit = require("../middleware/rateLimit");
+const emailService = require("../services/emailService");
 
 // Multer config for project images
 const storage = multer.diskStorage({
@@ -839,6 +840,23 @@ router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) 
         pm2Access: (role === 'support' && pm2_access) ? true : false
       }
     });
+
+    // Send welcome email if user has email and is a client
+    if (email && role === 'client') {
+      const loginUrl = `${req.protocol}://${req.get('host')}/portal`;
+      try {
+        await emailService.sendEmail('user-created', email, {
+          name: name || username,
+          username: username,
+          password: password, // Plain password before hashing
+          loginUrl: loginUrl
+        });
+        console.log(`[Users] Welcome email sent to ${email}`);
+      } catch (emailErr) {
+        console.error(`[Users] Failed to send welcome email to ${email}:`, emailErr.message);
+        // Don't fail user creation if email fails
+      }
+    }
 
     res.json({ ok: true, userId: user.id });
   } catch (err) {
