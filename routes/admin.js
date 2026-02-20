@@ -1752,9 +1752,17 @@ router.get("/api/session", requireAuth, (req, res) => {
 
 // Logout
 router.get("/logout", (req, res) => {
+  // Capture user role before destroying session
+  const userRole = req.session.user?.role || 'admin';
   req.session.destroy(() => {
-    res.sendFile("logout.html", { root: "./views/admin" });
+    // Redirect with role parameter
+    res.redirect(process.env.ADMIN_PATH + `/logout-page?role=${userRole}`);
   });
+});
+
+// Logout page (serves the animation page)
+router.get("/logout-page", (req, res) => {
+  res.sendFile("logout.html", { root: "./views/admin" });
 });
 
 // ── Technologies API (Admin) ──

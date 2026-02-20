@@ -215,11 +215,19 @@
     // Clear session storage for welcome modal
     sessionStorage.removeItem('cerberus_welcome_shown');
 
-    // Redirect after animation
+    // Get role from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const userRole = urlParams.get('role');
+
+    // Redirect after animation based on role
     setTimeout(() => {
       document.getElementById('logoutContent').classList.add('is-leaving');
       setTimeout(() => {
-        window.location.href = './login';
+        if (userRole === 'client') {
+          window.location.href = './portal-login';
+        } else {
+          window.location.href = './login';
+        }
       }, 500);
     }, 3500);
   </script>

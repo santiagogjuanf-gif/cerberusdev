@@ -866,7 +866,7 @@
         messageEl.style.display = 'none';
 
         try {
-          const res = await fetch(window.location.pathname.replace('/portal', '/api/password-recovery'), {
+          const res = await fetch(window.location.pathname.replace('/portal-login', '/api/password-recovery'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
