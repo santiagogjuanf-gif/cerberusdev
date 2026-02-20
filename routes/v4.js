@@ -961,7 +961,21 @@ const defaultTemplates = [
     name: 'Restablecer Contraseña',
     subject: 'Restablece tu contraseña - Cerberus Dev',
     variables: ['{{name}}', '{{resetUrl}}', '{{expiresIn}}'],
-    description: 'Email para restablecer contraseña'
+    description: 'Email para restablecer contraseña (con link)'
+  },
+  {
+    code: 'password-recovery',
+    name: 'Recuperación de Contraseña',
+    subject: 'Recuperacion de Contrasena - Cerberus Dev',
+    variables: ['{{name}}', '{{username}}', '{{password}}', '{{loginUrl}}'],
+    description: 'Se envía al cliente con nueva contraseña temporal'
+  },
+  {
+    code: 'ticket-client-confirmation',
+    name: 'Confirmación de Ticket (Cliente)',
+    subject: 'Tu ticket #{{ticketId}} ha sido creado',
+    variables: ['{{ticketId}}', '{{subject}}', '{{category}}', '{{priority}}', '{{message}}', '{{ticketUrl}}', '{{clientName}}'],
+    description: 'Confirmación enviada al cliente cuando crea un ticket'
   }
 ];
 
