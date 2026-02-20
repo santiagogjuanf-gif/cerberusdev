@@ -1682,11 +1682,6 @@ router.get("/api/monitor/pm2", requireAuth, requireRole(['admin', 'support']), a
 
 // ── Client Portal (Client role) ──
 
-// Portal page
-router.get("/portal", requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "views", "admin", "portal.html"));
-});
-
 // Change password page
 router.get("/change-password", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "admin", "change-password.html"));
