@@ -104,6 +104,14 @@ app.get("/api/technologies", async (req, res) => {
   }
 });
 
+// Public redirect to client portal (works regardless of ADMIN_PATH)
+app.get("/acceso-clientes", (req, res) => {
+  if (ADMIN_PATH) {
+    return res.redirect(ADMIN_PATH + "/portal-login");
+  }
+  res.status(404).send("Portal no configurado");
+});
+
 // Admin panel (only if ADMIN_PATH is configured)
 if (ADMIN_PATH) {
   app.get(ADMIN_PATH, (req, res) => {
