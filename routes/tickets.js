@@ -530,10 +530,15 @@ router.post("/api/tickets", requireAuth, async (req, res) => {
       const ticketUrl = `${baseUrl}/admin/support`;
 
       if (role === 'client') {
+        // Get client info
+        const client = await prisma.adminUser.findUnique({
+          where: { id: ticketClientId },
+          select: { name: true, username: true, email: true }
+        });
+
         // Notify admin about new client ticket
         const adminEmail = process.env.ADMIN_EMAIL;
         if (adminEmail) {
-          const client = await prisma.adminUser.findUnique({ where: { id: ticketClientId }, select: { name: true, username: true } });
           await emailService.sendEmail('ticket-created', adminEmail, {
             ticketId: ticket.id,
             subject,
@@ -543,6 +548,21 @@ router.post("/api/tickets", requireAuth, async (req, res) => {
             ticketUrl,
             clientName: client?.name || client?.username || 'Cliente'
           });
+        }
+
+        // Send confirmation email to client
+        if (client?.email) {
+          const clientTicketUrl = `${baseUrl}${process.env.ADMIN_PATH}/portal`;
+          await emailService.sendEmail('ticket-client-confirmation', client.email, {
+            ticketId: ticket.id,
+            subject,
+            category: ticketCategory,
+            priority: priority || 'medium',
+            message,
+            ticketUrl: clientTicketUrl,
+            clientName: client?.name || client?.username || 'Cliente'
+          });
+          console.log("[TICKET] Confirmation email sent to client:", client.email);
         }
       }
     } catch (emailErr) {

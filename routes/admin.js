@@ -61,6 +61,12 @@ router.post("/login", rateLimit, async (req, res) => {
     return res.redirect(process.env.ADMIN_PATH + "/login?error=invalid");
   }
 
+  // Block clients from admin login - redirect to portal
+  if (user.role === 'client') {
+    console.log("[LOGIN FAIL] client tried admin login, redirecting to portal");
+    return res.redirect(process.env.ADMIN_PATH + "/portal-login?error=use_portal");
+  }
+
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) {
     console.log("[LOGIN FAIL] wrong password");
@@ -73,23 +79,204 @@ router.post("/login", rateLimit, async (req, res) => {
     username: user.username,
     name: user.name || user.username,
     email: user.email,
-    role: user.role || 'client',
+    role: user.role || 'admin',
     must_change_password: user.mustChangePassword || false,
     pm2_access: user.pm2Access || false
   };
-  console.log("[LOGIN OK]", username, "name:", user.name || username, "role:", user.role || 'client');
+  console.log("[LOGIN OK]", username, "name:", user.name || username, "role:", user.role);
 
   // Check if user needs to change password
   if (user.mustChangePassword) {
     return res.redirect(process.env.ADMIN_PATH + "/change-password");
   }
 
-  // Redirect based on role
-  if (user.role === 'client') {
-    return res.redirect(process.env.ADMIN_PATH + "/portal");
+  res.redirect(process.env.ADMIN_PATH + "/dashboard");
+});
+
+// ── Portal Login (Client Only) ──
+
+// Portal login page
+router.get("/portal-login", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "portal-login.html"));
+});
+
+// Alias: /portal redirects to portal-login if not authenticated
+router.get("/portal", (req, res, next) => {
+  if (req.session.user) {
+    // If authenticated, check role
+    if (req.session.user.role !== 'client') {
+      return res.redirect(process.env.ADMIN_PATH + "/dashboard");
+    }
+    // Serve portal page
+    return res.sendFile(path.join(__dirname, "..", "views", "admin", "portal.html"));
+  }
+  // Not authenticated, redirect to portal login
+  res.redirect(process.env.ADMIN_PATH + "/portal-login");
+});
+
+// Portal login action (only accepts clients)
+router.post("/portal-login", rateLimit, async (req, res) => {
+  const { username, password } = req.body;
+
+  let user;
+  try {
+    user = await prisma.adminUser.findFirst({
+      where: {
+        OR: [
+          { username },
+          { email: username }
+        ]
+      }
+    });
+  } catch (err) {
+    console.error("[PORTAL LOGIN ERROR] Database connection failed:", err.message);
+    return res.redirect(process.env.ADMIN_PATH + "/portal-login?error=database");
   }
 
-  res.redirect(process.env.ADMIN_PATH + "/dashboard");
+  if (!user) {
+    console.log("[PORTAL LOGIN FAIL] user not found");
+    return res.redirect(process.env.ADMIN_PATH + "/portal-login?error=invalid");
+  }
+
+  // Check if user is a client
+  if (user.role !== 'client') {
+    console.log("[PORTAL LOGIN FAIL] user is not a client:", user.role);
+    return res.redirect(process.env.ADMIN_PATH + "/portal-login?error=access_denied");
+  }
+
+  // Check if user is active
+  if (!user.isActive) {
+    console.log("[PORTAL LOGIN FAIL] user is inactive");
+    return res.redirect(process.env.ADMIN_PATH + "/portal-login?error=inactive");
+  }
+
+  const ok = await bcrypt.compare(password, user.passwordHash);
+  if (!ok) {
+    console.log("[PORTAL LOGIN FAIL] wrong password");
+    return res.redirect(process.env.ADMIN_PATH + "/portal-login?error=invalid");
+  }
+
+  // Store user info in session
+  req.session.user = {
+    id: user.id,
+    username: user.username,
+    name: user.name || user.username,
+    email: user.email,
+    role: user.role,
+    must_change_password: user.mustChangePassword || false,
+    pm2_access: false
+  };
+  console.log("[PORTAL LOGIN OK]", username, "name:", user.name || username);
+
+  // Check if user needs to change password
+  if (user.mustChangePassword) {
+    return res.redirect(process.env.ADMIN_PATH + "/change-password");
+  }
+
+  res.redirect(process.env.ADMIN_PATH + "/portal");
+});
+
+// Password Recovery API (only for clients)
+router.post("/api/password-recovery", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.json({ ok: false, error: "Email es requerido" });
+  }
+
+  try {
+    // Check rate limiting (max 3 attempts per hour)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+    let resetAttempt = await prisma.passwordResetAttempt.findUnique({
+      where: { email: email.toLowerCase() }
+    });
+
+    if (resetAttempt) {
+      // Check if last attempt was within the hour
+      if (resetAttempt.lastAttemptAt > oneHourAgo) {
+        if (resetAttempt.attempts >= 3) {
+          console.log("[PASSWORD RECOVERY] Rate limited:", email);
+          // Return generic message for security (don't reveal rate limiting)
+          return res.json({ ok: true });
+        }
+        // Increment attempts
+        await prisma.passwordResetAttempt.update({
+          where: { email: email.toLowerCase() },
+          data: {
+            attempts: resetAttempt.attempts + 1,
+            lastAttemptAt: new Date()
+          }
+        });
+      } else {
+        // Reset counter (more than 1 hour passed)
+        await prisma.passwordResetAttempt.update({
+          where: { email: email.toLowerCase() },
+          data: {
+            attempts: 1,
+            lastAttemptAt: new Date()
+          }
+        });
+      }
+    } else {
+      // Create new attempt record
+      await prisma.passwordResetAttempt.create({
+        data: {
+          email: email.toLowerCase(),
+          attempts: 1,
+          lastAttemptAt: new Date()
+        }
+      });
+    }
+
+    // Find user by email (only clients)
+    const user = await prisma.adminUser.findFirst({
+      where: {
+        email: email.toLowerCase(),
+        role: 'client'
+      }
+    });
+
+    if (!user) {
+      console.log("[PASSWORD RECOVERY] User not found or not client:", email);
+      // Return generic message for security
+      return res.json({ ok: true });
+    }
+
+    // Generate random password
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let newPassword = 'Cerb_';
+    for (let i = 0; i < 8; i++) {
+      newPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    // Hash and update password
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await prisma.adminUser.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        mustChangePassword: true
+      }
+    });
+
+    // Send email with new password
+    const loginUrl = `${process.env.SITE_URL || 'https://cerberusdev.lat'}${process.env.ADMIN_PATH}/portal-login`;
+
+    await emailService.sendEmail('password-recovery', user.email, {
+      name: user.name || user.username,
+      username: user.username,
+      password: newPassword,
+      loginUrl
+    });
+
+    console.log("[PASSWORD RECOVERY] Sent new password to:", email);
+    return res.json({ ok: true });
+
+  } catch (err) {
+    console.error("[PASSWORD RECOVERY ERROR]", err);
+    return res.json({ ok: false, error: "Error al procesar la solicitud" });
+  }
 });
 
 // Dashboard
@@ -806,9 +993,30 @@ router.get("/api/users/:id", requireAuth, requireRole(['admin']), async (req, re
 router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
     const { username, name, email, password, role, must_change_password, company, phone, pm2_access } = req.body;
+    const userRole = role || 'client';
 
-    if (!username || !password) {
-      return res.status(400).json({ ok: false, error: 'username and password required' });
+    if (!username) {
+      return res.status(400).json({ ok: false, error: 'username required' });
+    }
+
+    // For clients: auto-generate password if not provided
+    // For admin/support: password is required
+    let userPassword = password;
+    let forceChangePassword = must_change_password ? true : false;
+
+    if (userRole === 'client') {
+      if (!userPassword) {
+        // Generate random secure password for client
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+        userPassword = 'Cerb_';
+        for (let i = 0; i < 8; i++) {
+          userPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+      }
+      // Always force password change for clients
+      forceChangePassword = true;
+    } else if (!userPassword) {
+      return res.status(400).json({ ok: false, error: 'password required for admin/support users' });
     }
 
     // Check if username or email already exists
@@ -825,7 +1033,7 @@ router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) 
       return res.status(400).json({ ok: false, error: 'username or email already exists' });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(userPassword, 10);
     const user = await prisma.adminUser.create({
       data: {
         username,
@@ -833,22 +1041,22 @@ router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) 
         fullName: name || null,
         email: email || null,
         passwordHash,
-        role: role || 'client',
-        mustChangePassword: must_change_password ? true : false,
+        role: userRole,
+        mustChangePassword: forceChangePassword,
         company: company || null,
         phone: phone || null,
-        pm2Access: (role === 'support' && pm2_access) ? true : false
+        pm2Access: (userRole === 'support' && pm2_access) ? true : false
       }
     });
 
     // Send welcome email if user has email and is a client
-    if (email && role === 'client') {
-      const loginUrl = `${req.protocol}://${req.get('host')}/portal`;
+    if (email && userRole === 'client') {
+      const loginUrl = `${req.protocol}://${req.get('host')}${process.env.ADMIN_PATH}/portal-login`;
       try {
         await emailService.sendEmail('user-created', email, {
           name: name || username,
           username: username,
-          password: password, // Plain password before hashing
+          password: userPassword, // Plain password before hashing
           loginUrl: loginUrl
         });
         console.log(`[Users] Welcome email sent to ${email}`);

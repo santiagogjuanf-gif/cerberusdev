@@ -450,6 +450,113 @@ const templates = {
       </p>
       ` : ''}
     `, data.title || 'Notificacion')
+  }),
+
+  // Password recovery
+  'password-recovery': (data) => ({
+    subject: 'Recuperacion de Contrasena - Cerberus Dev',
+    html: getCerberusTemplate(`
+      <h2 style="color: #FF7A18; margin: 0 0 20px; font-size: 22px; font-weight: 600;">Hola ${data.name},</h2>
+
+      <p style="margin: 0 0 15px; color: #e0e0e0;">Hemos recibido una solicitud para restablecer tu contrasena.</p>
+      <p style="margin: 0 0 20px; color: #b0b0b0;">Se ha generado una nueva contrasena temporal para tu cuenta.</p>
+
+      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
+
+      <!-- Credentials Box -->
+      <div style="background: linear-gradient(135deg, rgba(255,122,24,0.15), rgba(255,122,24,0.05)); border: 1px solid rgba(255,122,24,0.3); border-radius: 12px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 0 0 5px; font-size: 13px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px;">Nueva contrasena</p>
+        <table role="presentation" style="width: 100%; margin-top: 10px;">
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0; width: 140px;">Usuario:</td>
+            <td style="padding: 8px 0; color: #fff; font-weight: 600;">${data.username}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0;">Contrasena temporal:</td>
+            <td style="padding: 8px 0; color: #FF7A18; font-weight: 600; font-family: monospace; font-size: 14px;">${data.password}</td>
+          </tr>
+        </table>
+      </div>
+
+      <p style="margin: 15px 0 25px; color: #f59e0b; font-size: 13px;">
+        <strong>&#x26A0; Por seguridad, deberas cambiar tu contrasena al iniciar sesion.</strong>
+      </p>
+
+      <!-- CTA Button -->
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${data.loginUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #FF7A18, #FF9A45); color: #fff; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(255,122,24,0.3);">Iniciar Sesion</a>
+      </div>
+
+      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
+
+      <p style="margin: 0 0 15px; color: #b0b0b0;">Si no solicitaste este cambio, ignora este correo. Tu contrasena anterior ya no es valida.</p>
+
+      <p style="margin: 25px 0 0; color: #fff;">
+        Saludos,<br>
+        <strong style="color: #FF7A18;">Equipo Cerberus Dev</strong>
+      </p>
+    `, 'Recuperacion de Contrasena')
+  }),
+
+  // Ticket confirmation for client (when they create a ticket)
+  'ticket-client-confirmation': (data) => ({
+    subject: `Tu ticket #${data.ticketId} ha sido creado`,
+    html: getCerberusTemplate(`
+      <h2 style="color: #FF7A18; margin: 0 0 20px; font-size: 22px; font-weight: 600;">Hola ${data.clientName},</h2>
+
+      <p style="margin: 0 0 15px; color: #e0e0e0;">Hemos recibido tu solicitud correctamente.</p>
+      <p style="margin: 0 0 20px; color: #b0b0b0;">Nuestro equipo revisara tu caso y te responderemos a la brevedad.</p>
+
+      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
+
+      <!-- Ticket Info Box -->
+      <div style="background: linear-gradient(135deg, rgba(255,122,24,0.15), rgba(255,122,24,0.05)); border: 1px solid rgba(255,122,24,0.3); border-radius: 12px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 0 0 5px; font-size: 13px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px;">Detalles del Ticket</p>
+        <table role="presentation" style="width: 100%; margin-top: 10px;">
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0; width: 140px;">Ticket #:</td>
+            <td style="padding: 8px 0; color: #FF7A18; font-weight: 600;">${data.ticketId}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0;">Asunto:</td>
+            <td style="padding: 8px 0; color: #fff; font-weight: 600;">${data.subject}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0;">Tipo:</td>
+            <td style="padding: 8px 0; color: #fff;">${data.category === 'improvement' ? 'Mejora' : data.category === 'storage_request' ? 'Solicitud de Espacio' : 'Soporte'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0;">Prioridad:</td>
+            <td style="padding: 8px 0; color: #fff;">${data.priority === 'urgent' ? 'Urgente' : data.priority === 'high' ? 'Alta' : data.priority === 'medium' ? 'Media' : 'Baja'}</td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 0 0 10px; font-size: 13px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px;">Tu mensaje:</p>
+        <p style="margin: 0; color: #e0e0e0; white-space: pre-wrap;">${data.message}</p>
+      </div>
+
+      <div style="background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); border-radius: 12px; padding: 15px 20px; margin: 20px 0;">
+        <p style="margin: 0; color: #22c55e; font-size: 14px;">
+          <strong>&#x23F0; Tiempo estimado de respuesta:</strong> 0 - 48 horas
+        </p>
+      </div>
+
+      <!-- CTA Button -->
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${data.ticketUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #FF7A18, #FF9A45); color: #fff; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(255,122,24,0.3);">Ver mi Ticket</a>
+      </div>
+
+      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
+
+      <p style="margin: 0 0 15px; color: #b0b0b0;">Si tienes informacion adicional que agregar, puedes responder directamente en el portal.</p>
+
+      <p style="margin: 25px 0 0; color: #fff;">
+        Saludos,<br>
+        <strong style="color: #FF7A18;">Equipo Cerberus Dev</strong>
+      </p>
+    `, `Ticket #${data.ticketId} Creado`)
   })
 };
 
