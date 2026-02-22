@@ -552,7 +552,7 @@ router.post("/api/tickets", requireAuth, async (req, res) => {
 
         // Send confirmation email to client
         if (client?.email) {
-          const clientTicketUrl = `${baseUrl}${process.env.ADMIN_PATH}/portal`;
+          const clientTicketUrl = `${baseUrl}/cliente`;
           await emailService.sendEmail('ticket-client-confirmation', client.email, {
             ticketId: ticket.id,
             subject,

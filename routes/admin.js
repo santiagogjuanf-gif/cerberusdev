@@ -32,12 +32,12 @@ const upload = multer({
   }
 });
 
-// Login page
+// Login page (redirects to portal-admin)
 router.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "views", "admin", "login.html"));
+  res.redirect("/portal-admin");
 });
 
-// Login action
+// Login action (for admin/support)
 router.post("/login", rateLimit, async (req, res) => {
   const { username, password } = req.body;
 
@@ -53,24 +53,24 @@ router.post("/login", rateLimit, async (req, res) => {
     });
   } catch (err) {
     console.error("[LOGIN ERROR] Database connection failed:", err.message);
-    return res.redirect(process.env.ADMIN_PATH + "/login?error=database");
+    return res.redirect("/portal-admin?error=database");
   }
 
   if (!user) {
     console.log("[LOGIN FAIL] user not found");
-    return res.redirect(process.env.ADMIN_PATH + "/login?error=invalid");
+    return res.redirect("/portal-admin?error=invalid");
   }
 
-  // Block clients from admin login - redirect to portal
+  // Block clients from admin login - redirect to client portal
   if (user.role === 'client') {
     console.log("[LOGIN FAIL] client tried admin login, redirecting to portal");
-    return res.redirect(process.env.ADMIN_PATH + "/portal-login?error=use_portal");
+    return res.redirect("/portal-cliente?error=use_portal");
   }
 
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) {
     console.log("[LOGIN FAIL] wrong password");
-    return res.redirect(process.env.ADMIN_PATH + "/login?error=invalid");
+    return res.redirect("/portal-admin?error=invalid");
   }
 
   // Store user info including role in session
@@ -87,34 +87,13 @@ router.post("/login", rateLimit, async (req, res) => {
 
   // Check if user needs to change password
   if (user.mustChangePassword) {
-    return res.redirect(process.env.ADMIN_PATH + "/change-password");
+    return res.redirect("/admin/change-password");
   }
 
-  res.redirect(process.env.ADMIN_PATH + "/dashboard");
+  res.redirect("/admin/dashboard");
 });
 
-// ── Portal Login (Client Only) ──
-
-// Portal login page
-router.get("/portal-login", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "views", "admin", "portal-login.html"));
-});
-
-// Alias: /portal redirects to portal-login if not authenticated
-router.get("/portal", (req, res, next) => {
-  if (req.session.user) {
-    // If authenticated, check role
-    if (req.session.user.role !== 'client') {
-      return res.redirect(process.env.ADMIN_PATH + "/dashboard");
-    }
-    // Serve portal page
-    return res.sendFile(path.join(__dirname, "..", "views", "admin", "portal.html"));
-  }
-  // Not authenticated, redirect to portal login
-  res.redirect(process.env.ADMIN_PATH + "/portal-login");
-});
-
-// Portal login action (only accepts clients)
+// Portal login action (only accepts clients) - called from /portal-cliente form
 router.post("/portal-login", rateLimit, async (req, res) => {
   const { username, password } = req.body;
 
@@ -130,30 +109,30 @@ router.post("/portal-login", rateLimit, async (req, res) => {
     });
   } catch (err) {
     console.error("[PORTAL LOGIN ERROR] Database connection failed:", err.message);
-    return res.redirect(process.env.ADMIN_PATH + "/portal-login?error=database");
+    return res.redirect("/portal-cliente?error=database");
   }
 
   if (!user) {
     console.log("[PORTAL LOGIN FAIL] user not found");
-    return res.redirect(process.env.ADMIN_PATH + "/portal-login?error=invalid");
+    return res.redirect("/portal-cliente?error=invalid");
   }
 
   // Check if user is a client
   if (user.role !== 'client') {
     console.log("[PORTAL LOGIN FAIL] user is not a client:", user.role);
-    return res.redirect(process.env.ADMIN_PATH + "/portal-login?error=access_denied");
+    return res.redirect("/portal-cliente?error=access_denied");
   }
 
   // Check if user is active
   if (!user.isActive) {
     console.log("[PORTAL LOGIN FAIL] user is inactive");
-    return res.redirect(process.env.ADMIN_PATH + "/portal-login?error=inactive");
+    return res.redirect("/portal-cliente?error=inactive");
   }
 
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) {
     console.log("[PORTAL LOGIN FAIL] wrong password");
-    return res.redirect(process.env.ADMIN_PATH + "/portal-login?error=invalid");
+    return res.redirect("/portal-cliente?error=invalid");
   }
 
   // Store user info in session
@@ -170,10 +149,10 @@ router.post("/portal-login", rateLimit, async (req, res) => {
 
   // Check if user needs to change password
   if (user.mustChangePassword) {
-    return res.redirect(process.env.ADMIN_PATH + "/change-password");
+    return res.redirect("/cliente/change-password");
   }
 
-  res.redirect(process.env.ADMIN_PATH + "/portal");
+  res.redirect("/cliente");
 });
 
 // Password Recovery API (only for clients)
@@ -261,7 +240,7 @@ router.post("/api/password-recovery", async (req, res) => {
     });
 
     // Send email with new password
-    const loginUrl = `${process.env.SITE_URL || 'https://cerberusdev.lat'}${process.env.ADMIN_PATH}/portal-login`;
+    const loginUrl = `${process.env.SITE_URL || 'https://cerberusdev.pro'}/portal-cliente`;
 
     await emailService.sendEmail('password-recovery', user.email, {
       name: user.name || user.username,
@@ -1051,7 +1030,7 @@ router.post("/api/users", requireAuth, requireRole(['admin']), async (req, res) 
 
     // Send welcome email if user has email and is a client
     if (email && userRole === 'client') {
-      const loginUrl = `${req.protocol}://${req.get('host')}${process.env.ADMIN_PATH}/portal-login`;
+      const loginUrl = `${req.protocol}://${req.get('host')}/portal-cliente`;
       try {
         await emailService.sendEmail('user-created', email, {
           name: name || username,
@@ -1152,7 +1131,7 @@ router.post("/api/users/:id/delete", requireAuth, requireRole(['admin']), async 
 // Services admin page (support needs pm2_access)
 router.get("/services", requireAuth, requireRole(['admin', 'support']), (req, res) => {
   if (req.session.user.role === 'support' && !req.session.user.pm2_access) {
-    return res.redirect(process.env.ADMIN_PATH + "/dashboard");
+    return res.redirect("/admin/dashboard");
   }
   res.sendFile(path.join(__dirname, "..", "views", "admin", "services.html"));
 });
@@ -1377,7 +1356,7 @@ router.get("/api/services/:id/logs", requireAuth, requireRole(['admin', 'support
 
 // Monitor page - redirect to unified services page
 router.get("/monitor", requireAuth, requireRole(['admin', 'support']), (req, res) => {
-  res.redirect(process.env.ADMIN_PATH + "/services");
+  res.redirect("/admin/services");
 });
 
 // System stats endpoint - Enhanced with CPU %, multiple disks, network
@@ -1756,7 +1735,7 @@ router.get("/logout", (req, res) => {
   const userRole = req.session.user?.role || 'admin';
   req.session.destroy(() => {
     // Redirect with role parameter
-    res.redirect(process.env.ADMIN_PATH + `/logout-page?role=${userRole}`);
+    res.redirect(`/admin/logout-page?role=${userRole}`);
   });
 });
 

@@ -26,10 +26,9 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 
-// Socket.IO setup
-const ADMIN_PATH = process.env.ADMIN_PATH;
+// Socket.IO setup - using fixed path
 const io = new Server(server, {
-  path: (ADMIN_PATH || "") + "/socket.io/",
+  path: "/socket.io/",
   cors: { origin: false }
 });
 
@@ -104,23 +103,33 @@ app.get("/api/technologies", async (req, res) => {
   }
 });
 
-// Public redirect to client portal (works regardless of ADMIN_PATH)
+// Public redirect to client portal
 app.get("/acceso-clientes", (req, res) => {
-  if (ADMIN_PATH) {
-    return res.redirect(ADMIN_PATH + "/portal-login");
-  }
-  res.status(404).send("Portal no configurado");
+  res.redirect("/portal-cliente");
 });
 
-// Admin panel (only if ADMIN_PATH is configured)
-if (ADMIN_PATH) {
-  app.get(ADMIN_PATH, (req, res) => {
-    return res.redirect(ADMIN_PATH + "/");
-  });
-  app.use(ADMIN_PATH, require("./routes/admin"));
-  app.use(ADMIN_PATH, require("./routes/tickets"));
-  app.use(ADMIN_PATH, require("./routes/v4")); // v4 features
-}
+// Login pages (public)
+app.get("/portal-cliente", (req, res) => {
+  if (req.session.user && req.session.user.role === 'client') {
+    return res.redirect("/cliente");
+  }
+  res.sendFile(path.join(__dirname, "views", "admin", "portal-login.html"));
+});
+
+app.get("/portal-admin", (req, res) => {
+  if (req.session.user && req.session.user.role !== 'client') {
+    return res.redirect("/admin/dashboard");
+  }
+  res.sendFile(path.join(__dirname, "views", "admin", "login.html"));
+});
+
+// Admin panel routes (for admin/support staff)
+app.use("/admin", require("./routes/admin"));
+app.use("/admin", require("./routes/tickets"));
+app.use("/admin", require("./routes/v4"));
+
+// Client portal routes (for clients)
+app.use("/cliente", require("./routes/cliente"));
 
 // Internal API routes (v4) - accessible only from localhost
 app.use(require("./routes/v4"));
@@ -169,7 +178,6 @@ app.get("*", (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`Server running: http://localhost:${PORT}`);
-  if (ADMIN_PATH) {
-    console.log(`Admin panel: http://localhost:${PORT}${ADMIN_PATH}/login`);
-  }
+  console.log(`Admin login: http://localhost:${PORT}/portal-admin`);
+  console.log(`Client login: http://localhost:${PORT}/portal-cliente`);
 });

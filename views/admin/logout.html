@@ -224,9 +224,9 @@
       document.getElementById('logoutContent').classList.add('is-leaving');
       setTimeout(() => {
         if (userRole === 'client') {
-          window.location.href = './portal-login';
+          window.location.href = '/portal-cliente';
         } else {
-          window.location.href = './login';
+          window.location.href = '/portal-admin';
         }
       }, 500);
     }, 3500);

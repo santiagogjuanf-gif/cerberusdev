@@ -624,7 +624,7 @@
       <span class="login-success-text" id="loginSuccessText">Operacion exitosa</span>
     </div>
 
-    <form class="login-form" method="POST" action="portal-login">
+    <form class="login-form" method="POST" action="/admin/portal-login">
       <div class="login-field-wrap">
         <input class="login-field" name="username" placeholder="Usuario o email" required autocomplete="username">
         <span class="login-field-icon">&#x1F464;</span>
@@ -866,7 +866,7 @@
         messageEl.style.display = 'none';
 
         try {
-          const res = await fetch(window.location.pathname.replace('/portal-login', '/api/password-recovery'), {
+          const res = await fetch('/admin/api/password-recovery', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
