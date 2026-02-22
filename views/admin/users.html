@@ -316,6 +316,8 @@
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s ease;
+      padding: 20px;
+      overflow-y: auto;
     }
     .modal-overlay.is-visible { opacity: 1; visibility: visible; }
     .modal-content {
@@ -324,19 +326,27 @@
       border-radius: 20px;
       padding: 30px;
       width: 90%;
-      max-width: 500px;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
       transform: translateY(20px);
       transition: transform 0.3s ease;
     }
     .modal-overlay.is-visible .modal-content { transform: translateY(0); }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
     .modal-title {
       font-size: 20px;
       font-weight: 700;
-      margin-bottom: 24px;
       color: #fff;
       display: flex;
       align-items: center;
       gap: 12px;
+      margin: 0;
     }
     .modal-title::before {
       content: '';
@@ -344,6 +354,31 @@
       background: linear-gradient(180deg, #FF7A18, #FF9A45);
       border-radius: 2px;
     }
+    .modal-close {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.5);
+      font-size: 28px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      transition: color 0.3s;
+    }
+    .modal-close:hover { color: #FF7A18; }
+
+    /* Two column form layout */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 24px;
+    }
+    .form-grid .form-group { margin-bottom: 0; }
+    .form-grid .form-group.full-width { grid-column: 1 / -1; }
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .modal-content { max-width: 100%; }
+    }
+
     .form-group { margin-bottom: 20px; }
     .form-label { display: block; font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
     .form-input, .form-select {
@@ -365,6 +400,15 @@
     .form-select option { background: #1a1a1a; }
     .form-checkbox { display: flex; align-items: center; gap: 10px; cursor: pointer; }
     .form-checkbox input { width: 18px; height: 18px; accent-color: #FF7A18; }
+    .form-note {
+      background: rgba(34,197,94,0.15);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #4ade80;
+      margin-top: 8px;
+    }
     .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
     .modal-actions .btn { flex: 1; padding: 12px 20px; }
     .btn--danger { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4); color: #f87171; }
@@ -721,62 +765,66 @@
   <!-- User Modal -->
   <div class="modal-overlay" id="userModal">
     <div class="modal-content">
-      <div class="modal-title" id="modalTitle">Nuevo Usuario</div>
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">Nuevo Usuario</div>
+        <button type="button" class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
       <form id="userForm">
         <input type="hidden" id="userId">
-        <div class="form-group">
-          <label class="form-label">Nombre de usuario *</label>
-          <input type="text" class="form-input" id="username" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Nombre completo</label>
-          <input type="text" class="form-input" id="name" placeholder="Juan Santiago">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-input" id="email">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Rol</label>
-          <select class="form-select" id="role" onchange="toggleClientFields()">
-            <option value="client">Cliente</option>
-            <option value="support">Soporte</option>
-            <option value="admin">Administrador</option>
-          </select>
-        </div>
-        <div id="passwordGroup" class="form-group" style="display:none;">
-          <label class="form-label">Contrasena <span id="pwdHint">(requerida)</span></label>
-          <input type="password" class="form-input" id="password">
-        </div>
-        <div id="clientPasswordNote" class="form-group">
-          <div style="background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #4ade80;">
-            <strong>&#x1F512; Contrasena automatica:</strong> Se generara una contrasena segura y se enviara por email al cliente. El cliente debera cambiarla en su primer inicio de sesion.
-          </div>
-        </div>
-        <div id="clientFields">
+
+        <div class="form-grid">
           <div class="form-group">
+            <label class="form-label">Nombre de usuario *</label>
+            <input type="text" class="form-input" id="username" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nombre completo</label>
+            <input type="text" class="form-input" id="name" placeholder="Juan Santiago">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rol</label>
+            <select class="form-select" id="role" onchange="toggleClientFields()">
+              <option value="client">Cliente</option>
+              <option value="support">Soporte</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+          <div id="clientFields" class="form-group">
             <label class="form-label">Empresa</label>
             <input type="text" class="form-input" id="company" placeholder="Nombre de la empresa">
           </div>
-          <div class="form-group">
+          <div id="clientFieldsPhone" class="form-group">
             <label class="form-label">Telefono</label>
             <input type="tel" class="form-input" id="phone" placeholder="+52 123 456 7890">
           </div>
-        </div>
-        <div id="supportFields" style="display:none;">
-          <div class="form-group">
+          <div id="passwordGroup" class="form-group" style="display:none;">
+            <label class="form-label">Contrasena <span id="pwdHint">(requerida)</span></label>
+            <input type="password" class="form-input" id="password">
+          </div>
+          <div id="mustChangePasswordGroup" class="form-group" style="display:none;">
+            <label class="form-checkbox">
+              <input type="checkbox" id="mustChangePassword">
+              <span>Debe cambiar contrasena</span>
+            </label>
+          </div>
+          <div id="supportFields" class="form-group" style="display:none;">
             <label class="form-checkbox">
               <input type="checkbox" id="pm2Access">
-              <span>Permitir control de servicios PM2 (iniciar/reiniciar)</span>
+              <span>Permitir control PM2</span>
             </label>
           </div>
         </div>
-        <div id="mustChangePasswordGroup" class="form-group" style="display:none;">
-          <label class="form-checkbox">
-            <input type="checkbox" id="mustChangePassword">
-            <span>Debe cambiar contrasena al iniciar sesion</span>
-          </label>
+
+        <div id="clientPasswordNote">
+          <div class="form-note">
+            <strong>&#x1F512; Contrasena automatica:</strong> Se generara una contrasena segura y se enviara por email al cliente. El cliente debera cambiarla en su primer inicio de sesion.
+          </div>
         </div>
+
         <div class="modal-actions">
           <button type="button" class="btn btn--ghost" onclick="closeModal()">Cancelar</button>
           <button type="submit" class="btn btn--primary">Guardar</button>
@@ -883,6 +931,7 @@
 
       // Show/hide client-specific fields
       document.getElementById('clientFields').style.display = isClient ? 'block' : 'none';
+      document.getElementById('clientFieldsPhone').style.display = isClient ? 'block' : 'none';
       document.getElementById('supportFields').style.display = isSupport ? 'block' : 'none';
 
       // For clients: hide password field and show auto-password note (when creating)
@@ -1157,10 +1206,7 @@
       }
     };
 
-    // Close modal on overlay click
-    document.getElementById('userModal').onclick = (e) => {
-      if (e.target === e.currentTarget) closeModal();
-    };
+    // Modal only closes with Cancel/X button - no click-outside close
 
     loadUsers();
 
@@ -1199,9 +1245,7 @@
       currentSvcClientId = null;
     }
 
-    document.getElementById('servicesModal').onclick = (e) => {
-      if (e.target === e.currentTarget) closeServicesModal();
-    };
+    // Services modal only closes with Cancel/X button - no click-outside close
 
     async function loadClientServices() {
       const list = document.getElementById('svcList');
