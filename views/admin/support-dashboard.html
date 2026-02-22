@@ -470,6 +470,56 @@
     /* Request modal form */
     .request-modal .modal-content { max-width: 550px; }
 
+    /* ===== DROPDOWN NAVIGATION ===== */
+    .nav-dropdowns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .nav-dropdown { position: relative; }
+    .nav-dropdown-btn {
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: rgba(255,255,255,0.8);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.3s ease;
+    }
+    .nav-dropdown-btn:hover {
+      border-color: rgba(255,122,24,0.4);
+      background: rgba(255,122,24,0.1);
+      color: #FF7A18;
+      box-shadow: 0 0 15px rgba(255,122,24,0.15);
+    }
+    .nav-dropdown-arrow { font-size: 8px; transition: transform 0.3s ease; }
+    .nav-dropdown:hover .nav-dropdown-arrow { transform: rotate(180deg); }
+    .nav-dropdown-menu {
+      position: absolute; top: calc(100% + 8px); left: 0;
+      min-width: 200px;
+      background: rgba(18,18,18,0.98);
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 12px; padding: 8px;
+      opacity: 0; visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(255,122,24,0.1);
+    }
+    .nav-dropdown:hover .nav-dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+    .nav-dropdown-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none; font-size: 13px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    .nav-dropdown-item:hover { background: rgba(255,122,24,0.15); color: #FF7A18; }
+    .nav-dropdown-item.active { background: rgba(255,122,24,0.2); color: #FF7A18; }
+
+    /* Mobile menu sections */
+    .mobile-menu-section { margin-bottom: 16px; }
+    .mobile-menu-section-title { font-size: 10px; text-transform: uppercase; color: rgba(255,255,255,0.4); padding: 8px 16px 4px; letter-spacing: 1px; }
+
     /* Responsive */
     @media (max-width: 768px) {
       .mobile-menu-toggle { display: block; }
@@ -484,6 +534,110 @@
     }
     @media (max-width: 480px) {
       .stat-chip-label { display: none; }
+    }
+
+    /* Pagination */
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .pagination-info {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+    }
+    .pagination-info strong {
+      color: rgba(255,255,255,0.8);
+    }
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pagination-select {
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .pagination-select:focus {
+      outline: none;
+      border-color: rgba(255,122,24,0.4);
+    }
+    .pagination-select option {
+      background: #1a1a1a;
+    }
+    .pagination-btn {
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pagination-btn:hover:not(:disabled) {
+      background: rgba(255,122,24,0.15);
+      border-color: rgba(255,122,24,0.3);
+      color: #FF7A18;
+    }
+    .pagination-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .pagination-pages {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pagination-page {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.6);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pagination-page:hover {
+      background: rgba(255,122,24,0.1);
+      border-color: rgba(255,122,24,0.3);
+      color: #fff;
+    }
+    .pagination-page.active {
+      background: rgba(255,122,24,0.2);
+      border-color: rgba(255,122,24,0.5);
+      color: #FF7A18;
+      font-weight: 600;
+    }
+    .pagination-ellipsis {
+      color: rgba(255,255,255,0.3);
+      padding: 0 4px;
+    }
+    @media (max-width: 600px) {
+      .pagination-bar {
+        justify-content: center;
+      }
+      .pagination-info {
+        width: 100%;
+        text-align: center;
+      }
     }
   </style>
 </head>
@@ -520,14 +674,38 @@
 
       <div class="admin-actions">
         <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
-        <a class="btn btn--ghost" href="./users" id="navUsers" style="display:none;">&#x1F465; Usuarios</a>
-        <a class="btn btn--ghost" href="./services" id="navServices" style="display:none;">&#x2699; Servicios</a>
-        <a class="btn btn--ghost" href="./monitor" id="navMonitor" style="display:none;">&#x1F4CA; Monitor</a>
-        <a class="btn btn--ghost" href="./projects-admin" id="navProjects" style="display:none;">&#x1F4C1; Proyectos</a>
-        <a class="btn btn--ghost" href="./blog-admin" id="navBlog" style="display:none;">&#x270F; Blog</a>
-        <a class="btn btn--ghost" href="./leads" id="navLeads" style="display:none;">&#x1F4E9; Leads</a>
-        <a class="btn btn--ghost" href="./tech-admin" id="navTech" style="display:none;">&#x1F527; Tecnologias</a>
-        <a class="btn btn--ghost is-active" href="./support">&#x1F3AB; Soporte</a>
+        <div class="nav-dropdowns">
+          <!-- Contenido -->
+          <div class="nav-dropdown">
+            <button class="nav-dropdown-btn">&#x1F4DD; Contenido <span class="nav-dropdown-arrow">&#x25BC;</span></button>
+            <div class="nav-dropdown-menu">
+              <a href="./projects-admin" class="nav-dropdown-item">&#x1F4C1; Proyectos</a>
+              <a href="./blog-admin" class="nav-dropdown-item">&#x270F; Blog</a>
+              <a href="./tech-admin" class="nav-dropdown-item" id="navTech" style="display:none;">&#x1F527; Tecnologias</a>
+              <a href="./faq-admin" class="nav-dropdown-item" id="navFaq" style="display:none;">&#x2753; FAQ</a>
+            </div>
+          </div>
+          <!-- Clientes -->
+          <div class="nav-dropdown">
+            <button class="nav-dropdown-btn">&#x1F465; Clientes <span class="nav-dropdown-arrow">&#x25BC;</span></button>
+            <div class="nav-dropdown-menu">
+              <a href="./leads" class="nav-dropdown-item">&#x1F4E9; Leads</a>
+              <a href="./users" class="nav-dropdown-item" id="navUsers" style="display:none;">&#x1F465; Usuarios</a>
+              <a href="./support" class="nav-dropdown-item active">&#x1F3AB; Soporte</a>
+              <a href="./requirements-admin" class="nav-dropdown-item" id="navRequirements" style="display:none;">&#x1F4CB; Requerimientos</a>
+            </div>
+          </div>
+          <!-- Sistema -->
+          <div class="nav-dropdown" id="dropdownSistema" style="display:none;">
+            <button class="nav-dropdown-btn">&#x2699; Sistema <span class="nav-dropdown-arrow">&#x25BC;</span></button>
+            <div class="nav-dropdown-menu">
+              <a href="./services" class="nav-dropdown-item">&#x1F5A5; Servicios</a>
+              <a href="./maintenance-admin" class="nav-dropdown-item">&#x1F6A7; Mantenimiento</a>
+              <a href="./storage-admin" class="nav-dropdown-item">&#x1F4E6; Storage</a>
+              <a href="./email-admin" class="nav-dropdown-item">&#x1F4E7; Email</a>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -535,15 +713,33 @@
     <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
     <div class="mobile-menu-panel" id="mobileMenuPanel">
       <button class="mobile-menu-close" id="mobileMenuClose">&#x2715;</button>
+
       <a class="btn btn--ghost" href="./dashboard">&#x1F3E0; Dashboard</a>
-      <a class="btn btn--ghost" href="./users" id="navUsersMobile" style="display:none;">&#x1F465; Usuarios</a>
-      <a class="btn btn--ghost" href="./services" id="navServicesMobile" style="display:none;">&#x2699; Servicios</a>
-      <a class="btn btn--ghost" href="./monitor" id="navMonitorMobile" style="display:none;">&#x1F4CA; Monitor</a>
-      <a class="btn btn--ghost" href="./projects-admin" id="navProjectsMobile" style="display:none;">&#x1F4C1; Proyectos</a>
-      <a class="btn btn--ghost" href="./blog-admin" id="navBlogMobile" style="display:none;">&#x270F; Blog</a>
-      <a class="btn btn--ghost" href="./leads" id="navLeadsMobile" style="display:none;">&#x1F4E9; Leads</a>
-      <a class="btn btn--ghost" href="./tech-admin" id="navTechMobile" style="display:none;">&#x1F527; Tecnologias</a>
-      <a class="btn btn--ghost is-active" href="./support">&#x1F3AB; Soporte</a>
+
+      <div class="mobile-menu-section">
+        <div class="mobile-menu-section-title">Contenido</div>
+        <a class="btn btn--ghost" href="./projects-admin">&#x1F4C1; Proyectos</a>
+        <a class="btn btn--ghost" href="./blog-admin">&#x270F; Blog</a>
+        <a class="btn btn--ghost" href="./tech-admin" id="navTechMobile" style="display:none;">&#x1F527; Tecnologias</a>
+        <a class="btn btn--ghost" href="./faq-admin" id="navFaqMobile" style="display:none;">&#x2753; FAQ</a>
+      </div>
+
+      <div class="mobile-menu-section">
+        <div class="mobile-menu-section-title">Clientes</div>
+        <a class="btn btn--ghost" href="./leads">&#x1F4E9; Leads</a>
+        <a class="btn btn--ghost" href="./users" id="navUsersMobile" style="display:none;">&#x1F465; Usuarios</a>
+        <a class="btn btn--ghost" href="./support" style="background:rgba(255,122,24,0.15);border-color:rgba(255,122,24,0.3);">&#x1F3AB; Soporte</a>
+        <a class="btn btn--ghost" href="./requirements-admin" id="navRequirementsMobile" style="display:none;">&#x1F4CB; Requerimientos</a>
+      </div>
+
+      <div class="mobile-menu-section" id="mobileSistemaSection" style="display:none;">
+        <div class="mobile-menu-section-title">Sistema</div>
+        <a class="btn btn--ghost" href="./services">&#x1F5A5; Servicios</a>
+        <a class="btn btn--ghost" href="./maintenance-admin">&#x1F6A7; Mantenimiento</a>
+        <a class="btn btn--ghost" href="./storage-admin">&#x1F4E6; Storage</a>
+        <a class="btn btn--ghost" href="./email-admin">&#x1F4E7; Email</a>
+      </div>
+
       <a class="btn btn--ghost" href="./logout" style="margin-top:auto;">Cerrar sesion</a>
     </div>
 
@@ -613,6 +809,22 @@
             <tr><td colspan="9" class="empty-table">Cargando...</td></tr>
           </tbody>
         </table>
+      </div>
+      <div class="pagination-bar">
+        <div class="pagination-info">
+          Mostrando <strong id="paginationFrom">0</strong>-<strong id="paginationTo">0</strong> de <strong id="paginationTotal">0</strong> tickets
+        </div>
+        <div class="pagination-controls">
+          <select class="pagination-select" id="pageSizeSelect" onchange="changePageSize()">
+            <option value="10">10 por pagina</option>
+            <option value="20" selected>20 por pagina</option>
+            <option value="50">50 por pagina</option>
+            <option value="100">100 por pagina</option>
+          </select>
+          <button class="pagination-btn" id="prevPageBtn" onclick="prevPage()" disabled>&#x25C0; Anterior</button>
+          <div class="pagination-pages" id="paginationPages"></div>
+          <button class="pagination-btn" id="nextPageBtn" onclick="nextPage()">Siguiente &#x25B6;</button>
+        </div>
       </div>
     </section>
   </main>
@@ -746,6 +958,10 @@
     let userId = null;
     let socket = null;
 
+    // Pagination state
+    let currentPage = 1;
+    let pageSize = 20;
+
     const statusLabels = { new: 'Nuevo', in_progress: 'En Progreso', waiting_client: 'Esperando Cliente', waiting_support: 'Esperando Soporte', closed: 'Cerrado' };
     const priorityLabels = { low: 'Baja', medium: 'Media', high: 'Alta', urgent: 'Urgente' };
     const filterTitles = {
@@ -781,21 +997,27 @@
     }
 
     function setupNav() {
-      const adminLinks = ['navUsers', 'navServices', 'navMonitor', 'navTech', 'navProjects', 'navBlog', 'navLeads'];
-      const adminMobile = ['navUsersMobile', 'navServicesMobile', 'navMonitorMobile', 'navTechMobile', 'navProjectsMobile', 'navBlogMobile', 'navLeadsMobile'];
-
       if (userRole === 'admin') {
-        adminLinks.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
-        adminMobile.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
+        // Desktop dropdowns
+        ['navUsers', 'navTech', 'navFaq', 'navRequirements'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.style.display = '';
+        });
+        const dropdownSistema = document.getElementById('dropdownSistema');
+        if (dropdownSistema) dropdownSistema.style.display = '';
+        // Mobile
+        ['navUsersMobile', 'navTechMobile', 'navFaqMobile', 'navRequirementsMobile'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.style.display = '';
+        });
+        const mobileSistema = document.getElementById('mobileSistemaSection');
+        if (mobileSistema) mobileSistema.style.display = '';
       } else if (userRole === 'support') {
-        // Monitor always visible for support
-        ['navMonitor'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
-        ['navMonitorMobile'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
-        // Services only if pm2_access
-        if (userPm2Access) {
-          ['navServices'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
-          ['navServicesMobile'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
-        }
+        // Support can see requirements
+        ['navRequirements'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.style.display = '';
+        });
+        ['navRequirementsMobile'].forEach(id => {
+          const el = document.getElementById(id); if (el) el.style.display = '';
+        });
         // Show request bar for support
         document.getElementById('requestBar').style.display = '';
       }
@@ -852,12 +1074,36 @@
     // ===== Rendering =====
     function renderTable() {
       const tbody = document.getElementById('ticketsTbody');
-      if (allTickets.length === 0) {
+
+      // Calculate pagination
+      const totalItems = allTickets.length;
+      const totalPages = Math.ceil(totalItems / pageSize);
+
+      // Ensure current page is valid
+      if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, totalItems);
+      const paginatedTickets = allTickets.slice(startIndex, endIndex);
+
+      // Update pagination info
+      document.getElementById('paginationFrom').textContent = totalItems > 0 ? startIndex + 1 : 0;
+      document.getElementById('paginationTo').textContent = endIndex;
+      document.getElementById('paginationTotal').textContent = totalItems;
+
+      // Update pagination buttons
+      document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+      document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+
+      // Render page numbers
+      renderPaginationPages(totalPages);
+
+      if (paginatedTickets.length === 0) {
         tbody.innerHTML = '<tr><td colspan="9" class="empty-table">No hay tickets</td></tr>';
         return;
       }
 
-      tbody.innerHTML = allTickets.map(t => {
+      tbody.innerHTML = paginatedTickets.map(t => {
         const isAdmin = userRole === 'admin';
         const isClosed = t.status === 'closed';
         let actionsHtml = '';
@@ -894,9 +1140,66 @@
       }).join('');
     }
 
+    function renderPaginationPages(totalPages) {
+      const container = document.getElementById('paginationPages');
+      if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+      const maxVisible = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+      if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+      }
+
+      if (startPage > 1) {
+        html += `<button class="pagination-page" onclick="goToPage(1)">1</button>`;
+        if (startPage > 2) html += `<span class="pagination-ellipsis">...</span>`;
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        html += `<button class="pagination-page ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<span class="pagination-ellipsis">...</span>`;
+        html += `<button class="pagination-page" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      renderTable();
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    }
+
+    function nextPage() {
+      currentPage++;
+      renderTable();
+    }
+
+    function changePageSize() {
+      pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+      currentPage = 1;
+      renderTable();
+    }
+
     // ===== Filters =====
     function filterTickets(status, el) {
       currentFilter = status;
+      currentPage = 1; // Reset to first page on filter change
       document.querySelectorAll('.stat-chip').forEach(s => s.classList.remove('active'));
       if (el) el.classList.add('active');
       const [title, sub] = filterTitles[status] || filterTitles.all;

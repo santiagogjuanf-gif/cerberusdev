@@ -561,3 +561,18 @@ enum EmailStatus {
   sent
   failed
 }
+
+// ============================================
+// Password Reset Attempts (Rate Limiting)
+// ============================================
+
+model PasswordResetAttempt {
+  id        Int      @id @default(autoincrement())
+  email     String   @db.VarChar(255)
+  attempts  Int      @default(1)
+  lastAttemptAt DateTime @default(now()) @map("last_attempt_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([email])
+  @@map("password_reset_attempts")
+}
