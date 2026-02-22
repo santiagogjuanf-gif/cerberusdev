@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const path = require("path");
+const bcrypt = require("bcrypt");
 const { prisma } = require("../lib/prisma");
 
 // Middleware: require client authentication
@@ -25,6 +26,40 @@ router.get("/", requireClientAuth, (req, res) => {
 // Change password page
 router.get("/change-password", requireClientAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "admin", "change-password.html"));
+});
+
+// Change password action
+router.post("/change-password", requireClientAuth, async (req, res) => {
+  try {
+    const { current_password, new_password } = req.body;
+    const userId = req.session.user.id;
+
+    const user = await prisma.adminUser.findUnique({
+      where: { id: userId },
+      select: { passwordHash: true }
+    });
+    if (!user) return res.status(404).json({ ok: false, error: 'user not found' });
+
+    const ok = await bcrypt.compare(current_password, user.passwordHash);
+    if (!ok) {
+      return res.status(400).json({ ok: false, error: 'Contraseña actual incorrecta' });
+    }
+
+    const passwordHash = await bcrypt.hash(new_password, 10);
+    await prisma.adminUser.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+        mustChangePassword: false
+      }
+    });
+
+    req.session.user.must_change_password = false;
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[CLIENT CHANGE PASSWORD]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 // Logout
