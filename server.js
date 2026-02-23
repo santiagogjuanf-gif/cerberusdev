@@ -129,7 +129,13 @@ app.use("/admin", require("./routes/tickets"));
 app.use("/admin", require("./routes/v4"));
 
 // Client portal routes (for clients)
+// Ensure trailing slash for correct relative URL resolution in portal.html
+app.get("/cliente", (req, res) => {
+  res.redirect(301, "/cliente/");
+});
 app.use("/cliente", require("./routes/cliente"));
+app.use("/cliente", require("./routes/tickets"));
+app.use("/cliente", require("./routes/v4"));
 
 // Internal API routes (v4) - accessible only from localhost
 app.use(require("./routes/v4"));

@@ -83,44 +83,67 @@ router.get("/api/session", requireClientAuth, (req, res) => {
       username: req.session.user.username,
       name: req.session.user.name,
       email: req.session.user.email,
-      role: req.session.user.role
+      role: req.session.user.role,
+      must_change_password: req.session.user.must_change_password || false
     }
   });
 });
 
-// API: Get client's services
-router.get("/api/services", requireClientAuth, async (req, res) => {
+// API: Get notifications
+router.get("/api/notifications", requireClientAuth, async (req, res) => {
   try {
-    const services = await prisma.clientService.findMany({
-      where: { clientId: req.session.user.id },
-      orderBy: { createdAt: 'desc' }
+    const userId = req.session.user.id;
+    const notifications = await prisma.adminNotification.findMany({
+      where: {
+        OR: [
+          { userId: null },
+          { userId }
+        ]
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50
     });
-    res.json({ ok: true, services });
+    res.json({ ok: true, notifications });
   } catch (err) {
-    console.error("[CLIENT SERVICES]", err);
-    res.status(500).json({ ok: false, error: err.message });
+    console.error("[CLIENT NOTIF]", err);
+    res.json({ ok: true, notifications: [] });
   }
 });
 
-// API: Get client's tickets
-router.get("/api/tickets", requireClientAuth, async (req, res) => {
+// API: Mark all notifications as read
+router.post("/api/notifications/read-all", requireClientAuth, async (req, res) => {
   try {
-    const tickets = await prisma.ticket.findMany({
-      where: { clientId: req.session.user.id },
-      include: {
-        service: { select: { serviceName: true } },
-        messages: {
-          orderBy: { createdAt: 'desc' },
-          take: 1
-        }
+    const userId = req.session.user.id;
+    await prisma.adminNotification.updateMany({
+      where: {
+        isRead: false,
+        OR: [
+          { userId: null },
+          { userId }
+        ]
       },
-      orderBy: { createdAt: 'desc' }
+      data: { isRead: true }
     });
-    res.json({ ok: true, tickets });
+    res.json({ ok: true });
   } catch (err) {
-    console.error("[CLIENT TICKETS]", err);
-    res.status(500).json({ ok: false, error: err.message });
+    res.json({ ok: true });
   }
 });
+
+// API: Delete notification
+router.post("/api/notifications/:id/delete", requireClientAuth, async (req, res) => {
+  try {
+    await prisma.adminNotification.delete({
+      where: { id: Number(req.params.id) }
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[CLIENT NOTIF DELETE]", err);
+    res.status(500).json({ ok: false });
+  }
+});
+
+// Note: /api/tickets/*, /api/client/services, /api/maintenance/* are handled by
+// tickets.js and v4.js mounted alongside this router in server.js
 
 module.exports = router;
