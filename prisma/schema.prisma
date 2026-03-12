@@ -599,17 +599,19 @@ model SalesCategory {
 }
 
 model SalesProduct {
-  id          Int       @id @default(autoincrement())
-  categoryId  Int       @map("category_id")
-  name        String    @db.VarChar(200)
-  slug        String    @unique @db.VarChar(200)
-  description String?   @db.Text
-  imageUrl    String?   @map("image_url") @db.VarChar(500)
-  basePrice   Decimal   @default(0) @map("base_price") @db.Decimal(10, 2)
-  sortOrder   Int       @default(0) @map("sort_order")
-  isActive    Boolean   @default(true) @map("is_active") @db.TinyInt
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id            Int       @id @default(autoincrement())
+  categoryId    Int       @map("category_id")
+  name          String    @db.VarChar(200)
+  slug          String    @unique @db.VarChar(200)
+  description   String?   @db.Text
+  imageUrl      String?   @map("image_url") @db.VarChar(500)
+  priceCad      Decimal   @default(0) @map("price_cad") @db.Decimal(10, 2)
+  priceMxn      Decimal   @default(0) @map("price_mxn") @db.Decimal(10, 2)
+  minStockAlert Int       @default(3) @map("min_stock_alert")
+  sortOrder     Int       @default(0) @map("sort_order")
+  isActive      Boolean   @default(true) @map("is_active") @db.TinyInt
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   // Relations
   category    SalesCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
@@ -621,17 +623,20 @@ model SalesProduct {
 }
 
 model SalesKey {
-  id          Int           @id @default(autoincrement())
-  productId   Int           @map("product_id")
-  licenseKey  String        @map("license_key") @db.VarChar(500)
-  status      SalesKeyStatus @default(available)
-  notes       String?       @db.Text
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
+  id            Int           @id @default(autoincrement())
+  productId     Int           @map("product_id")
+  licenseKey    String        @map("license_key") @db.VarChar(500)
+  status        SalesKeyStatus @default(available)
+  failureReason String?       @map("failure_reason") @db.Text
+  notes         String?       @db.Text
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
 
   // Relations
-  product     SalesProduct  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  sale        Sale?
+  product       SalesProduct  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sale          Sale?         @relation("SaleKey")
+  replacedSales Sale[]        @relation("ReplacedKey")
+  history       SalesKeyHistory[]
 
   @@index([productId], map: "idx_sales_keys_product")
   @@index([status], map: "idx_sales_keys_status")
@@ -642,6 +647,9 @@ enum SalesKeyStatus {
   available
   sold
   reserved
+  returned
+  defective
+  refunded
 }
 
 model Sale {
@@ -655,12 +663,20 @@ model Sale {
 
   // Sale details
   manualKey             String?    @map("manual_key") @db.VarChar(500)
-  price                 Decimal    @db.Decimal(10, 2)
+  basePrice             Decimal    @map("base_price") @db.Decimal(10, 2)
+  supportPrice          Decimal    @default(0) @map("support_price") @db.Decimal(10, 2)
+  totalPrice            Decimal    @map("total_price") @db.Decimal(10, 2)
   currency              SalesCurrency @default(CAD)
+  includesSupport       Boolean    @default(false) @map("includes_support") @db.TinyInt
   language              SalesLanguage @default(es)
   customInstructions    String?    @map("custom_instructions") @db.Text
 
-  // Status
+  // Sale status
+  status                SaleStatus @default(completed)
+  replacedKeyId         Int?       @map("replaced_key_id")
+  supportNotes          String?    @map("support_notes") @db.Text
+
+  // Email status
   emailSent             Boolean    @default(false) @map("email_sent") @db.TinyInt
   emailSentAt           DateTime?  @map("email_sent_at")
 
@@ -669,11 +685,21 @@ model Sale {
 
   // Relations
   product               SalesProduct @relation(fields: [productId], references: [id], onDelete: Restrict)
-  key                   SalesKey?    @relation(fields: [keyId], references: [id], onDelete: SetNull)
+  key                   SalesKey?    @relation("SaleKey", fields: [keyId], references: [id], onDelete: SetNull)
+  replacedKey           SalesKey?    @relation("ReplacedKey", fields: [replacedKeyId], references: [id], onDelete: SetNull)
 
   @@index([productId], map: "idx_sales_product")
   @@index([createdAt], map: "idx_sales_created")
+  @@index([status], map: "idx_sales_status")
   @@map("sales")
+}
+
+enum SaleStatus {
+  completed
+  pending
+  support
+  replaced
+  refunded
 }
 
 enum SalesCurrency {
@@ -684,4 +710,47 @@ enum SalesCurrency {
 enum SalesLanguage {
   es
   en
+}
+
+// Key History - Track all changes to keys
+model SalesKeyHistory {
+  id          Int                 @id @default(autoincrement())
+  keyId       Int                 @map("key_id")
+  action      SalesKeyHistoryAction
+  saleId      Int?                @map("sale_id")
+  clientName  String?             @map("client_name") @db.VarChar(150)
+  clientEmail String?             @map("client_email") @db.VarChar(255)
+  price       Decimal?            @db.Decimal(10, 2)
+  currency    SalesCurrency?
+  notes       String?             @db.Text
+  createdAt   DateTime            @default(now()) @map("created_at")
+
+  // Relations
+  key         SalesKey            @relation(fields: [keyId], references: [id], onDelete: Cascade)
+
+  @@index([keyId], map: "idx_key_history_key")
+  @@index([createdAt], map: "idx_key_history_date")
+  @@map("sales_key_history")
+}
+
+enum SalesKeyHistoryAction {
+  created
+  sold
+  returned
+  marked_defective
+  refunded
+  reactivated
+  deleted
+}
+
+// Sales Settings - Global configuration
+model SalesSetting {
+  id           Int      @id @default(autoincrement())
+  settingKey   String   @unique @map("setting_key") @db.VarChar(100)
+  settingValue String?  @map("setting_value") @db.Text
+  description  String?  @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("sales_settings")
 }
