@@ -694,6 +694,12 @@
           </div>
         </div>
 
+        <!-- Ventas (admin only) -->
+        <a href="./sales-admin" class="nav-btn" id="navVentas" style="display:none;">
+          <span class="nav-btn-icon">&#x1F4B0;</span>
+          <span>Ventas</span>
+        </a>
+
         <!-- Sistema dropdown -->
         <div class="nav-item" id="navSistema" style="display:none;">
           <button class="nav-btn" onclick="toggleDropdown('navSistema')">
@@ -774,6 +780,15 @@
         <a href="./support" class="mobile-nav-item" id="navSupportMobile">
           <span class="mobile-nav-item-icon">&#x1F3AB;</span>
           <span>Soporte</span>
+        </a>
+      </div>
+
+      <!-- Ventas -->
+      <div class="mobile-nav-section" id="mobileNavVentas" style="display:none;">
+        <div class="mobile-nav-title">Ventas</div>
+        <a href="./sales-admin" class="mobile-nav-item">
+          <span class="mobile-nav-item-icon">&#x1F4B0;</span>
+          <span>Licencias Digitales</span>
         </a>
       </div>
 
@@ -1100,6 +1115,7 @@
             // Show all admin menus
             document.getElementById('navClientes').style.display = '';
             document.getElementById('navSistema').style.display = '';
+            document.getElementById('navVentas').style.display = '';
             document.getElementById('navTechDesktop').style.display = '';
             document.getElementById('kpiTechWrap').style.display = '';
             document.getElementById('kpiTicketsWrap').style.display = '';
@@ -1107,6 +1123,7 @@
             document.getElementById('navTechMobile').style.display = '';
             document.getElementById('mobileNavClientes').style.display = '';
             document.getElementById('mobileNavSistema').style.display = '';
+            document.getElementById('mobileNavVentas').style.display = '';
           } else if (role === 'support') {
             // Show limited menus for support
             document.getElementById('navClientes').style.display = '';

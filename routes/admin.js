@@ -283,6 +283,11 @@ router.get("/leads", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "admin", "leads.html"));
 });
 
+// Sales admin page (digital keys/licenses)
+router.get("/sales-admin", requireAuth, requireRole(['admin']), (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "sales-admin.html"));
+});
+
 // ── Blog Admin API ──
 
 // List all posts (including drafts)

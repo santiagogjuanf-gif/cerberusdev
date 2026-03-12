@@ -1,0 +1,1469 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <title>Ventas - Cerberus Admin</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+  <link rel="stylesheet" href="/assets/css/admin.css"/>
+  <style>
+    .admin-wrap { position: relative; }
+    .admin-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,122,24,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,122,24,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+    }
+    .admin-bg::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255,122,24,0.4), transparent);
+      animation: scanline 8s linear infinite;
+      opacity: 0.6;
+    }
+    @keyframes scanline {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    /* Header */
+    .admin-top {
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      flex-wrap: wrap;
+      gap: 12px !important;
+    }
+    .dashboard-header { flex: 1; display: flex; align-items: center; gap: 20px; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .header-logo {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(255,122,24,0.2), rgba(255,122,24,0.05));
+      border: 1px solid rgba(255,122,24,0.3);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 30px rgba(255,122,24,0.2), inset 0 0 20px rgba(255,122,24,0.1);
+      padding: 10px;
+    }
+    .header-logo img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255,122,24,0.4)); }
+    .admin-title { position: relative; }
+    .admin-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 60px; height: 3px;
+      background: linear-gradient(90deg, #FF7A18, transparent);
+      border-radius: 2px;
+    }
+    .admin-sub { display: flex; align-items: center; gap: 8px; }
+    .admin-sub::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    /* Navigation */
+    .admin-actions {
+      width: 100%;
+      order: 3;
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-item { position: relative; }
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .nav-btn:hover {
+      background: rgba(255,122,24,0.15);
+      border-color: rgba(255,122,24,0.3);
+      color: #fff;
+    }
+    .nav-btn.active, .nav-item.is-open .nav-btn {
+      background: rgba(255,122,24,0.2);
+      border-color: rgba(255,122,24,0.4);
+      color: #FF7A18;
+    }
+    .nav-btn-icon { font-size: 16px; }
+    .nav-btn-arrow { font-size: 10px; transition: transform 0.2s ease; margin-left: 4px; }
+    .nav-item.is-open .nav-btn-arrow { transform: rotate(180deg); }
+    .nav-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 200px;
+      background: rgba(18,18,24,0.98);
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 12px;
+      padding: 8px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.2s ease;
+      z-index: 1000;
+    }
+    .nav-item.is-open .nav-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+    .nav-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 13px;
+      transition: all 0.2s ease;
+    }
+    .nav-dropdown-item:hover {
+      background: rgba(255,122,24,0.15);
+      color: #FF7A18;
+    }
+    .nav-dropdown-item-icon { font-size: 16px; width: 20px; text-align: center; }
+    .nav-dropdown-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 6px 0; }
+
+    /* Mobile */
+    .mobile-menu-toggle {
+      display: none;
+      width: 44px; height: 40px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      cursor: pointer;
+      position: relative;
+    }
+    .mobile-menu-toggle span {
+      position: absolute;
+      left: 12px; right: 12px;
+      height: 2px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+    .mobile-menu-toggle span:nth-child(1) { top: 13px; }
+    .mobile-menu-toggle span:nth-child(2) { top: 19px; }
+    .mobile-menu-toggle span:nth-child(3) { top: 25px; }
+    .mobile-menu-toggle.is-open span:nth-child(1) { top: 19px; transform: rotate(45deg); }
+    .mobile-menu-toggle.is-open span:nth-child(2) { opacity: 0; }
+    .mobile-menu-toggle.is-open span:nth-child(3) { top: 19px; transform: rotate(-45deg); }
+    .mobile-menu-panel {
+      display: none;
+      position: fixed;
+      top: 0; right: 0;
+      width: min(300px, 90vw);
+      height: 100%;
+      background: rgba(12,15,24,0.98);
+      border-left: 1px solid rgba(255,122,24,0.3);
+      padding: 20px;
+      z-index: 9999;
+      flex-direction: column;
+      gap: 6px;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+    .mobile-menu-panel.is-open { display: flex; transform: translateX(0); }
+    .mobile-menu-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 9998;
+    }
+    .mobile-menu-backdrop.is-open { display: block; }
+    .mobile-menu-close {
+      align-self: flex-end;
+      width: 36px; height: 36px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .mobile-nav-section { margin-bottom: 16px; }
+    .mobile-nav-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255,122,24,0.7);
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255,122,24,0.2);
+      margin-bottom: 6px;
+    }
+    .mobile-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+    .mobile-nav-item:hover { background: rgba(255,122,24,0.15); color: #FF7A18; }
+    .mobile-nav-item-icon { font-size: 18px; width: 24px; text-align: center; }
+
+    @media (max-width: 900px) {
+      .mobile-menu-toggle { display: block; }
+      .admin-actions { display: none !important; }
+      .header-right .btn-logout { display: none; }
+    }
+    @media (max-width: 768px) {
+      .admin-top { padding: 12px 16px !important; }
+      .header-logo { width: 44px !important; height: 44px !important; padding: 8px !important; }
+      .admin-title { font-size: 16px !important; }
+      .admin-sub { font-size: 11px !important; }
+    }
+
+    /* Page content */
+    .admin-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #fff; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+    .tab-btn {
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      background: rgba(255,122,24,0.1);
+      border-color: rgba(255,122,24,0.2);
+    }
+    .tab-btn.active {
+      background: rgba(255,122,24,0.2);
+      border-color: rgba(255,122,24,0.4);
+      color: #FF7A18;
+    }
+
+    /* Stats Cards */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: linear-gradient(180deg, #FF7A18, transparent);
+    }
+    .stat-icon { font-size: 32px; margin-bottom: 12px; }
+    .stat-value { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .stat-label { font-size: 13px; color: rgba(255,255,255,0.5); }
+    .stat-card.success::before { background: linear-gradient(180deg, #22c55e, transparent); }
+    .stat-card.warning::before { background: linear-gradient(180deg, #f59e0b, transparent); }
+    .stat-card.danger::before { background: linear-gradient(180deg, #ef4444, transparent); }
+
+    /* Tables */
+    .table-container {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .table-title { font-size: 16px; font-weight: 600; color: #fff; }
+    .table-actions { display: flex; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    th { background: rgba(255,255,255,0.02); color: rgba(255,255,255,0.6); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { color: rgba(255,255,255,0.8); font-size: 14px; }
+    tr:hover td { background: rgba(255,122,24,0.05); }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-success { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .badge-warning { background: rgba(245,158,11,0.2); color: #fbbf24; }
+    .badge-danger { background: rgba(239,68,68,0.2); color: #f87171; }
+    .badge-info { background: rgba(59,130,246,0.2); color: #60a5fa; }
+
+    /* Forms */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 6px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 10px 14px;
+      background: rgba(30,30,30,0.95);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px; color: #fff; font-size: 14px;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: rgba(255,255,255,0.4); }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: rgba(255,122,24,0.5);
+    }
+    .form-textarea { resize: vertical; min-height: 100px; }
+
+    /* Buttons */
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+    .btn-icon {
+      width: 32px; height: 32px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-icon:hover {
+      background: rgba(255,122,24,0.15);
+      border-color: rgba(255,122,24,0.3);
+      color: #FF7A18;
+    }
+    .btn-icon.danger:hover {
+      background: rgba(239,68,68,0.15);
+      border-color: rgba(239,68,68,0.3);
+      color: #f87171;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    .modal-overlay.is-visible { opacity: 1; visibility: visible; }
+    .modal-content {
+      background: #1a1a1a;
+      border: 1px solid rgba(255,122,24,0.3);
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%; max-width: 600px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-title { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .modal-title::before { content: ''; width: 4px; height: 20px; background: linear-gradient(180deg, #FF7A18, #FF9A45); border-radius: 2px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions .btn { flex: 1; }
+
+    /* Tab Panels */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.5); }
+    .empty-icon { font-size: 48px; margin-bottom: 16px; }
+
+    /* Key input */
+    .key-display {
+      font-family: monospace;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+      padding: 4px 8px;
+      border-radius: 4px;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Radio group */
+    .radio-group { display: flex; gap: 16px; margin: 8px 0; }
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+    }
+    .radio-label input[type="radio"] { accent-color: #FF7A18; }
+
+    /* Price input */
+    .price-input-group { display: flex; gap: 8px; }
+    .price-input-group .form-input { flex: 1; }
+    .price-input-group .form-select { width: 100px; }
+
+    /* Low stock alert */
+    .low-stock-alert {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .low-stock-alert-title { color: #f87171; font-weight: 600; margin-bottom: 8px; }
+    .low-stock-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .low-stock-item {
+      background: rgba(239,68,68,0.15);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #f87171;
+    }
+  </style>
+</head>
+<body>
+  <main class="admin-wrap">
+    <div class="admin-bg"></div>
+    <header class="admin-top">
+      <div class="dashboard-header">
+        <div class="header-logo"><img src="/assets/img/cerberus-mark.png" alt="Cerberus"></div>
+        <div class="admin-brand">
+          <div class="admin-title">Ventas</div>
+          <div class="admin-sub">Licencias Digitales</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <a class="btn btn--ghost btn-logout" href="./logout">Cerrar sesion</a>
+        <button class="mobile-menu-toggle" id="mobileMenuToggle"><span></span><span></span><span></span></button>
+      </div>
+      <nav class="admin-actions" id="navDesktop">
+        <a href="./dashboard" class="nav-btn"><span class="nav-btn-icon">&#x1F3E0;</span><span>Dashboard</span></a>
+        <div class="nav-item" id="navContenido">
+          <button class="nav-btn" onclick="toggleDropdown('navContenido')"><span class="nav-btn-icon">&#x1F4C4;</span><span>Contenido</span><span class="nav-btn-arrow">&#x25BC;</span></button>
+          <div class="nav-dropdown">
+            <a href="./projects-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F4C1;</span><span>Proyectos</span></a>
+            <a href="./blog-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x270F;</span><span>Blog</span></a>
+            <a href="./leads" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F4E9;</span><span>Leads</span></a>
+            <a href="./tech-admin" class="nav-dropdown-item" id="navTechDesktop" style="display:none;"><span class="nav-dropdown-item-icon">&#x1F527;</span><span>Tecnologias</span></a>
+          </div>
+        </div>
+        <div class="nav-item" id="navClientes" style="display:none;">
+          <button class="nav-btn" onclick="toggleDropdown('navClientes')"><span class="nav-btn-icon">&#x1F465;</span><span>Clientes</span><span class="nav-btn-arrow">&#x25BC;</span></button>
+          <div class="nav-dropdown">
+            <a href="./users" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F464;</span><span>Usuarios</span></a>
+            <a href="./requirements-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F4CB;</span><span>Requerimientos</span></a>
+            <a href="./faq-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x2753;</span><span>FAQ</span></a>
+            <a href="./support" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F3AB;</span><span>Soporte</span></a>
+          </div>
+        </div>
+        <a href="./sales-admin" class="nav-btn active"><span class="nav-btn-icon">&#x1F4B0;</span><span>Ventas</span></a>
+        <div class="nav-item" id="navSistema" style="display:none;">
+          <button class="nav-btn" onclick="toggleDropdown('navSistema')"><span class="nav-btn-icon">&#x2699;</span><span>Sistema</span><span class="nav-btn-arrow">&#x25BC;</span></button>
+          <div class="nav-dropdown">
+            <a href="./services" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F4CA;</span><span>Servicios & Monitor</span></a>
+            <a href="./storage-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F4E6;</span><span>Storage</span></a>
+            <a href="./email-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F4E7;</span><span>Email</span></a>
+            <div class="nav-dropdown-divider"></div>
+            <a href="./maintenance-admin" class="nav-dropdown-item"><span class="nav-dropdown-item-icon">&#x1F6A7;</span><span>Mantenimiento</span></a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
+    <div class="mobile-menu-panel" id="mobileMenuPanel">
+      <button class="mobile-menu-close" id="mobileMenuClose">&#x2715;</button>
+      <a href="./dashboard" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F3E0;</span><span>Dashboard</span></a>
+      <div class="mobile-nav-section">
+        <div class="mobile-nav-title">Contenido</div>
+        <a href="./projects-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4C1;</span><span>Proyectos</span></a>
+        <a href="./blog-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x270F;</span><span>Blog</span></a>
+        <a href="./leads" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4E9;</span><span>Leads</span></a>
+      </div>
+      <div class="mobile-nav-section" id="mobileNavClientes" style="display:none;">
+        <div class="mobile-nav-title">Clientes</div>
+        <a href="./users" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F464;</span><span>Usuarios</span></a>
+        <a href="./requirements-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4CB;</span><span>Requerimientos</span></a>
+        <a href="./faq-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x2753;</span><span>FAQ</span></a>
+        <a href="./support" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F3AB;</span><span>Soporte</span></a>
+      </div>
+      <div class="mobile-nav-section">
+        <div class="mobile-nav-title">Ventas</div>
+        <a href="./sales-admin" class="mobile-nav-item" style="background: rgba(255,122,24,0.15); color: #FF7A18;"><span class="mobile-nav-item-icon">&#x1F4B0;</span><span>Ventas</span></a>
+      </div>
+      <div class="mobile-nav-section" id="mobileNavSistema" style="display:none;">
+        <div class="mobile-nav-title">Sistema</div>
+        <a href="./services" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4CA;</span><span>Servicios & Monitor</span></a>
+        <a href="./storage-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4E6;</span><span>Storage</span></a>
+        <a href="./email-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4E7;</span><span>Email</span></a>
+        <a href="./maintenance-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F6A7;</span><span>Mantenimiento</span></a>
+      </div>
+      <a href="./logout" class="mobile-nav-item" style="margin-top:auto;border-top:1px solid rgba(255,255,255,0.1);padding-top:16px;"><span class="mobile-nav-item-icon">&#x1F6AA;</span><span>Cerrar sesion</span></a>
+    </div>
+
+    <div class="admin-container">
+      <!-- Low Stock Alert -->
+      <div class="low-stock-alert" id="lowStockAlert" style="display: none;">
+        <div class="low-stock-alert-title">&#x26A0; Productos con bajo inventario</div>
+        <div class="low-stock-list" id="lowStockList"></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+        <button class="tab-btn" data-tab="products">Productos</button>
+        <button class="tab-btn" data-tab="keys">Inventario Keys</button>
+        <button class="tab-btn" data-tab="history">Historial Ventas</button>
+      </div>
+
+      <!-- Dashboard Tab -->
+      <div class="tab-panel active" id="tab-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">&#x1F4E6;</div>
+            <div class="stat-value" id="statProducts">-</div>
+            <div class="stat-label">Productos Activos</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-icon">&#x1F511;</div>
+            <div class="stat-value" id="statAvailable">-</div>
+            <div class="stat-label">Keys Disponibles</div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-icon">&#x1F4B5;</div>
+            <div class="stat-value" id="statMonthSales">-</div>
+            <div class="stat-label">Ventas del Mes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#x1F4B0;</div>
+            <div class="stat-value" id="statRevenueCAD">-</div>
+            <div class="stat-label">Ingresos CAD (Mes)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#x1F4B2;</div>
+            <div class="stat-value" id="statRevenueMXN">-</div>
+            <div class="stat-label">Ingresos MXN (Mes)</div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <div class="table-header">
+            <div class="table-title">&#x1F4CB; Ventas Recientes</div>
+            <button class="btn btn--primary" onclick="openSaleModal()">&#x2795; Nueva Venta</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Producto</th>
+                <th>Precio</th>
+              </tr>
+            </thead>
+            <tbody id="recentSalesTable">
+              <tr><td colspan="4" class="empty-state">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Products Tab -->
+      <div class="tab-panel" id="tab-products">
+        <div class="table-container">
+          <div class="table-header">
+            <div class="table-title">&#x1F4E6; Productos</div>
+            <div class="table-actions">
+              <button class="btn btn--ghost" onclick="openCategoryModal()">&#x1F4C2; Categorias</button>
+              <button class="btn btn--primary" onclick="openProductModal()">&#x2795; Nuevo Producto</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Categoria</th>
+                <th>Precio Base</th>
+                <th>Stock</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="productsTable">
+              <tr><td colspan="6" class="empty-state">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Keys Tab -->
+      <div class="tab-panel" id="tab-keys">
+        <div class="table-container">
+          <div class="table-header">
+            <div class="table-title">&#x1F511; Inventario de Keys</div>
+            <div class="table-actions">
+              <select class="form-select" id="keyFilterProduct" style="width: auto; min-width: 150px;">
+                <option value="">Todos los productos</option>
+              </select>
+              <select class="form-select" id="keyFilterStatus" style="width: auto;">
+                <option value="">Todos los estados</option>
+                <option value="available">Disponibles</option>
+                <option value="sold">Vendidas</option>
+              </select>
+              <button class="btn btn--primary" onclick="openKeyModal()">&#x2795; Agregar Keys</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Licencia</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="keysTable">
+              <tr><td colspan="5" class="empty-state">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- History Tab -->
+      <div class="tab-panel" id="tab-history">
+        <div class="table-container">
+          <div class="table-header">
+            <div class="table-title">&#x1F4CB; Historial de Ventas</div>
+            <div class="table-actions">
+              <input type="date" class="form-input" id="historyStartDate" style="width: auto;">
+              <input type="date" class="form-input" id="historyEndDate" style="width: auto;">
+              <button class="btn btn--ghost" onclick="loadSalesHistory()">Filtrar</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Producto</th>
+                <th>Licencia</th>
+                <th>Precio</th>
+                <th>Email</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="historyTable">
+              <tr><td colspan="8" class="empty-state">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Sale Modal -->
+  <div class="modal-overlay" id="saleModal">
+    <div class="modal-content">
+      <div class="modal-title">&#x1F4B0; Registrar Venta</div>
+      <form id="saleForm">
+        <div class="form-group">
+          <label class="form-label">Producto *</label>
+          <select class="form-select" id="saleProduct" required>
+            <option value="">Seleccionar producto...</option>
+          </select>
+          <small id="saleProductStock" style="color: rgba(255,255,255,0.4); font-size: 12px;"></small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nombre del Cliente *</label>
+          <input type="text" class="form-input" id="saleClientName" required placeholder="Nombre completo">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Correo del Cliente *</label>
+          <input type="email" class="form-input" id="saleClientEmail" required placeholder="correo@ejemplo.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Licencia</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="keySource" value="inventory" checked onchange="toggleKeySource()">
+              Del inventario (automatico)
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="keySource" value="manual" onchange="toggleKeySource()">
+              Escribir manual
+            </label>
+          </div>
+          <input type="text" class="form-input" id="saleManualKey" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" style="display: none; margin-top: 8px;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Precio *</label>
+          <div class="price-input-group">
+            <input type="number" class="form-input" id="salePrice" required placeholder="0.00" step="0.01" min="0">
+            <select class="form-select" id="saleCurrency">
+              <option value="CAD">CAD</option>
+              <option value="MXN">MXN</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Idioma del Correo</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="saleLanguage" value="es" checked>
+              Espanol
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="saleLanguage" value="en">
+              English
+            </label>
+          </div>
+        </div>
+        <div class="form-group" id="customInstructionsGroup" style="display: none;">
+          <label class="form-label">Instrucciones Personalizadas *</label>
+          <textarea class="form-textarea" id="saleCustomInstructions" placeholder="Escribe las instrucciones de activacion para este software..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn--ghost" onclick="closeSaleModal()">Cancelar</button>
+          <button type="submit" class="btn btn--primary" id="saleSubmitBtn">Enviar y Registrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Product Modal -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal-content">
+      <div class="modal-title" id="productModalTitle">&#x1F4E6; Nuevo Producto</div>
+      <form id="productForm">
+        <input type="hidden" id="productId">
+        <div class="form-group">
+          <label class="form-label">Categoria *</label>
+          <select class="form-select" id="productCategory" required>
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nombre *</label>
+          <input type="text" class="form-input" id="productName" required placeholder="Ej: Windows 11 Pro">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripcion</label>
+          <textarea class="form-textarea" id="productDescription" placeholder="Descripcion opcional..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Precio Base</label>
+          <input type="number" class="form-input" id="productBasePrice" placeholder="0.00" step="0.01" min="0">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn--ghost" onclick="closeProductModal()">Cancelar</button>
+          <button type="submit" class="btn btn--primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Key Modal -->
+  <div class="modal-overlay" id="keyModal">
+    <div class="modal-content">
+      <div class="modal-title">&#x1F511; Agregar Keys</div>
+      <form id="keyForm">
+        <div class="form-group">
+          <label class="form-label">Producto *</label>
+          <select class="form-select" id="keyProduct" required>
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Keys (una por linea)</label>
+          <textarea class="form-textarea" id="keysList" required placeholder="XXXXX-XXXXX-XXXXX-XXXXX&#10;YYYYY-YYYYY-YYYYY-YYYYY&#10;ZZZZZ-ZZZZZ-ZZZZZ-ZZZZZ" style="min-height: 150px; font-family: monospace;"></textarea>
+          <small style="color: rgba(255,255,255,0.4); font-size: 12px;">Puedes pegar multiples keys, cada una en una linea nueva.</small>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn--ghost" onclick="closeKeyModal()">Cancelar</button>
+          <button type="submit" class="btn btn--primary">Agregar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Category Modal -->
+  <div class="modal-overlay" id="categoryModal">
+    <div class="modal-content">
+      <div class="modal-title">&#x1F4C2; Categorias</div>
+      <div id="categoryList" style="margin-bottom: 20px;"></div>
+      <form id="categoryForm">
+        <div class="form-group">
+          <label class="form-label">Nueva Categoria</label>
+          <input type="text" class="form-input" id="categoryName" placeholder="Nombre de la categoria">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn--ghost" onclick="closeCategoryModal()">Cerrar</button>
+          <button type="submit" class="btn btn--primary">Agregar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // =====================
+    // Navigation
+    // =====================
+    function toggleDropdown(id) {
+      const item = document.getElementById(id);
+      const wasOpen = item.classList.contains('is-open');
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('is-open'));
+      if (!wasOpen) item.classList.add('is-open');
+    }
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.nav-item')) document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('is-open'));
+    });
+
+    // Mobile menu
+    (function() {
+      const toggle = document.getElementById('mobileMenuToggle');
+      const panel = document.getElementById('mobileMenuPanel');
+      const backdrop = document.getElementById('mobileMenuBackdrop');
+      const closeBtn = document.getElementById('mobileMenuClose');
+      function openMenu() { toggle.classList.add('is-open'); panel.classList.add('is-open'); backdrop.classList.add('is-open'); document.body.style.overflow = 'hidden'; }
+      function closeMenu() { toggle.classList.remove('is-open'); panel.classList.remove('is-open'); backdrop.classList.remove('is-open'); document.body.style.overflow = ''; }
+      toggle?.addEventListener('click', () => panel.classList.contains('is-open') ? closeMenu() : openMenu());
+      closeBtn?.addEventListener('click', closeMenu);
+      backdrop?.addEventListener('click', closeMenu);
+    })();
+
+    // Role-based nav
+    (async function() {
+      try {
+        const res = await fetch('./api/session');
+        const data = await res.json();
+        if (data.ok && (data.user.role === 'admin' || data.user.role === 'support')) {
+          document.getElementById('navClientes').style.display = '';
+          document.getElementById('navSistema').style.display = '';
+          document.getElementById('mobileNavClientes').style.display = '';
+          document.getElementById('mobileNavSistema').style.display = '';
+          if (data.user.role === 'admin') {
+            document.getElementById('navTechDesktop').style.display = '';
+          }
+        }
+      } catch (err) {}
+    })();
+
+    // =====================
+    // Tabs
+    // =====================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // =====================
+    // Data & State
+    // =====================
+    let categories = [];
+    let products = [];
+    let productsForSale = [];
+
+    // =====================
+    // Load Functions
+    // =====================
+    async function loadStats() {
+      try {
+        const res = await fetch('./api/stats');
+        const data = await res.json();
+        if (!data.ok) return;
+
+        const s = data.stats;
+        document.getElementById('statProducts').textContent = s.totalProducts;
+        document.getElementById('statAvailable').textContent = s.availableKeys;
+        document.getElementById('statMonthSales').textContent = s.monthSales;
+        document.getElementById('statRevenueCAD').textContent = '$' + s.monthRevenueCAD.toFixed(2);
+        document.getElementById('statRevenueMXN').textContent = '$' + s.monthRevenueMXN.toFixed(2);
+
+        // Recent sales
+        const tbody = document.getElementById('recentSalesTable');
+        if (s.recentSales.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No hay ventas recientes</td></tr>';
+        } else {
+          tbody.innerHTML = s.recentSales.map(sale => `
+            <tr>
+              <td>${new Date(sale.createdAt).toLocaleDateString('es-MX')}</td>
+              <td>${escapeHtml(sale.clientName)}</td>
+              <td>${escapeHtml(sale.productName)}</td>
+              <td>$${sale.price.toFixed(2)} ${sale.currency}</td>
+            </tr>
+          `).join('');
+        }
+
+        // Low stock alert
+        if (s.lowStock && s.lowStock.length > 0) {
+          document.getElementById('lowStockAlert').style.display = '';
+          document.getElementById('lowStockList').innerHTML = s.lowStock.map(p =>
+            `<span class="low-stock-item">${escapeHtml(p.name)}: ${p.available_count} disponibles</span>`
+          ).join('');
+        }
+      } catch (err) {
+        console.error('Error loading stats:', err);
+      }
+    }
+
+    async function loadCategories() {
+      try {
+        const res = await fetch('./api/categories');
+        const data = await res.json();
+        if (data.ok) {
+          categories = data.categories;
+          updateCategorySelects();
+          renderCategoryList();
+        }
+      } catch (err) {
+        console.error('Error loading categories:', err);
+      }
+    }
+
+    async function loadProducts() {
+      try {
+        const res = await fetch('./api/products');
+        const data = await res.json();
+        if (!data.ok) return;
+
+        products = data.products;
+        const tbody = document.getElementById('productsTable');
+
+        if (products.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No hay productos</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = products.map(p => `
+          <tr>
+            <td><strong>${escapeHtml(p.name)}</strong></td>
+            <td>${escapeHtml(p.category?.name || '-')}</td>
+            <td>$${p.basePrice.toFixed(2)}</td>
+            <td>
+              <span class="${p.availableKeys < 3 ? 'badge badge-danger' : 'badge badge-success'}">
+                ${p.availableKeys} disponibles
+              </span>
+            </td>
+            <td>
+              <span class="badge ${p.isActive ? 'badge-success' : 'badge-warning'}">
+                ${p.isActive ? 'Activo' : 'Inactivo'}
+              </span>
+            </td>
+            <td>
+              <div style="display: flex; gap: 6px;">
+                <button class="btn-icon" onclick="editProduct(${p.id})" title="Editar">&#x270F;</button>
+                <button class="btn-icon danger" onclick="deleteProduct(${p.id})" title="Eliminar">&#x1F5D1;</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+
+        // Update key filter dropdown
+        const keyFilter = document.getElementById('keyFilterProduct');
+        keyFilter.innerHTML = '<option value="">Todos los productos</option>' +
+          products.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+      } catch (err) {
+        console.error('Error loading products:', err);
+      }
+    }
+
+    async function loadKeys() {
+      try {
+        const productId = document.getElementById('keyFilterProduct').value;
+        const status = document.getElementById('keyFilterStatus').value;
+
+        let url = './api/keys?';
+        if (productId) url += `productId=${productId}&`;
+        if (status) url += `status=${status}&`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!data.ok) return;
+
+        const tbody = document.getElementById('keysTable');
+
+        if (data.keys.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No hay keys</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.keys.map(k => `
+          <tr>
+            <td>${escapeHtml(k.product?.name || '-')}</td>
+            <td><span class="key-display">${escapeHtml(k.licenseKey)}</span></td>
+            <td>
+              <span class="badge ${k.status === 'available' ? 'badge-success' : k.status === 'sold' ? 'badge-warning' : 'badge-info'}">
+                ${k.status === 'available' ? 'Disponible' : k.status === 'sold' ? 'Vendida' : 'Reservada'}
+              </span>
+            </td>
+            <td>${new Date(k.createdAt).toLocaleDateString('es-MX')}</td>
+            <td>
+              <div style="display: flex; gap: 6px;">
+                <button class="btn-icon danger" onclick="deleteKey(${k.id})" title="Eliminar" ${k.status === 'sold' ? 'disabled style="opacity:0.3"' : ''}>&#x1F5D1;</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading keys:', err);
+      }
+    }
+
+    async function loadSalesHistory() {
+      try {
+        const startDate = document.getElementById('historyStartDate').value;
+        const endDate = document.getElementById('historyEndDate').value;
+
+        let url = './api/sales?limit=50';
+        if (startDate) url += `&startDate=${startDate}`;
+        if (endDate) url += `&endDate=${endDate}`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!data.ok) return;
+
+        const tbody = document.getElementById('historyTable');
+
+        if (data.sales.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay ventas</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.sales.map(s => `
+          <tr>
+            <td>#${s.id}</td>
+            <td>${new Date(s.createdAt).toLocaleDateString('es-MX')}</td>
+            <td>${escapeHtml(s.clientName)}</td>
+            <td>${escapeHtml(s.product?.name || '-')}</td>
+            <td><span class="key-display">${escapeHtml(s.licenseKey || '-')}</span></td>
+            <td>$${s.price.toFixed(2)} ${s.currency}</td>
+            <td>
+              <span class="badge ${s.emailSent ? 'badge-success' : 'badge-warning'}">
+                ${s.emailSent ? 'Enviado' : 'Pendiente'}
+              </span>
+            </td>
+            <td>
+              <div style="display: flex; gap: 6px;">
+                <button class="btn-icon" onclick="resendEmail(${s.id})" title="Reenviar correo">&#x1F4E7;</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading sales history:', err);
+      }
+    }
+
+    async function loadProductsForSale() {
+      try {
+        const res = await fetch('./api/products-for-sale');
+        const data = await res.json();
+        if (data.ok) {
+          productsForSale = data.products;
+          const select = document.getElementById('saleProduct');
+          select.innerHTML = '<option value="">Seleccionar producto...</option>' +
+            productsForSale.map(p => `<option value="${p.id}" data-category="${p.categorySlug}" data-stock="${p.availableKeys}" data-price="${p.basePrice}">${escapeHtml(p.categoryName)} - ${escapeHtml(p.name)} (${p.availableKeys} disponibles)</option>`).join('');
+        }
+      } catch (err) {
+        console.error('Error loading products for sale:', err);
+      }
+    }
+
+    // =====================
+    // Helpers
+    // =====================
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function updateCategorySelects() {
+      const html = '<option value="">Seleccionar...</option>' +
+        categories.filter(c => c.isActive).map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+      document.getElementById('productCategory').innerHTML = html;
+      document.getElementById('keyProduct').innerHTML = html.replace('Seleccionar...', 'Seleccionar producto...');
+    }
+
+    function renderCategoryList() {
+      const container = document.getElementById('categoryList');
+      if (categories.length === 0) {
+        container.innerHTML = '<p style="color: rgba(255,255,255,0.5);">No hay categorias</p>';
+        return;
+      }
+      container.innerHTML = categories.map(c => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px;">
+          <span>${escapeHtml(c.name)} <small style="color: rgba(255,255,255,0.4);">(${c._count?.products || 0} productos)</small></span>
+          <button class="btn-icon danger" onclick="deleteCategory(${c.id})" title="Eliminar">&#x1F5D1;</button>
+        </div>
+      `).join('');
+    }
+
+    // =====================
+    // Sale Modal
+    // =====================
+    function openSaleModal() {
+      loadProductsForSale();
+      document.getElementById('saleForm').reset();
+      document.getElementById('saleManualKey').style.display = 'none';
+      document.getElementById('customInstructionsGroup').style.display = 'none';
+      document.getElementById('saleProductStock').textContent = '';
+      document.getElementById('saleModal').classList.add('is-visible');
+    }
+
+    function closeSaleModal() {
+      document.getElementById('saleModal').classList.remove('is-visible');
+    }
+
+    function toggleKeySource() {
+      const manual = document.querySelector('input[name="keySource"][value="manual"]').checked;
+      document.getElementById('saleManualKey').style.display = manual ? '' : 'none';
+      document.getElementById('saleManualKey').required = manual;
+    }
+
+    document.getElementById('saleProduct').addEventListener('change', function() {
+      const option = this.options[this.selectedIndex];
+      const stock = option.dataset.stock;
+      const price = option.dataset.price;
+      const category = option.dataset.category;
+
+      document.getElementById('saleProductStock').textContent = stock ? `${stock} keys disponibles` : '';
+      if (price && parseFloat(price) > 0) {
+        document.getElementById('salePrice').value = price;
+      }
+
+      // Show custom instructions for software category
+      document.getElementById('customInstructionsGroup').style.display = category === 'software' ? '' : 'none';
+      document.getElementById('saleCustomInstructions').required = category === 'software';
+    });
+
+    document.getElementById('saleForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('saleSubmitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Procesando...';
+
+      try {
+        const useInventory = document.querySelector('input[name="keySource"][value="inventory"]').checked;
+        const language = document.querySelector('input[name="saleLanguage"]:checked').value;
+
+        const res = await fetch('./api/sales', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId: document.getElementById('saleProduct').value,
+            clientName: document.getElementById('saleClientName').value,
+            clientEmail: document.getElementById('saleClientEmail').value,
+            useInventory,
+            manualKey: useInventory ? null : document.getElementById('saleManualKey').value,
+            price: document.getElementById('salePrice').value,
+            currency: document.getElementById('saleCurrency').value,
+            language,
+            customInstructions: document.getElementById('saleCustomInstructions').value || null
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          alert('Venta registrada correctamente!' + (data.sale.emailSent ? ' Correo enviado.' : ' Error al enviar correo.'));
+          closeSaleModal();
+          loadStats();
+          loadKeys();
+          loadSalesHistory();
+        } else {
+          alert('Error: ' + (data.error || 'No se pudo registrar la venta'));
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Enviar y Registrar';
+    });
+
+    // =====================
+    // Product Modal
+    // =====================
+    function openProductModal(id = null) {
+      document.getElementById('productForm').reset();
+      document.getElementById('productId').value = id || '';
+      document.getElementById('productModalTitle').innerHTML = id ? '&#x270F; Editar Producto' : '&#x1F4E6; Nuevo Producto';
+
+      if (id) {
+        const p = products.find(x => x.id === id);
+        if (p) {
+          document.getElementById('productCategory').value = p.categoryId;
+          document.getElementById('productName').value = p.name;
+          document.getElementById('productDescription').value = p.description || '';
+          document.getElementById('productBasePrice').value = p.basePrice;
+        }
+      }
+
+      document.getElementById('productModal').classList.add('is-visible');
+    }
+
+    function closeProductModal() {
+      document.getElementById('productModal').classList.remove('is-visible');
+    }
+
+    function editProduct(id) {
+      openProductModal(id);
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Eliminar este producto? Se eliminaran todas las keys asociadas.')) return;
+
+      try {
+        const res = await fetch(`./api/products/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) {
+          loadProducts();
+          loadStats();
+        } else {
+          alert('Error: ' + (data.error || 'No se pudo eliminar'));
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+    }
+
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('productId').value;
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `./api/products/${id}` : './api/products';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            categoryId: document.getElementById('productCategory').value,
+            name: document.getElementById('productName').value,
+            description: document.getElementById('productDescription').value,
+            basePrice: document.getElementById('productBasePrice').value || 0
+          })
+        });
+
+        const data = await res.json();
+        if (data.ok) {
+          closeProductModal();
+          loadProducts();
+          loadStats();
+        } else {
+          alert('Error: ' + (data.error || 'No se pudo guardar'));
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+    });
+
+    // =====================
+    // Key Modal
+    // =====================
+    function openKeyModal() {
+      document.getElementById('keyForm').reset();
+      // Populate key product dropdown with products from products list
+      document.getElementById('keyProduct').innerHTML = '<option value="">Seleccionar...</option>' +
+        products.map(p => `<option value="${p.id}">${escapeHtml(p.category?.name || '')} - ${escapeHtml(p.name)}</option>`).join('');
+      document.getElementById('keyModal').classList.add('is-visible');
+    }
+
+    function closeKeyModal() {
+      document.getElementById('keyModal').classList.remove('is-visible');
+    }
+
+    async function deleteKey(id) {
+      if (!confirm('Eliminar esta key?')) return;
+
+      try {
+        const res = await fetch(`./api/keys/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) {
+          loadKeys();
+          loadStats();
+        } else {
+          alert('Error: ' + (data.error || 'No se pudo eliminar'));
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+    }
+
+    document.getElementById('keyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const keys = document.getElementById('keysList').value.split('\n').map(k => k.trim()).filter(k => k);
+
+      if (keys.length === 0) {
+        alert('Ingresa al menos una key');
+        return;
+      }
+
+      try {
+        const res = await fetch('./api/keys/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId: document.getElementById('keyProduct').value,
+            keys
+          })
+        });
+
+        const data = await res.json();
+        if (data.ok) {
+          alert(`${data.count} keys agregadas correctamente`);
+          closeKeyModal();
+          loadKeys();
+          loadStats();
+        } else {
+          alert('Error: ' + (data.error || 'No se pudieron agregar'));
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+    });
+
+    // =====================
+    // Category Modal
+    // =====================
+    function openCategoryModal() {
+      document.getElementById('categoryName').value = '';
+      document.getElementById('categoryModal').classList.add('is-visible');
+    }
+
+    function closeCategoryModal() {
+      document.getElementById('categoryModal').classList.remove('is-visible');
+    }
+
+    async function deleteCategory(id) {
+      if (!confirm('Eliminar esta categoria? Se eliminaran todos los productos y keys asociados.')) return;
+
+      try {
+        const res = await fetch(`./api/categories/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) {
+          loadCategories();
+          loadProducts();
+        } else {
+          alert('Error: ' + (data.error || 'No se pudo eliminar'));
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+    }
+
+    document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('categoryName').value.trim();
+      if (!name) return;
+
+      try {
+        const res = await fetch('./api/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+
+        const data = await res.json();
+        if (data.ok) {
+          document.getElementById('categoryName').value = '';
+          loadCategories();
+        } else {
+          alert('Error: ' + (data.error || 'No se pudo crear'));
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+    });
+
+    // =====================
+    // Resend Email
+    // =====================
+    async function resendEmail(saleId) {
+      if (!confirm('Reenviar correo con la licencia?')) return;
+
+      try {
+        const res = await fetch(`./api/sales/${saleId}/resend`, { method: 'POST' });
+        const data = await res.json();
+        if (data.ok && data.emailSent) {
+          alert('Correo reenviado correctamente');
+          loadSalesHistory();
+        } else {
+          alert('Error al reenviar correo');
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+    }
+
+    // =====================
+    // Key Filters
+    // =====================
+    document.getElementById('keyFilterProduct').addEventListener('change', loadKeys);
+    document.getElementById('keyFilterStatus').addEventListener('change', loadKeys);
+
+    // Modal click outside
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('is-visible');
+      });
+    });
+
+    // =====================
+    // Init
+    // =====================
+    loadStats();
+    loadCategories();
+    loadProducts();
+    loadKeys();
+    loadSalesHistory();
+  </script>
+</body>
+</html>

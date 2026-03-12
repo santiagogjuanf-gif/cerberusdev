@@ -127,6 +127,7 @@ app.get("/portal-admin", (req, res) => {
 app.use("/admin", require("./routes/admin"));
 app.use("/admin", require("./routes/tickets"));
 app.use("/admin", require("./routes/v4"));
+app.use("/admin", require("./routes/sales"));
 
 // Client portal routes (for clients)
 // Ensure trailing slash for correct relative URL resolution in portal.html
