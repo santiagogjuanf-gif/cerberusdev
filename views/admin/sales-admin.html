@@ -554,6 +554,7 @@
         <button class="tab-btn" data-tab="products">Productos</button>
         <button class="tab-btn" data-tab="keys">Inventario Keys</button>
         <button class="tab-btn" data-tab="history">Historial Ventas</button>
+        <button class="tab-btn" data-tab="statistics">Estadisticas</button>
       </div>
 
       <!-- Dashboard Tab -->
@@ -648,6 +649,9 @@
                 <option value="">Todos los estados</option>
                 <option value="available">Disponibles</option>
                 <option value="sold">Vendidas</option>
+                <option value="returned">Devueltas</option>
+                <option value="defective">Defectuosas</option>
+                <option value="refunded">Reembolsadas</option>
               </select>
               <button class="btn btn--primary" onclick="openKeyModal()">&#x2795; Agregar Keys</button>
             </div>
@@ -677,7 +681,15 @@
             <div class="table-actions">
               <input type="date" class="form-input" id="historyStartDate" style="width: auto;">
               <input type="date" class="form-input" id="historyEndDate" style="width: auto;">
+              <select class="form-select" id="historyStatusFilter" style="width: auto;">
+                <option value="">Todos los estados</option>
+                <option value="completed">Completada</option>
+                <option value="support">En Soporte</option>
+                <option value="replaced">Reemplazada</option>
+                <option value="refunded">Reembolsada</option>
+              </select>
               <button class="btn btn--ghost" onclick="loadSalesHistory()">Filtrar</button>
+              <button class="btn btn--primary" onclick="exportSales()">&#x1F4E5; Exportar</button>
             </div>
           </div>
           <table>
@@ -687,14 +699,89 @@
                 <th>Fecha</th>
                 <th>Cliente</th>
                 <th>Producto</th>
-                <th>Licencia</th>
-                <th>Precio</th>
+                <th>Total</th>
+                <th>Soporte</th>
+                <th>Estado</th>
                 <th>Email</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="historyTable">
-              <tr><td colspan="8" class="empty-state">Cargando...</td></tr>
+              <tr><td colspan="9" class="empty-state">Cargando...</td></tr>
+            </tbody>
+          </table>
+          <div id="historyPagination" style="padding: 16px; text-align: center;"></div>
+        </div>
+      </div>
+
+      <!-- Statistics Tab -->
+      <div class="tab-panel" id="tab-statistics">
+        <div class="stats-grid" style="margin-bottom: 24px;">
+          <div class="stat-card">
+            <div class="stat-icon">&#x1F4B0;</div>
+            <div class="stat-value" id="statsTotal">-</div>
+            <div class="stat-label">Ventas Totales</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-icon">&#x1F4B5;</div>
+            <div class="stat-value" id="statsRevenueCAD">-</div>
+            <div class="stat-label">Ingresos CAD</div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-icon">&#x1F4B2;</div>
+            <div class="stat-value" id="statsRevenueMXN">-</div>
+            <div class="stat-label">Ingresos MXN</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#x1F527;</div>
+            <div class="stat-value" id="statsWithSupport">-</div>
+            <div class="stat-label">Con Soporte</div>
+          </div>
+          <div class="stat-card danger">
+            <div class="stat-icon">&#x21A9;</div>
+            <div class="stat-value" id="statsRefunded">-</div>
+            <div class="stat-label">Reembolsadas</div>
+          </div>
+        </div>
+
+        <div class="stats-grid" style="margin-bottom: 24px;">
+          <div class="stat-card">
+            <div class="stat-icon">&#x1F4E6;</div>
+            <div class="stat-value" id="statsInventoryTotal">-</div>
+            <div class="stat-label">Total Keys Registradas</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-icon">&#x2705;</div>
+            <div class="stat-value" id="statsInventoryAvailable">-</div>
+            <div class="stat-label">Keys Disponibles</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">&#x1F4B8;</div>
+            <div class="stat-value" id="statsInventorySold">-</div>
+            <div class="stat-label">Keys Vendidas</div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <div class="table-header">
+            <div class="table-title">&#x1F3C6; Productos Mas Vendidos</div>
+            <div class="table-actions">
+              <input type="date" class="form-input" id="statsStartDate" style="width: auto;">
+              <input type="date" class="form-input" id="statsEndDate" style="width: auto;">
+              <button class="btn btn--ghost" onclick="loadStatistics()">Actualizar</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Categoria</th>
+                <th>Producto</th>
+                <th>Vendidas</th>
+                <th>Ingresos</th>
+              </tr>
+            </thead>
+            <tbody id="statsProductsTable">
+              <tr><td colspan="4" class="empty-state">Cargando...</td></tr>
             </tbody>
           </table>
         </div>
@@ -702,14 +789,42 @@
     </div>
   </main>
 
+  <!-- Key History Modal -->
+  <div class="modal-overlay" id="keyHistoryModal">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-title">&#x1F4DC; Historial de Llave</div>
+      <div id="keyHistoryContent">
+        <p style="color: rgba(255,255,255,0.5);">Cargando...</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn--ghost" onclick="closeKeyHistoryModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sale Detail Modal -->
+  <div class="modal-overlay" id="saleDetailModal">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-title">&#x1F4CB; Detalle de Venta</div>
+      <div id="saleDetailContent"></div>
+      <div class="modal-actions" id="saleDetailActions"></div>
+    </div>
+  </div>
+
   <!-- Sale Modal -->
   <div class="modal-overlay" id="saleModal">
     <div class="modal-content">
-      <div class="modal-title">&#x1F4B0; Registrar Venta</div>
+      <div class="modal-title">&#x1F4B0; Nueva Venta</div>
       <form id="saleForm">
         <div class="form-group">
+          <label class="form-label">Categoria *</label>
+          <select class="form-select" id="saleCategorySelect" required onchange="filterProductsByCategory()">
+            <option value="">Seleccionar categoria...</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label class="form-label">Producto *</label>
-          <select class="form-select" id="saleProduct" required>
+          <select class="form-select" id="saleProduct" required onchange="onProductSelected()">
             <option value="">Seleccionar producto...</option>
           </select>
           <small id="saleProductStock" style="color: rgba(255,255,255,0.4); font-size: 12px;"></small>
@@ -721,6 +836,45 @@
         <div class="form-group">
           <label class="form-label">Correo del Cliente *</label>
           <input type="email" class="form-input" id="saleClientEmail" required placeholder="correo@ejemplo.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Idioma</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="saleLanguage" value="es" checked onchange="updateCurrencyFromLanguage()">
+              Espanol (MXN)
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="saleLanguage" value="en" onchange="updateCurrencyFromLanguage()">
+              English (CAD)
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Precio Base *</label>
+          <div class="price-input-group">
+            <input type="number" class="form-input" id="saleBasePrice" required placeholder="0.00" step="0.01" min="0" onchange="calculateTotal()">
+            <select class="form-select" id="saleCurrency" onchange="calculateTotal()">
+              <option value="MXN">MXN</option>
+              <option value="CAD">CAD</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="display: flex; align-items: center; gap: 10px;">
+            <input type="checkbox" id="saleIncludesSupport" onchange="toggleSupportPrice()" style="accent-color: #FF7A18;">
+            Incluye soporte remoto
+          </label>
+        </div>
+        <div class="form-group" id="supportPriceGroup" style="display: none;">
+          <label class="form-label">Precio del Soporte</label>
+          <input type="number" class="form-input" id="saleSupportPrice" placeholder="0.00" step="0.01" min="0" value="0" onchange="calculateTotal()">
+        </div>
+        <div class="form-group" style="background: rgba(255,122,24,0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,122,24,0.3);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: rgba(255,255,255,0.7);">TOTAL:</span>
+            <span id="saleTotalDisplay" style="font-size: 20px; font-weight: 700; color: #FF7A18;">$0.00</span>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Licencia</label>
@@ -736,36 +890,9 @@
           </div>
           <input type="text" class="form-input" id="saleManualKey" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" style="display: none; margin-top: 8px;">
         </div>
-        <div class="form-group">
-          <label class="form-label">Precio *</label>
-          <div class="price-input-group">
-            <input type="number" class="form-input" id="salePrice" required placeholder="0.00" step="0.01" min="0">
-            <select class="form-select" id="saleCurrency">
-              <option value="CAD">CAD</option>
-              <option value="MXN">MXN</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Idioma del Correo</label>
-          <div class="radio-group">
-            <label class="radio-label">
-              <input type="radio" name="saleLanguage" value="es" checked>
-              Espanol
-            </label>
-            <label class="radio-label">
-              <input type="radio" name="saleLanguage" value="en">
-              English
-            </label>
-          </div>
-        </div>
-        <div class="form-group" id="customInstructionsGroup" style="display: none;">
-          <label class="form-label">Instrucciones Personalizadas *</label>
-          <textarea class="form-textarea" id="saleCustomInstructions" placeholder="Escribe las instrucciones de activacion para este software..."></textarea>
-        </div>
         <div class="modal-actions">
           <button type="button" class="btn btn--ghost" onclick="closeSaleModal()">Cancelar</button>
-          <button type="submit" class="btn btn--primary" id="saleSubmitBtn">Enviar y Registrar</button>
+          <button type="submit" class="btn btn--primary" id="saleSubmitBtn">&#x1F4E7; Vender y Enviar Email</button>
         </div>
       </form>
     </div>
@@ -791,9 +918,20 @@
           <label class="form-label">Descripcion</label>
           <textarea class="form-textarea" id="productDescription" placeholder="Descripcion opcional..."></textarea>
         </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Precio CAD</label>
+            <input type="number" class="form-input" id="productPriceCad" placeholder="0.00" step="0.01" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Precio MXN</label>
+            <input type="number" class="form-input" id="productPriceMxn" placeholder="0.00" step="0.01" min="0">
+          </div>
+        </div>
         <div class="form-group">
-          <label class="form-label">Precio Base</label>
-          <input type="number" class="form-input" id="productBasePrice" placeholder="0.00" step="0.01" min="0">
+          <label class="form-label">Alerta de Stock Minimo</label>
+          <input type="number" class="form-input" id="productMinStock" placeholder="3" min="1" value="3">
+          <small style="color: rgba(255,255,255,0.4); font-size: 12px;">Se mostrara alerta cuando queden menos de estas llaves.</small>
         </div>
         <div class="modal-actions">
           <button type="button" class="btn btn--ghost" onclick="closeProductModal()">Cancelar</button>
@@ -934,7 +1072,7 @@
               <td>${new Date(sale.createdAt).toLocaleDateString('es-MX')}</td>
               <td>${escapeHtml(sale.clientName)}</td>
               <td>${escapeHtml(sale.productName)}</td>
-              <td>$${sale.price.toFixed(2)} ${sale.currency}</td>
+              <td>$${sale.totalPrice.toFixed(2)} ${sale.currency}</td>
             </tr>
           `).join('');
         }
@@ -983,9 +1121,12 @@
           <tr>
             <td><strong>${escapeHtml(p.name)}</strong></td>
             <td>${escapeHtml(p.category?.name || '-')}</td>
-            <td>$${p.basePrice.toFixed(2)}</td>
             <td>
-              <span class="${p.availableKeys < 3 ? 'badge badge-danger' : 'badge badge-success'}">
+              <small style="color: rgba(255,255,255,0.5);">CAD:</small> $${p.priceCad.toFixed(2)}<br>
+              <small style="color: rgba(255,255,255,0.5);">MXN:</small> $${p.priceMxn.toFixed(2)}
+            </td>
+            <td>
+              <span class="${p.lowStock ? 'badge badge-danger' : 'badge badge-success'}">
                 ${p.availableKeys} disponibles
               </span>
             </td>
@@ -1032,36 +1173,63 @@
           return;
         }
 
-        tbody.innerHTML = data.keys.map(k => `
-          <tr>
-            <td>${escapeHtml(k.product?.name || '-')}</td>
-            <td><span class="key-display">${escapeHtml(k.licenseKey)}</span></td>
-            <td>
-              <span class="badge ${k.status === 'available' ? 'badge-success' : k.status === 'sold' ? 'badge-warning' : 'badge-info'}">
-                ${k.status === 'available' ? 'Disponible' : k.status === 'sold' ? 'Vendida' : 'Reservada'}
-              </span>
-            </td>
-            <td>${new Date(k.createdAt).toLocaleDateString('es-MX')}</td>
-            <td>
-              <div style="display: flex; gap: 6px;">
-                <button class="btn-icon danger" onclick="deleteKey(${k.id})" title="Eliminar" ${k.status === 'sold' ? 'disabled style="opacity:0.3"' : ''}>&#x1F5D1;</button>
-              </div>
-            </td>
-          </tr>
-        `).join('');
+        const statusLabels = {
+          available: { text: 'Disponible', class: 'badge-success' },
+          sold: { text: 'Vendida', class: 'badge-warning' },
+          reserved: { text: 'Reservada', class: 'badge-info' },
+          returned: { text: 'Devuelta', class: 'badge-danger' },
+          defective: { text: 'Defectuosa', class: 'badge-danger' },
+          refunded: { text: 'Reembolsada', class: 'badge-info' }
+        };
+
+        tbody.innerHTML = data.keys.map(k => {
+          const status = statusLabels[k.status] || { text: k.status, class: 'badge-info' };
+          let actions = `<button class="btn-icon" onclick="showKeyHistory(${k.id})" title="Ver historial">&#x1F4DC;</button>`;
+
+          if (k.status === 'available') {
+            actions += `<button class="btn-icon danger" onclick="deleteKey(${k.id})" title="Eliminar">&#x1F5D1;</button>`;
+          } else if (k.status === 'sold') {
+            actions += `<button class="btn-icon" onclick="updateKeyStatus(${k.id}, 'returned')" title="Marcar como devuelta">&#x21A9;</button>`;
+          } else if (k.status === 'returned' || k.status === 'defective') {
+            actions += `<button class="btn-icon" onclick="updateKeyStatus(${k.id}, 'available')" title="Reactivar">&#x2705;</button>`;
+            actions += `<button class="btn-icon danger" onclick="deleteKey(${k.id})" title="Eliminar">&#x1F5D1;</button>`;
+          }
+
+          return `
+            <tr>
+              <td>${escapeHtml(k.product?.name || '-')}</td>
+              <td>
+                <span class="key-display">${escapeHtml(k.licenseKey)}</span>
+                ${k.sale ? `<br><small style="color: rgba(255,255,255,0.4);">Cliente: ${escapeHtml(k.sale.clientName)}</small>` : ''}
+              </td>
+              <td><span class="badge ${status.class}">${status.text}</span></td>
+              <td>${new Date(k.createdAt).toLocaleDateString('es-MX')}</td>
+              <td>
+                <div style="display: flex; gap: 6px;">
+                  ${actions}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
       } catch (err) {
         console.error('Error loading keys:', err);
       }
     }
 
-    async function loadSalesHistory() {
+    let currentSalesPage = 1;
+
+    async function loadSalesHistory(page = 1) {
       try {
+        currentSalesPage = page;
         const startDate = document.getElementById('historyStartDate').value;
         const endDate = document.getElementById('historyEndDate').value;
+        const status = document.getElementById('historyStatusFilter').value;
 
-        let url = './api/sales?limit=50';
+        let url = `./api/sales?page=${page}&limit=20`;
         if (startDate) url += `&startDate=${startDate}`;
         if (endDate) url += `&endDate=${endDate}`;
+        if (status) url += `&status=${status}`;
 
         const res = await fetch(url);
         const data = await res.json();
@@ -1070,32 +1238,82 @@
         const tbody = document.getElementById('historyTable');
 
         if (data.sales.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay ventas</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No hay ventas</td></tr>';
+          document.getElementById('historyPagination').innerHTML = '';
           return;
         }
 
-        tbody.innerHTML = data.sales.map(s => `
-          <tr>
-            <td>#${s.id}</td>
-            <td>${new Date(s.createdAt).toLocaleDateString('es-MX')}</td>
-            <td>${escapeHtml(s.clientName)}</td>
-            <td>${escapeHtml(s.product?.name || '-')}</td>
-            <td><span class="key-display">${escapeHtml(s.licenseKey || '-')}</span></td>
-            <td>$${s.price.toFixed(2)} ${s.currency}</td>
-            <td>
-              <span class="badge ${s.emailSent ? 'badge-success' : 'badge-warning'}">
-                ${s.emailSent ? 'Enviado' : 'Pendiente'}
-              </span>
-            </td>
-            <td>
-              <div style="display: flex; gap: 6px;">
-                <button class="btn-icon" onclick="resendEmail(${s.id})" title="Reenviar correo">&#x1F4E7;</button>
-              </div>
-            </td>
-          </tr>
-        `).join('');
+        const statusLabels = {
+          completed: { text: 'Completada', class: 'badge-success' },
+          pending: { text: 'Pendiente', class: 'badge-warning' },
+          support: { text: 'En Soporte', class: 'badge-info' },
+          replaced: { text: 'Reemplazada', class: 'badge-warning' },
+          refunded: { text: 'Reembolsada', class: 'badge-danger' }
+        };
+
+        tbody.innerHTML = data.sales.map(s => {
+          const status = statusLabels[s.status] || { text: s.status, class: 'badge-info' };
+          return `
+            <tr>
+              <td>#${s.id}</td>
+              <td>${new Date(s.createdAt).toLocaleDateString('es-MX')}</td>
+              <td>${escapeHtml(s.clientName)}<br><small style="color: rgba(255,255,255,0.4);">${escapeHtml(s.clientEmail)}</small></td>
+              <td>${escapeHtml(s.product?.name || '-')}</td>
+              <td>$${s.totalPrice.toFixed(2)} ${s.currency}</td>
+              <td>${s.includesSupport ? '<span class="badge badge-success">Si</span>' : '<span class="badge badge-info">No</span>'}</td>
+              <td><span class="badge ${status.class}">${status.text}</span></td>
+              <td>
+                <span class="badge ${s.emailSent ? 'badge-success' : 'badge-warning'}">
+                  ${s.emailSent ? 'Enviado' : 'Pendiente'}
+                </span>
+              </td>
+              <td>
+                <div style="display: flex; gap: 6px;">
+                  <button class="btn-icon" onclick="resendEmail(${s.id})" title="Reenviar correo">&#x1F4E7;</button>
+                  ${s.status === 'completed' ? `<button class="btn-icon" onclick="replaceSaleKey(${s.id})" title="Reemplazar llave">&#x1F504;</button>` : ''}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Pagination
+        if (data.pages > 1) {
+          let pagination = '';
+          for (let i = 1; i <= data.pages; i++) {
+            pagination += `<button class="btn btn--ghost ${i === page ? 'active' : ''}" onclick="loadSalesHistory(${i})" style="margin: 0 4px;">${i}</button>`;
+          }
+          document.getElementById('historyPagination').innerHTML = pagination;
+        } else {
+          document.getElementById('historyPagination').innerHTML = '';
+        }
       } catch (err) {
         console.error('Error loading sales history:', err);
+      }
+    }
+
+    async function replaceSaleKey(saleId) {
+      const reason = prompt('Razon del reemplazo (opcional):');
+      if (reason === null) return; // Cancelled
+
+      try {
+        const res = await fetch(`./api/sales/${saleId}/replace-key`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason })
+        });
+
+        const data = await res.json();
+        if (data.ok) {
+          alert('Llave reemplazada. Nueva llave enviada al cliente.');
+          loadSalesHistory(currentSalesPage);
+          loadKeys();
+          loadStats();
+        } else {
+          alert('Error: ' + (data.error || 'No se pudo reemplazar'));
+        }
+      } catch (err) {
+        alert('Error de conexion');
       }
     }
 
@@ -1104,14 +1322,94 @@
         const res = await fetch('./api/products-for-sale');
         const data = await res.json();
         if (data.ok) {
-          productsForSale = data.products;
-          const select = document.getElementById('saleProduct');
-          select.innerHTML = '<option value="">Seleccionar producto...</option>' +
-            productsForSale.map(p => `<option value="${p.id}" data-category="${p.categorySlug}" data-stock="${p.availableKeys}" data-price="${p.basePrice}">${escapeHtml(p.categoryName)} - ${escapeHtml(p.name)} (${p.availableKeys} disponibles)</option>`).join('');
+          categoriesForSale = data.categories;
+          // Populate category select
+          const catSelect = document.getElementById('saleCategorySelect');
+          catSelect.innerHTML = '<option value="">Seleccionar categoria...</option>' +
+            categoriesForSale.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+          // Clear products
+          document.getElementById('saleProduct').innerHTML = '<option value="">Primero selecciona una categoria...</option>';
         }
       } catch (err) {
         console.error('Error loading products for sale:', err);
       }
+    }
+
+    let categoriesForSale = [];
+
+    function filterProductsByCategory() {
+      const catId = document.getElementById('saleCategorySelect').value;
+      const productSelect = document.getElementById('saleProduct');
+
+      if (!catId) {
+        productSelect.innerHTML = '<option value="">Primero selecciona una categoria...</option>';
+        return;
+      }
+
+      const category = categoriesForSale.find(c => c.id == catId);
+      if (!category) return;
+
+      productSelect.innerHTML = '<option value="">Seleccionar producto...</option>' +
+        category.products.map(p =>
+          `<option value="${p.id}" data-stock="${p.availableKeys}" data-pricecad="${p.priceCad}" data-pricemxn="${p.priceMxn}">${escapeHtml(p.name)} (${p.availableKeys} disponibles)</option>`
+        ).join('');
+    }
+
+    function onProductSelected() {
+      const select = document.getElementById('saleProduct');
+      const option = select.options[select.selectedIndex];
+      const stock = option.dataset.stock;
+      const priceCad = option.dataset.pricecad;
+      const priceMxn = option.dataset.pricemxn;
+
+      document.getElementById('saleProductStock').textContent = stock ? `${stock} keys disponibles` : '';
+
+      // Set price based on selected language/currency
+      const language = document.querySelector('input[name="saleLanguage"]:checked').value;
+      if (language === 'es') {
+        document.getElementById('saleBasePrice').value = priceMxn || 0;
+        document.getElementById('saleCurrency').value = 'MXN';
+      } else {
+        document.getElementById('saleBasePrice').value = priceCad || 0;
+        document.getElementById('saleCurrency').value = 'CAD';
+      }
+      calculateTotal();
+    }
+
+    function updateCurrencyFromLanguage() {
+      const language = document.querySelector('input[name="saleLanguage"]:checked').value;
+      const select = document.getElementById('saleProduct');
+      const option = select.options[select.selectedIndex];
+
+      if (language === 'es') {
+        document.getElementById('saleCurrency').value = 'MXN';
+        if (option && option.dataset.pricemxn) {
+          document.getElementById('saleBasePrice').value = option.dataset.pricemxn;
+        }
+      } else {
+        document.getElementById('saleCurrency').value = 'CAD';
+        if (option && option.dataset.pricecad) {
+          document.getElementById('saleBasePrice').value = option.dataset.pricecad;
+        }
+      }
+      calculateTotal();
+    }
+
+    function toggleSupportPrice() {
+      const checked = document.getElementById('saleIncludesSupport').checked;
+      document.getElementById('supportPriceGroup').style.display = checked ? '' : 'none';
+      if (!checked) {
+        document.getElementById('saleSupportPrice').value = 0;
+      }
+      calculateTotal();
+    }
+
+    function calculateTotal() {
+      const base = parseFloat(document.getElementById('saleBasePrice').value) || 0;
+      const support = parseFloat(document.getElementById('saleSupportPrice').value) || 0;
+      const currency = document.getElementById('saleCurrency').value;
+      const total = base + support;
+      document.getElementById('saleTotalDisplay').textContent = `$${total.toFixed(2)} ${currency}`;
     }
 
     // =====================
@@ -1185,11 +1483,12 @@
       e.preventDefault();
       const btn = document.getElementById('saleSubmitBtn');
       btn.disabled = true;
-      btn.textContent = 'Procesando...';
+      btn.innerHTML = '&#x23F3; Procesando...';
 
       try {
         const useInventory = document.querySelector('input[name="keySource"][value="inventory"]').checked;
         const language = document.querySelector('input[name="saleLanguage"]:checked').value;
+        const includesSupport = document.getElementById('saleIncludesSupport').checked;
 
         const res = await fetch('./api/sales', {
           method: 'POST',
@@ -1200,17 +1499,18 @@
             clientEmail: document.getElementById('saleClientEmail').value,
             useInventory,
             manualKey: useInventory ? null : document.getElementById('saleManualKey').value,
-            price: document.getElementById('salePrice').value,
+            basePrice: document.getElementById('saleBasePrice').value,
+            supportPrice: includesSupport ? document.getElementById('saleSupportPrice').value : 0,
             currency: document.getElementById('saleCurrency').value,
             language,
-            customInstructions: document.getElementById('saleCustomInstructions').value || null
+            includesSupport
           })
         });
 
         const data = await res.json();
 
         if (data.ok) {
-          alert('Venta registrada correctamente!' + (data.sale.emailSent ? ' Correo enviado.' : ' Error al enviar correo.'));
+          alert('Venta registrada! Total: $' + data.sale.totalPrice.toFixed(2) + (data.sale.emailSent ? '\nCorreo enviado al cliente.' : '\nError al enviar correo.'));
           closeSaleModal();
           loadStats();
           loadKeys();
@@ -1223,7 +1523,7 @@
       }
 
       btn.disabled = false;
-      btn.textContent = 'Enviar y Registrar';
+      btn.innerHTML = '&#x1F4E7; Vender y Enviar Email';
     });
 
     // =====================
@@ -1240,7 +1540,9 @@
           document.getElementById('productCategory').value = p.categoryId;
           document.getElementById('productName').value = p.name;
           document.getElementById('productDescription').value = p.description || '';
-          document.getElementById('productBasePrice').value = p.basePrice;
+          document.getElementById('productPriceCad').value = p.priceCad;
+          document.getElementById('productPriceMxn').value = p.priceMxn;
+          document.getElementById('productMinStock').value = p.minStockAlert || 3;
         }
       }
 
@@ -1286,7 +1588,9 @@
             categoryId: document.getElementById('productCategory').value,
             name: document.getElementById('productName').value,
             description: document.getElementById('productDescription').value,
-            basePrice: document.getElementById('productBasePrice').value || 0
+            priceCad: document.getElementById('productPriceCad').value || 0,
+            priceMxn: document.getElementById('productPriceMxn').value || 0,
+            minStockAlert: document.getElementById('productMinStock').value || 3
           })
         });
 
@@ -1453,6 +1757,180 @@
     document.querySelectorAll('.modal-overlay').forEach(modal => {
       modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.classList.remove('is-visible');
+      });
+    });
+
+    // =====================
+    // Statistics
+    // =====================
+    async function loadStatistics() {
+      try {
+        const startDate = document.getElementById('statsStartDate').value;
+        const endDate = document.getElementById('statsEndDate').value;
+
+        let url = './api/statistics?';
+        if (startDate) url += `startDate=${startDate}&`;
+        if (endDate) url += `endDate=${endDate}&`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!data.ok) return;
+
+        const s = data.stats;
+        document.getElementById('statsTotal').textContent = s.totalSales;
+        document.getElementById('statsRevenueCAD').textContent = '$' + s.revenueCAD.toFixed(2);
+        document.getElementById('statsRevenueMXN').textContent = '$' + s.revenueMXN.toFixed(2);
+        document.getElementById('statsWithSupport').textContent = s.salesWithSupport;
+        document.getElementById('statsRefunded').textContent = s.refundedSales;
+        document.getElementById('statsInventoryTotal').textContent = s.inventory.total;
+        document.getElementById('statsInventoryAvailable').textContent = s.inventory.available;
+        document.getElementById('statsInventorySold').textContent = s.inventory.sold;
+
+        // Products table
+        const tbody = document.getElementById('statsProductsTable');
+        if (s.byProduct.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No hay datos</td></tr>';
+        } else {
+          tbody.innerHTML = s.byProduct.map(p => `
+            <tr>
+              <td>${escapeHtml(p.categoryName)}</td>
+              <td><strong>${escapeHtml(p.productName)}</strong></td>
+              <td>${p.count}</td>
+              <td>$${p.revenue.toFixed(2)}</td>
+            </tr>
+          `).join('');
+        }
+      } catch (err) {
+        console.error('Error loading statistics:', err);
+      }
+    }
+
+    // =====================
+    // Export Sales
+    // =====================
+    async function exportSales() {
+      const startDate = document.getElementById('historyStartDate').value;
+      const endDate = document.getElementById('historyEndDate').value;
+
+      let url = './api/export?format=csv';
+      if (startDate) url += `&startDate=${startDate}`;
+      if (endDate) url += `&endDate=${endDate}`;
+
+      window.open(url, '_blank');
+    }
+
+    // =====================
+    // Key History Modal
+    // =====================
+    async function showKeyHistory(keyId) {
+      document.getElementById('keyHistoryModal').classList.add('is-visible');
+      document.getElementById('keyHistoryContent').innerHTML = '<p style="color: rgba(255,255,255,0.5);">Cargando...</p>';
+
+      try {
+        const res = await fetch(`./api/keys/${keyId}/history`);
+        const data = await res.json();
+
+        if (!data.ok || data.history.length === 0) {
+          document.getElementById('keyHistoryContent').innerHTML = '<p style="color: rgba(255,255,255,0.5);">No hay historial</p>';
+          return;
+        }
+
+        const actionLabels = {
+          created: 'Agregada',
+          sold: 'Vendida',
+          returned: 'Devuelta',
+          marked_defective: 'Marcada defectuosa',
+          refunded: 'Reembolsada',
+          reactivated: 'Reactivada'
+        };
+
+        document.getElementById('keyHistoryContent').innerHTML = `
+          <table style="width: 100%;">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Accion</th>
+                <th>Cliente</th>
+                <th>Precio</th>
+                <th>Notas</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.history.map(h => `
+                <tr>
+                  <td>${new Date(h.createdAt).toLocaleDateString('es-MX')}</td>
+                  <td><span class="badge badge-info">${actionLabels[h.action] || h.action}</span></td>
+                  <td>${escapeHtml(h.clientName || '-')}</td>
+                  <td>${h.price ? '$' + h.price.toFixed(2) + ' ' + h.currency : '-'}</td>
+                  <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(h.notes || '-')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        document.getElementById('keyHistoryContent').innerHTML = '<p style="color: #f87171;">Error al cargar historial</p>';
+      }
+    }
+
+    function closeKeyHistoryModal() {
+      document.getElementById('keyHistoryModal').classList.remove('is-visible');
+    }
+
+    // =====================
+    // Update Key Status
+    // =====================
+    async function updateKeyStatus(keyId, newStatus, reason = null) {
+      const labels = {
+        available: 'disponible',
+        returned: 'devuelta',
+        defective: 'defectuosa'
+      };
+
+      if (!confirm(`Marcar esta llave como ${labels[newStatus] || newStatus}?`)) return;
+
+      try {
+        const res = await fetch(`./api/keys/${keyId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: newStatus,
+            failureReason: reason
+          })
+        });
+
+        const data = await res.json();
+        if (data.ok) {
+          loadKeys();
+          loadStats();
+        } else {
+          alert('Error: ' + (data.error || 'No se pudo actualizar'));
+        }
+      } catch (err) {
+        alert('Error de conexion');
+      }
+    }
+
+    // =====================
+    // Sale Detail Modal
+    // =====================
+    async function showSaleDetail(saleId) {
+      // TODO: Implement sale detail view
+      document.getElementById('saleDetailModal').classList.add('is-visible');
+    }
+
+    function closeSaleDetailModal() {
+      document.getElementById('saleDetailModal').classList.remove('is-visible');
+    }
+
+    // =====================
+    // Tab change handler
+    // =====================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.tab === 'statistics') {
+          loadStatistics();
+        }
       });
     });
 
