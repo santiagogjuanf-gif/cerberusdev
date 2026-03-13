@@ -404,6 +404,8 @@
               <a href="./email-admin" class="nav-dropdown-item">&#x1F4E7; Email</a>
             </div>
           </div>
+          <!-- Ventas -->
+          <a href="./sales-admin" class="btn btn--ghost" id="navVentas" style="display:none;">&#x1F4B0; Ventas</a>
         </div>
       </div>
     </header>
@@ -437,6 +439,10 @@
         <a href="./maintenance-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F6A7;</span><span>Mantenimiento</span></a>
         <a href="./storage-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4E6;</span><span>Storage</span></a>
         <a href="./email-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4E7;</span><span>Email</span></a>
+      </div>
+      <div class="mobile-nav-section" id="mobileVentasSection" style="display:none;">
+        <div class="mobile-nav-title">Ventas</div>
+        <a href="./sales-admin" class="mobile-nav-item"><span class="mobile-nav-item-icon">&#x1F4B0;</span><span>Licencias Digitales</span></a>
       </div>
 
       <a href="./logout" class="mobile-nav-item" style="margin-top:auto;border-top:1px solid rgba(255,255,255,0.1);padding-top:16px;"><span class="mobile-nav-item-icon">&#x1F6AA;</span><span>Cerrar sesion</span></a>
@@ -1045,6 +1051,8 @@
           document.getElementById('navSupportMobile').style.display = '';
           document.getElementById('navRequirementsMobile').style.display = '';
           document.getElementById('mobileSistemaSection').style.display = '';
+          document.getElementById('navVentas').style.display = '';
+          document.getElementById('mobileVentasSection').style.display = '';
         } else if (role === 'support') {
           document.getElementById('navSupport').style.display = '';
           document.getElementById('navRequirements').style.display = '';

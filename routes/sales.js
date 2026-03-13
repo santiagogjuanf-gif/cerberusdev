@@ -811,6 +811,7 @@ router.post("/api/sales", requireAuth, requireRole(['admin']), async (req, res) 
     const emailResult = await emailService.sendEmail(templateCode, clientEmail, {
       clientName,
       productName: product.name,
+      productImage: product.imageUrl || '',
       licenseKey: licenseKeyToSend,
       saleDate,
       basePrice: formattedBasePrice,
@@ -957,6 +958,7 @@ router.post("/api/sales/:id/replace-key", requireAuth, requireRole(['admin']), a
     await emailService.sendEmail(templateCode, sale.clientEmail, {
       clientName: sale.clientName,
       productName: sale.product.name,
+      productImage: sale.product.imageUrl || '',
       licenseKey: newKey.licenseKey,
       saleDate,
       basePrice: formattedBasePrice,
@@ -1023,6 +1025,7 @@ router.post("/api/sales/:id/resend", requireAuth, requireRole(['admin']), async 
     const emailResult = await emailService.sendEmail(templateCode, sale.clientEmail, {
       clientName: sale.clientName,
       productName: sale.product.name,
+      productImage: sale.product.imageUrl || '',
       licenseKey,
       saleDate,
       basePrice: formattedBasePrice,

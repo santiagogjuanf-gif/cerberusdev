@@ -567,6 +567,12 @@ const templates = {
 
       <p style="margin: 0 0 15px; color: #e0e0e0;">Gracias por tu compra. Aqui estan los detalles de tu licencia:</p>
 
+      ${data.productImage ? `
+      <div style="text-align: center; margin: 25px 0;">
+        <img src="${data.productImage}" alt="${data.productName}" style="max-width: 200px; max-height: 200px; border-radius: 12px; border: 2px solid rgba(255,122,24,0.3); box-shadow: 0 4px 20px rgba(255,122,24,0.2);">
+      </div>
+      ` : ''}
+
       <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
 
       <!-- License Details Box -->
@@ -662,6 +668,12 @@ const templates = {
       <h2 style="color: #FF7A18; margin: 0 0 20px; font-size: 22px; font-weight: 600;">Hello ${data.clientName},</h2>
 
       <p style="margin: 0 0 15px; color: #e0e0e0;">Thank you for your purchase. Here are your license details:</p>
+
+      ${data.productImage ? `
+      <div style="text-align: center; margin: 25px 0;">
+        <img src="${data.productImage}" alt="${data.productName}" style="max-width: 200px; max-height: 200px; border-radius: 12px; border: 2px solid rgba(255,122,24,0.3); box-shadow: 0 4px 20px rgba(255,122,24,0.2);">
+      </div>
+      ` : ''}
 
       <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
 

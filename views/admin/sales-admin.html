@@ -1998,8 +1998,13 @@
     function toggleSupportPrice() {
       const checked = document.getElementById('saleIncludesSupport').checked;
       document.getElementById('supportPriceGroup').style.display = checked ? '' : 'none';
+      const customGroup = document.getElementById('customInstructionsGroup');
+      if (customGroup) customGroup.style.display = checked ? '' : 'none';
       if (!checked) {
         document.getElementById('saleSupportPrice').value = 0;
+        if (document.getElementById('saleCustomInstructions')) {
+          document.getElementById('saleCustomInstructions').value = '';
+        }
       }
       calculateTotal();
     }
@@ -2077,6 +2082,8 @@
         const language = document.querySelector('input[name="saleLanguage"]:checked').value;
         const includesSupport = document.getElementById('saleIncludesSupport').checked;
 
+        const customInstructions = includesSupport ? document.getElementById('saleCustomInstructions').value : '';
+
         const res = await fetch('./api/sales', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2090,7 +2097,8 @@
             supportPrice: includesSupport ? document.getElementById('saleSupportPrice').value : 0,
             currency: document.getElementById('saleCurrency').value,
             language,
-            includesSupport
+            includesSupport,
+            customInstructions
           })
         });
 
