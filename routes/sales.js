@@ -245,9 +245,9 @@ router.post("/api/products", requireAuth, requireRole(['admin']), async (req, re
         name,
         slug,
         description,
-        priceCad: priceCad || 0,
-        priceMxn: priceMxn || 0,
-        minStockAlert: minStockAlert || 3
+        priceCad: priceCad ? parseFloat(priceCad) : 0,
+        priceMxn: priceMxn ? parseFloat(priceMxn) : 0,
+        minStockAlert: minStockAlert ? parseInt(minStockAlert) : 3
       }
     });
 
@@ -270,11 +270,11 @@ router.put("/api/products/:id", requireAuth, requireRole(['admin']), async (req,
         ...(categoryId && { categoryId: parseInt(categoryId) }),
         ...(name && { name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') }),
         ...(description !== undefined && { description }),
-        ...(priceCad !== undefined && { priceCad }),
-        ...(priceMxn !== undefined && { priceMxn }),
-        ...(minStockAlert !== undefined && { minStockAlert }),
+        ...(priceCad !== undefined && { priceCad: parseFloat(priceCad) }),
+        ...(priceMxn !== undefined && { priceMxn: parseFloat(priceMxn) }),
+        ...(minStockAlert !== undefined && { minStockAlert: parseInt(minStockAlert) }),
         ...(isActive !== undefined && { isActive }),
-        ...(sortOrder !== undefined && { sortOrder })
+        ...(sortOrder !== undefined && { sortOrder: parseInt(sortOrder) })
       }
     });
 

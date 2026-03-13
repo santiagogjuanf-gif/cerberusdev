@@ -890,6 +890,10 @@
           </div>
           <input type="text" class="form-input" id="saleManualKey" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" style="display: none; margin-top: 8px;">
         </div>
+        <div class="form-group" id="customInstructionsGroup" style="display: none;">
+          <label class="form-label">Instrucciones Especiales</label>
+          <textarea class="form-input" id="saleCustomInstructions" rows="3" placeholder="Instrucciones adicionales para el cliente..."></textarea>
+        </div>
         <div class="modal-actions">
           <button type="button" class="btn btn--ghost" onclick="closeSaleModal()">Cancelar</button>
           <button type="submit" class="btn btn--primary" id="saleSubmitBtn">&#x1F4E7; Vender y Enviar Email</button>
@@ -1448,8 +1452,11 @@
       loadProductsForSale();
       document.getElementById('saleForm').reset();
       document.getElementById('saleManualKey').style.display = 'none';
-      document.getElementById('customInstructionsGroup').style.display = 'none';
+      document.getElementById('supportPriceGroup').style.display = 'none';
+      const customGroup = document.getElementById('customInstructionsGroup');
+      if (customGroup) customGroup.style.display = 'none';
       document.getElementById('saleProductStock').textContent = '';
+      document.getElementById('saleTotalDisplay').textContent = '$0.00';
       document.getElementById('saleModal').classList.add('is-visible');
     }
 
@@ -1462,22 +1469,6 @@
       document.getElementById('saleManualKey').style.display = manual ? '' : 'none';
       document.getElementById('saleManualKey').required = manual;
     }
-
-    document.getElementById('saleProduct').addEventListener('change', function() {
-      const option = this.options[this.selectedIndex];
-      const stock = option.dataset.stock;
-      const price = option.dataset.price;
-      const category = option.dataset.category;
-
-      document.getElementById('saleProductStock').textContent = stock ? `${stock} keys disponibles` : '';
-      if (price && parseFloat(price) > 0) {
-        document.getElementById('salePrice').value = price;
-      }
-
-      // Show custom instructions for software category
-      document.getElementById('customInstructionsGroup').style.display = category === 'software' ? '' : 'none';
-      document.getElementById('saleCustomInstructions').required = category === 'software';
-    });
 
     document.getElementById('saleForm').addEventListener('submit', async (e) => {
       e.preventDefault();
