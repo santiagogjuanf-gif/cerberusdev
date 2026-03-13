@@ -557,6 +557,198 @@ const templates = {
         <strong style="color: #FF7A18;">Equipo Cerberus Dev</strong>
       </p>
     `, `Ticket #${data.ticketId} Creado`)
+  }),
+
+  // Sale generic Spanish
+  'sale-generic-es': (data) => ({
+    subject: `Tu licencia de ${data.productName} - Cerberus Dev`,
+    html: getCerberusTemplate(`
+      <h2 style="color: #FF7A18; margin: 0 0 20px; font-size: 22px; font-weight: 600;">Hola ${data.clientName},</h2>
+
+      <p style="margin: 0 0 15px; color: #e0e0e0;">Gracias por tu compra. Aqui estan los detalles de tu licencia:</p>
+
+      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
+
+      <!-- License Details Box -->
+      <div style="background: linear-gradient(135deg, rgba(255,122,24,0.15), rgba(255,122,24,0.05)); border: 1px solid rgba(255,122,24,0.3); border-radius: 12px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 0 0 5px; font-size: 13px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px;">Detalles de tu Licencia</p>
+        <table role="presentation" style="width: 100%; margin-top: 10px;">
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0; width: 140px;">Producto:</td>
+            <td style="padding: 8px 0; color: #fff; font-weight: 600;">${data.productName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0;">Licencia:</td>
+            <td style="padding: 8px 0; color: #FF7A18; font-weight: 600; font-family: monospace; font-size: 14px;">${data.licenseKey}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0;">Fecha:</td>
+            <td style="padding: 8px 0; color: #fff;">${data.saleDate}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Pricing Box -->
+      <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 0 0 10px; font-size: 13px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px;">Resumen de Compra</p>
+        <table role="presentation" style="width: 100%; margin-top: 10px;">
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0;">Producto:</td>
+            <td style="padding: 8px 0; color: #fff; text-align: right;">${data.basePrice}</td>
+          </tr>
+          ${data.includesSupport && data.supportPrice ? `
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0;">Soporte Tecnico:</td>
+            <td style="padding: 8px 0; color: #22c55e; text-align: right;">+ ${data.supportPrice}</td>
+          </tr>
+          ` : ''}
+          <tr style="border-top: 1px solid rgba(255,255,255,0.1);">
+            <td style="padding: 12px 0 8px; color: #fff; font-weight: 600;">Total:</td>
+            <td style="padding: 12px 0 8px; color: #FF7A18; font-weight: 700; font-size: 18px; text-align: right;">${data.totalPrice}</td>
+          </tr>
+        </table>
+      </div>
+
+      ${data.includesSupport ? `
+      <div style="background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); border-radius: 12px; padding: 15px 20px; margin: 20px 0;">
+        <p style="margin: 0; color: #22c55e; font-size: 14px;">
+          <strong>&#x2705; Soporte Tecnico Incluido</strong><br>
+          <span style="color: #86efac; font-size: 13px;">Cuentas con asistencia para instalacion y configuracion.</span>
+        </p>
+      </div>
+      ` : ''}
+
+      ${data.customInstructions ? `
+      <div style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 15px 20px; margin: 20px 0;">
+        <p style="margin: 0 0 10px; font-size: 13px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px;">Instrucciones Especiales</p>
+        <p style="margin: 0; color: #93c5fd; font-size: 14px; white-space: pre-wrap;">${data.customInstructions}</p>
+      </div>
+      ` : ''}
+
+      <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 15px 20px; margin: 20px 0;">
+        <p style="margin: 0; color: #f87171; font-size: 13px;">
+          <strong>&#x26A0; IMPORTANTE:</strong><br>
+          - Esta licencia es para uso personal unicamente<br>
+          - No puede ser revendida ni transferida<br>
+          - Una licencia = Un dispositivo<br>
+          - No nos hacemos responsables por mal uso
+        </p>
+      </div>
+
+      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
+
+      <h3 style="color: #fff; margin: 0 0 15px; font-size: 16px;">
+        <span style="color: #FF7A18; margin-right: 10px;">&#x1F4DE;</span> Necesitas Ayuda?
+      </h3>
+
+      <p style="margin: 0 0 10px; color: #b0b0b0;">
+        <strong style="color: #fff;">WhatsApp:</strong> <a href="https://wa.me/524794381329" style="color: #FF7A18;">+52 479 438 1329</a>
+      </p>
+      <p style="margin: 0 0 20px; color: #b0b0b0;">
+        <strong style="color: #fff;">Email:</strong> <a href="mailto:soporte@cerberusdev.com" style="color: #FF7A18;">soporte@cerberusdev.com</a>
+      </p>
+
+      <p style="margin: 25px 0 0; color: #fff;">
+        Gracias por tu compra,<br>
+        <strong style="color: #FF7A18;">Equipo Cerberus Dev</strong>
+      </p>
+    `, `Tu licencia de ${data.productName}`)
+  }),
+
+  // Sale generic English
+  'sale-generic-en': (data) => ({
+    subject: `Your ${data.productName} License - Cerberus Dev`,
+    html: getCerberusTemplate(`
+      <h2 style="color: #FF7A18; margin: 0 0 20px; font-size: 22px; font-weight: 600;">Hello ${data.clientName},</h2>
+
+      <p style="margin: 0 0 15px; color: #e0e0e0;">Thank you for your purchase. Here are your license details:</p>
+
+      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
+
+      <!-- License Details Box -->
+      <div style="background: linear-gradient(135deg, rgba(255,122,24,0.15), rgba(255,122,24,0.05)); border: 1px solid rgba(255,122,24,0.3); border-radius: 12px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 0 0 5px; font-size: 13px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px;">License Details</p>
+        <table role="presentation" style="width: 100%; margin-top: 10px;">
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0; width: 140px;">Product:</td>
+            <td style="padding: 8px 0; color: #fff; font-weight: 600;">${data.productName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0;">License:</td>
+            <td style="padding: 8px 0; color: #FF7A18; font-weight: 600; font-family: monospace; font-size: 14px;">${data.licenseKey}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0;">Date:</td>
+            <td style="padding: 8px 0; color: #fff;">${data.saleDate}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Pricing Box -->
+      <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 0 0 10px; font-size: 13px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px;">Purchase Summary</p>
+        <table role="presentation" style="width: 100%; margin-top: 10px;">
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0;">Product:</td>
+            <td style="padding: 8px 0; color: #fff; text-align: right;">${data.basePrice}</td>
+          </tr>
+          ${data.includesSupport && data.supportPrice ? `
+          <tr>
+            <td style="padding: 8px 0; color: #b0b0b0;">Technical Support:</td>
+            <td style="padding: 8px 0; color: #22c55e; text-align: right;">+ ${data.supportPrice}</td>
+          </tr>
+          ` : ''}
+          <tr style="border-top: 1px solid rgba(255,255,255,0.1);">
+            <td style="padding: 12px 0 8px; color: #fff; font-weight: 600;">Total:</td>
+            <td style="padding: 12px 0 8px; color: #FF7A18; font-weight: 700; font-size: 18px; text-align: right;">${data.totalPrice}</td>
+          </tr>
+        </table>
+      </div>
+
+      ${data.includesSupport ? `
+      <div style="background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); border-radius: 12px; padding: 15px 20px; margin: 20px 0;">
+        <p style="margin: 0; color: #22c55e; font-size: 14px;">
+          <strong>&#x2705; Technical Support Included</strong><br>
+          <span style="color: #86efac; font-size: 13px;">You have assistance for installation and configuration.</span>
+        </p>
+      </div>
+      ` : ''}
+
+      ${data.customInstructions ? `
+      <div style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 15px 20px; margin: 20px 0;">
+        <p style="margin: 0 0 10px; font-size: 13px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px;">Special Instructions</p>
+        <p style="margin: 0; color: #93c5fd; font-size: 14px; white-space: pre-wrap;">${data.customInstructions}</p>
+      </div>
+      ` : ''}
+
+      <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 15px 20px; margin: 20px 0;">
+        <p style="margin: 0; color: #f87171; font-size: 13px;">
+          <strong>&#x26A0; IMPORTANT:</strong><br>
+          - This license is for personal use only<br>
+          - Cannot be resold or transferred<br>
+          - One license = One device<br>
+          - We are not responsible for misuse
+        </p>
+      </div>
+
+      <div style="height: 1px; background: linear-gradient(90deg, transparent, rgba(255,122,24,0.5), transparent); margin: 30px 0;"></div>
+
+      <h3 style="color: #fff; margin: 0 0 15px; font-size: 16px;">
+        <span style="color: #FF7A18; margin-right: 10px;">&#x1F4DE;</span> Need Help?
+      </h3>
+
+      <p style="margin: 0 0 10px; color: #b0b0b0;">
+        <strong style="color: #fff;">WhatsApp:</strong> <a href="https://wa.me/524794381329" style="color: #FF7A18;">+52 479 438 1329</a>
+      </p>
+      <p style="margin: 0 0 20px; color: #b0b0b0;">
+        <strong style="color: #fff;">Email:</strong> <a href="mailto:soporte@cerberusdev.com" style="color: #FF7A18;">soporte@cerberusdev.com</a>
+      </p>
+
+      <p style="margin: 25px 0 0; color: #fff;">
+        Thank you for your purchase,<br>
+        <strong style="color: #FF7A18;">Cerberus Dev Team</strong>
+      </p>
+    `, `Your ${data.productName} License`)
   })
 };
 

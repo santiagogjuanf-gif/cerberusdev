@@ -756,12 +756,23 @@ router.post("/api/sales", requireAuth, requireRole(['admin']), async (req, res) 
       day: 'numeric'
     });
 
+    // Format prices
+    const currencySymbol = currency === 'MXN' ? '$' : '$';
+    const currencyLabel = currency === 'MXN' ? 'MXN' : 'CAD';
+    const formattedBasePrice = `${currencySymbol}${parseFloat(basePrice).toFixed(2)} ${currencyLabel}`;
+    const formattedSupportPrice = supportPrice ? `${currencySymbol}${parseFloat(supportPrice).toFixed(2)} ${currencyLabel}` : null;
+    const formattedTotalPrice = `${currencySymbol}${totalPrice.toFixed(2)} ${currencyLabel}`;
+
     // Send email
     const emailResult = await emailService.sendEmail(templateCode, clientEmail, {
       clientName,
       productName: product.name,
       licenseKey: licenseKeyToSend,
       saleDate,
+      basePrice: formattedBasePrice,
+      supportPrice: formattedSupportPrice,
+      totalPrice: formattedTotalPrice,
+      includesSupport,
       customInstructions: customInstructions || ''
     });
 
@@ -892,11 +903,22 @@ router.post("/api/sales/:id/replace-key", requireAuth, requireRole(['admin']), a
       day: 'numeric'
     });
 
+    // Format prices for email
+    const currencySymbol = sale.currency === 'MXN' ? '$' : '$';
+    const currencyLabel = sale.currency === 'MXN' ? 'MXN' : 'CAD';
+    const formattedBasePrice = `${currencySymbol}${sale.basePrice.toFixed(2)} ${currencyLabel}`;
+    const formattedSupportPrice = sale.supportPrice ? `${currencySymbol}${sale.supportPrice.toFixed(2)} ${currencyLabel}` : null;
+    const formattedTotalPrice = `${currencySymbol}${sale.totalPrice.toFixed(2)} ${currencyLabel}`;
+
     await emailService.sendEmail(templateCode, sale.clientEmail, {
       clientName: sale.clientName,
       productName: sale.product.name,
       licenseKey: newKey.licenseKey,
       saleDate,
+      basePrice: formattedBasePrice,
+      supportPrice: formattedSupportPrice,
+      totalPrice: formattedTotalPrice,
+      includesSupport: sale.includesSupport,
       customInstructions: lang === 'es'
         ? 'Esta es tu nueva llave de reemplazo.'
         : 'This is your replacement key.'
@@ -947,11 +969,22 @@ router.post("/api/sales/:id/resend", requireAuth, requireRole(['admin']), async 
       day: 'numeric'
     });
 
+    // Format prices for email
+    const currencySymbol = sale.currency === 'MXN' ? '$' : '$';
+    const currencyLabel = sale.currency === 'MXN' ? 'MXN' : 'CAD';
+    const formattedBasePrice = `${currencySymbol}${sale.basePrice.toFixed(2)} ${currencyLabel}`;
+    const formattedSupportPrice = sale.supportPrice ? `${currencySymbol}${sale.supportPrice.toFixed(2)} ${currencyLabel}` : null;
+    const formattedTotalPrice = `${currencySymbol}${sale.totalPrice.toFixed(2)} ${currencyLabel}`;
+
     const emailResult = await emailService.sendEmail(templateCode, sale.clientEmail, {
       clientName: sale.clientName,
       productName: sale.product.name,
       licenseKey,
       saleDate,
+      basePrice: formattedBasePrice,
+      supportPrice: formattedSupportPrice,
+      totalPrice: formattedTotalPrice,
+      includesSupport: sale.includesSupport,
       customInstructions: sale.customInstructions || ''
     });
 
