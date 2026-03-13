@@ -1,0 +1,26 @@
+{
+  "name": "Cerberus Dev Admin",
+  "short_name": "Cerberus",
+  "description": "Panel de administracion Cerberus Dev",
+  "start_url": "/portal-admin",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#FF7A18",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/assets/img/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/img/cerberus-mark.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "es"
+}

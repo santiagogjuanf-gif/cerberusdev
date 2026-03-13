@@ -4,6 +4,13 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <link rel="icon" sizes="192x192" href="/assets/img/favicon.png">
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#FF7A18">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cerberus">
+  <link rel="apple-touch-icon" href="/assets/img/cerberus-mark.png">
   <title>Ventas - Cerberus Admin</title>
   <link rel="stylesheet" href="/assets/css/styles.css"/>
   <link rel="stylesheet" href="/assets/css/admin.css"/>
@@ -296,6 +303,47 @@
     .stat-card.success::before { background: linear-gradient(180deg, #22c55e, transparent); }
     .stat-card.warning::before { background: linear-gradient(180deg, #f59e0b, transparent); }
     .stat-card.danger::before { background: linear-gradient(180deg, #ef4444, transparent); }
+
+    /* Stats Responsive - Mobile */
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+      }
+      .stat-card {
+        padding: 12px;
+      }
+      .stat-icon {
+        font-size: 20px;
+        margin-bottom: 6px;
+      }
+      .stat-value {
+        font-size: 18px;
+        margin-bottom: 2px;
+      }
+      .stat-label {
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .stats-grid {
+        gap: 8px;
+      }
+      .stat-card {
+        padding: 10px;
+      }
+      .stat-icon {
+        font-size: 18px;
+        margin-bottom: 4px;
+      }
+      .stat-value {
+        font-size: 16px;
+      }
+      .stat-label {
+        font-size: 10px;
+      }
+    }
 
     /* Tables */
     .table-container {
@@ -2302,6 +2350,13 @@
     loadProducts();
     loadKeys();
     loadSalesHistory();
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then((reg) => console.log('[PWA] Service Worker registered'))
+        .catch((err) => console.log('[PWA] SW registration failed:', err));
+    }
   </script>
 </body>
 </html>
