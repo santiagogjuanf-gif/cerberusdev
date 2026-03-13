@@ -459,6 +459,184 @@
       font-size: 13px;
       color: #f87171;
     }
+
+    /* Notification Modal */
+    .notif-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .notif-modal.is-open { display: flex; }
+    .notif-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+    }
+    .notif-modal-box {
+      position: relative;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border-radius: 16px;
+      padding: 30px 40px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notifSlideIn 0.3s ease;
+    }
+    @keyframes notifSlideIn {
+      from { opacity: 0; transform: scale(0.9) translateY(-20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .notif-modal-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 28px;
+    }
+    .notif-modal-icon.is-success {
+      background: rgba(34,197,94,0.2);
+      border: 2px solid rgba(34,197,94,0.5);
+      color: #22c55e;
+    }
+    .notif-modal-icon.is-error {
+      background: rgba(239,68,68,0.2);
+      border: 2px solid rgba(239,68,68,0.5);
+      color: #ef4444;
+    }
+    .notif-modal-icon.is-warning {
+      background: rgba(245,158,11,0.2);
+      border: 2px solid rgba(245,158,11,0.5);
+      color: #f59e0b;
+    }
+    .notif-modal-icon.is-info {
+      background: rgba(59,130,246,0.2);
+      border: 2px solid rgba(59,130,246,0.5);
+      color: #3b82f6;
+    }
+    .notif-modal-title {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 10px;
+    }
+    .notif-modal-text {
+      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+      margin: 0 0 25px;
+      line-height: 1.5;
+    }
+    .notif-modal-btn {
+      background: linear-gradient(135deg, #FF7A18, #FF9A45);
+      color: #fff;
+      border: none;
+      padding: 12px 40px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .notif-modal-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(255,122,24,0.4);
+    }
+
+    /* Confirmation Modal */
+    .confirm-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .confirm-modal.is-open { display: flex; }
+    .confirm-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+    }
+    .confirm-modal-box {
+      position: relative;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border-radius: 16px;
+      padding: 30px 40px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: notifSlideIn 0.3s ease;
+    }
+    .confirm-modal-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(239,68,68,0.2);
+      border: 2px solid rgba(239,68,68,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 28px;
+      color: #ef4444;
+    }
+    .confirm-modal-title {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 10px;
+    }
+    .confirm-modal-text {
+      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+      margin: 0 0 25px;
+      line-height: 1.5;
+    }
+    .confirm-modal-btns {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .confirm-modal-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .confirm-modal-btn.is-cancel {
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
+    }
+    .confirm-modal-btn.is-cancel:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .confirm-modal-btn.is-confirm {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: #fff;
+    }
+    .confirm-modal-btn.is-confirm:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 15px rgba(239,68,68,0.4);
+    }
   </style>
 </head>
 <body>
@@ -987,7 +1165,112 @@
     </div>
   </div>
 
+  <!-- Notification Modal -->
+  <div class="notif-modal" id="notifModal">
+    <div class="notif-modal-backdrop" onclick="closeNotif()"></div>
+    <div class="notif-modal-box">
+      <div class="notif-modal-icon is-success" id="notifIcon">&#x2714;</div>
+      <h3 class="notif-modal-title" id="notifTitle">Exito</h3>
+      <p class="notif-modal-text" id="notifText">Operacion completada correctamente.</p>
+      <button class="notif-modal-btn" onclick="closeNotif()">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="confirm-modal" id="confirmModal">
+    <div class="confirm-modal-backdrop"></div>
+    <div class="confirm-modal-box">
+      <div class="confirm-modal-icon">&#x26A0;</div>
+      <h3 class="confirm-modal-title" id="confirmTitle">Confirmar</h3>
+      <p class="confirm-modal-text" id="confirmText">Esta seguro que desea continuar?</p>
+      <div class="confirm-modal-btns">
+        <button class="confirm-modal-btn is-cancel" id="confirmCancel">&#x2716;</button>
+        <button class="confirm-modal-btn is-confirm" id="confirmOk">&#x2714;</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // =====================
+    // Notification System
+    // =====================
+    function showNotif(message, type = 'success', title = null) {
+      const modal = document.getElementById('notifModal');
+      const icon = document.getElementById('notifIcon');
+      const titleEl = document.getElementById('notifTitle');
+      const textEl = document.getElementById('notifText');
+
+      // Set icon and title based on type
+      icon.className = 'notif-modal-icon';
+      switch(type) {
+        case 'success':
+          icon.classList.add('is-success');
+          icon.innerHTML = '&#x2714;';
+          titleEl.textContent = title || 'Exito';
+          break;
+        case 'error':
+          icon.classList.add('is-error');
+          icon.innerHTML = '&#x2716;';
+          titleEl.textContent = title || 'Error';
+          break;
+        case 'warning':
+          icon.classList.add('is-warning');
+          icon.innerHTML = '&#x26A0;';
+          titleEl.textContent = title || 'Atencion';
+          break;
+        case 'info':
+          icon.classList.add('is-info');
+          icon.innerHTML = '&#x2139;';
+          titleEl.textContent = title || 'Informacion';
+          break;
+      }
+
+      textEl.textContent = message;
+      modal.classList.add('is-open');
+    }
+
+    function closeNotif() {
+      document.getElementById('notifModal').classList.remove('is-open');
+    }
+
+    // =====================
+    // Confirmation System
+    // =====================
+    function showConfirm(title, text) {
+      return new Promise(resolve => {
+        const modal = document.getElementById('confirmModal');
+        const titleEl = document.getElementById('confirmTitle');
+        const textEl = document.getElementById('confirmText');
+        const okBtn = document.getElementById('confirmOk');
+        const cancelBtn = document.getElementById('confirmCancel');
+        const backdrop = modal.querySelector('.confirm-modal-backdrop');
+
+        titleEl.textContent = title;
+        textEl.textContent = text;
+        modal.classList.add('is-open');
+
+        function cleanup() {
+          modal.classList.remove('is-open');
+          okBtn.removeEventListener('click', onOk);
+          cancelBtn.removeEventListener('click', onCancel);
+          backdrop.removeEventListener('click', onCancel);
+        }
+
+        function onOk() {
+          cleanup();
+          resolve(true);
+        }
+
+        function onCancel() {
+          cleanup();
+          resolve(false);
+        }
+
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        backdrop.addEventListener('click', onCancel);
+      });
+    }
     // =====================
     // Navigation
     // =====================
@@ -1309,15 +1592,15 @@
 
         const data = await res.json();
         if (data.ok) {
-          alert('Llave reemplazada. Nueva llave enviada al cliente.');
+          showNotif('Llave reemplazada. Nueva llave enviada al cliente.', 'success');
           loadSalesHistory(currentSalesPage);
           loadKeys();
           loadStats();
         } else {
-          alert('Error: ' + (data.error || 'No se pudo reemplazar'));
+          showNotif(data.error || 'No se pudo reemplazar', 'error');
         }
       } catch (err) {
-        alert('Error de conexion');
+        showNotif('Error de conexion', 'error');
       }
     }
 
@@ -1501,16 +1784,16 @@
         const data = await res.json();
 
         if (data.ok) {
-          alert('Venta registrada! Total: $' + data.sale.totalPrice.toFixed(2) + (data.sale.emailSent ? '\nCorreo enviado al cliente.' : '\nError al enviar correo.'));
+          showNotif('Venta registrada! Total: $' + data.sale.totalPrice.toFixed(2) + (data.sale.emailSent ? '. Correo enviado al cliente.' : '. Error al enviar correo.'), data.sale.emailSent ? 'success' : 'warning', 'Venta Registrada');
           closeSaleModal();
           loadStats();
           loadKeys();
           loadSalesHistory();
         } else {
-          alert('Error: ' + (data.error || 'No se pudo registrar la venta'));
+          showNotif(data.error || 'No se pudo registrar la venta', 'error');
         }
       } catch (err) {
-        alert('Error de conexion');
+        showNotif('Error de conexion', 'error');
       }
 
       btn.disabled = false;
@@ -1549,7 +1832,8 @@
     }
 
     async function deleteProduct(id) {
-      if (!confirm('Eliminar este producto? Se eliminaran todas las keys asociadas.')) return;
+      const ok = await showConfirm('Eliminar producto', 'Se eliminaran todas las keys asociadas. Esta accion no se puede deshacer.');
+      if (!ok) return;
 
       try {
         const res = await fetch(`./api/products/${id}`, { method: 'DELETE' });
@@ -1557,11 +1841,12 @@
         if (data.ok) {
           loadProducts();
           loadStats();
+          showNotif('Producto eliminado correctamente', 'success');
         } else {
-          alert('Error: ' + (data.error || 'No se pudo eliminar'));
+          showNotif(data.error || 'No se pudo eliminar', 'error');
         }
       } catch (err) {
-        alert('Error de conexion');
+        showNotif('Error de conexion', 'error');
       }
     }
 
@@ -1590,11 +1875,12 @@
           closeProductModal();
           loadProducts();
           loadStats();
+          showNotif(id ? 'Producto actualizado correctamente' : 'Producto creado correctamente', 'success');
         } else {
-          alert('Error: ' + (data.error || 'No se pudo guardar'));
+          showNotif(data.error || 'No se pudo guardar', 'error');
         }
       } catch (err) {
-        alert('Error de conexion');
+        showNotif('Error de conexion', 'error');
       }
     });
 
@@ -1614,7 +1900,8 @@
     }
 
     async function deleteKey(id) {
-      if (!confirm('Eliminar esta key?')) return;
+      const ok = await showConfirm('Eliminar key', 'Esta key sera eliminada permanentemente.');
+      if (!ok) return;
 
       try {
         const res = await fetch(`./api/keys/${id}`, { method: 'DELETE' });
@@ -1622,11 +1909,12 @@
         if (data.ok) {
           loadKeys();
           loadStats();
+          showNotif('Key eliminada correctamente', 'success');
         } else {
-          alert('Error: ' + (data.error || 'No se pudo eliminar'));
+          showNotif(data.error || 'No se pudo eliminar', 'error');
         }
       } catch (err) {
-        alert('Error de conexion');
+        showNotif('Error de conexion', 'error');
       }
     }
 
@@ -1636,7 +1924,7 @@
       const keys = document.getElementById('keysList').value.split('\n').map(k => k.trim()).filter(k => k);
 
       if (keys.length === 0) {
-        alert('Ingresa al menos una key');
+        showNotif('Ingresa al menos una key', 'warning');
         return;
       }
 
@@ -1652,15 +1940,15 @@
 
         const data = await res.json();
         if (data.ok) {
-          alert(`${data.count} keys agregadas correctamente`);
+          showNotif(`${data.count} keys agregadas correctamente`, 'success');
           closeKeyModal();
           loadKeys();
           loadStats();
         } else {
-          alert('Error: ' + (data.error || 'No se pudieron agregar'));
+          showNotif(data.error || 'No se pudieron agregar', 'error');
         }
       } catch (err) {
-        alert('Error de conexion');
+        showNotif('Error de conexion', 'error');
       }
     });
 
@@ -1677,7 +1965,8 @@
     }
 
     async function deleteCategory(id) {
-      if (!confirm('Eliminar esta categoria? Se eliminaran todos los productos y keys asociados.')) return;
+      const ok = await showConfirm('Eliminar categoria', 'Se eliminaran todos los productos y keys asociados. Esta accion no se puede deshacer.');
+      if (!ok) return;
 
       try {
         const res = await fetch(`./api/categories/${id}`, { method: 'DELETE' });
@@ -1685,11 +1974,12 @@
         if (data.ok) {
           loadCategories();
           loadProducts();
+          showNotif('Categoria eliminada correctamente', 'success');
         } else {
-          alert('Error: ' + (data.error || 'No se pudo eliminar'));
+          showNotif(data.error || 'No se pudo eliminar', 'error');
         }
       } catch (err) {
-        alert('Error de conexion');
+        showNotif('Error de conexion', 'error');
       }
     }
 
@@ -1710,11 +2000,12 @@
         if (data.ok) {
           document.getElementById('categoryName').value = '';
           loadCategories();
+          showNotif('Categoria creada correctamente', 'success');
         } else {
-          alert('Error: ' + (data.error || 'No se pudo crear'));
+          showNotif(data.error || 'No se pudo crear', 'error');
         }
       } catch (err) {
-        alert('Error de conexion');
+        showNotif('Error de conexion', 'error');
       }
     });
 
@@ -1722,19 +2013,20 @@
     // Resend Email
     // =====================
     async function resendEmail(saleId) {
-      if (!confirm('Reenviar correo con la licencia?')) return;
+      const ok = await showConfirm('Reenviar correo', 'Se enviara nuevamente el correo con la licencia al cliente.');
+      if (!ok) return;
 
       try {
         const res = await fetch(`./api/sales/${saleId}/resend`, { method: 'POST' });
         const data = await res.json();
         if (data.ok && data.emailSent) {
-          alert('Correo reenviado correctamente');
+          showNotif('Correo reenviado correctamente', 'success');
           loadSalesHistory();
         } else {
-          alert('Error al reenviar correo');
+          showNotif('Error al reenviar correo', 'error');
         }
       } catch (err) {
-        alert('Error de conexion');
+        showNotif('Error de conexion', 'error');
       }
     }
 
@@ -1878,7 +2170,8 @@
         defective: 'defectuosa'
       };
 
-      if (!confirm(`Marcar esta llave como ${labels[newStatus] || newStatus}?`)) return;
+      const ok = await showConfirm('Cambiar estado', `Marcar esta llave como ${labels[newStatus] || newStatus}?`);
+      if (!ok) return;
 
       try {
         const res = await fetch(`./api/keys/${keyId}`, {
@@ -1894,11 +2187,12 @@
         if (data.ok) {
           loadKeys();
           loadStats();
+          showNotif('Estado actualizado correctamente', 'success');
         } else {
-          alert('Error: ' + (data.error || 'No se pudo actualizar'));
+          showNotif(data.error || 'No se pudo actualizar', 'error');
         }
       } catch (err) {
-        alert('Error de conexion');
+        showNotif('Error de conexion', 'error');
       }
     }
 
