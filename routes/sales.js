@@ -4,10 +4,37 @@
  */
 
 const router = require("express").Router();
+const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
 const { prisma } = require("../lib/prisma");
 const requireAuth = require("../middleware/requireAuth");
 const requireRole = require("../middleware/requireRole");
 const emailService = require("../services/emailService");
+
+// Multer config for product images
+const productImageStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, "..", "public", "uploads", "products");
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const name = `product-${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
+    cb(null, name);
+  }
+});
+
+const uploadProductImage = multer({
+  storage: productImageStorage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  fileFilter: (req, file, cb) => {
+    const allowed = [".jpg", ".jpeg", ".png", ".webp"];
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, allowed.includes(ext));
+  }
+});
 
 // ============================================
 // Helper Functions
@@ -261,10 +288,25 @@ router.get("/api/products", requireAuth, requireRole(['admin']), async (req, res
   }
 });
 
+// Upload product image
+router.post("/api/upload-product-image", requireAuth, requireRole(['admin']), uploadProductImage.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ ok: false, error: 'No image uploaded' });
+    }
+
+    const url = `/uploads/products/${req.file.filename}`;
+    res.json({ ok: true, url });
+  } catch (err) {
+    console.error('[Sales] Upload product image error:', err);
+    res.status(500).json({ ok: false, error: 'Error uploading image' });
+  }
+});
+
 // Create product
 router.post("/api/products", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
-    const { categoryId, name, description, priceCad, priceMxn, minStockAlert } = req.body;
+    const { categoryId, name, description, priceCad, priceMxn, minStockAlert, imageUrl } = req.body;
     if (!categoryId || !name) {
       return res.status(400).json({ ok: false, error: 'Category and name are required' });
     }
@@ -277,6 +319,7 @@ router.post("/api/products", requireAuth, requireRole(['admin']), async (req, re
         name,
         slug,
         description,
+        imageUrl: imageUrl || null,
         priceCad: priceCad ? parseFloat(priceCad) : 0,
         priceMxn: priceMxn ? parseFloat(priceMxn) : 0,
         minStockAlert: minStockAlert ? parseInt(minStockAlert) : 3
@@ -295,7 +338,7 @@ router.put("/api/products/:id", requireAuth, requireRole(['admin']), async (req,
   try {
     const { id } = req.params;
     const productId = parseInt(id);
-    const { categoryId, name, description, priceCad, priceMxn, minStockAlert, isActive, sortOrder } = req.body;
+    const { categoryId, name, description, priceCad, priceMxn, minStockAlert, isActive, sortOrder, imageUrl } = req.body;
 
     const data = {
       ...(categoryId && { categoryId: parseInt(categoryId) }),
@@ -304,7 +347,8 @@ router.put("/api/products/:id", requireAuth, requireRole(['admin']), async (req,
       ...(priceMxn !== undefined && { priceMxn: parseFloat(priceMxn) }),
       ...(minStockAlert !== undefined && { minStockAlert: parseInt(minStockAlert) }),
       ...(isActive !== undefined && { isActive }),
-      ...(sortOrder !== undefined && { sortOrder: parseInt(sortOrder) })
+      ...(sortOrder !== undefined && { sortOrder: parseInt(sortOrder) }),
+      ...(imageUrl !== undefined && { imageUrl: imageUrl || null })
     };
 
     if (name) {
