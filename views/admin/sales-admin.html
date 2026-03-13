@@ -637,6 +637,24 @@
       transform: scale(1.1);
       box-shadow: 0 4px 15px rgba(239,68,68,0.4);
     }
+
+    /* Pagination buttons */
+    .btn--sm {
+      padding: 6px 12px !important;
+      font-size: 13px !important;
+      min-width: auto !important;
+    }
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .pagination-controls .btn {
+      min-width: 36px;
+    }
   </style>
 </head>
 <body>
@@ -811,6 +829,7 @@
               <tr><td colspan="6" class="empty-state">Cargando...</td></tr>
             </tbody>
           </table>
+          <div class="pagination-controls" id="productsPagination" style="display: flex; justify-content: center; gap: 8px; margin-top: 16px;"></div>
         </div>
       </div>
 
@@ -848,6 +867,7 @@
               <tr><td colspan="5" class="empty-state">Cargando...</td></tr>
             </tbody>
           </table>
+          <div class="pagination-controls" id="keysPagination" style="display: flex; justify-content: center; gap: 8px; margin-top: 16px;"></div>
         </div>
       </div>
 
@@ -1390,17 +1410,20 @@
       }
     }
 
-    async function loadProducts() {
+    async function loadProducts(page = 1) {
       try {
-        const res = await fetch('./api/products');
+        currentProductsPage = page;
+        const res = await fetch(`./api/products?page=${page}&limit=${ITEMS_PER_PAGE}`);
         const data = await res.json();
         if (!data.ok) return;
 
         products = data.products;
         const tbody = document.getElementById('productsTable');
+        const paginationEl = document.getElementById('productsPagination');
 
         if (products.length === 0) {
           tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No hay productos</td></tr>';
+          paginationEl.innerHTML = '';
           return;
         }
 
@@ -1431,21 +1454,47 @@
           </tr>
         `).join('');
 
-        // Update key filter dropdown
-        const keyFilter = document.getElementById('keyFilterProduct');
-        keyFilter.innerHTML = '<option value="">Todos los productos</option>' +
-          products.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+        // Render pagination
+        if (data.pages > 1) {
+          let pagination = '';
+          if (page > 1) {
+            pagination += `<button class="btn btn--ghost btn--sm" onclick="loadProducts(${page - 1})">&#x25C0; Anterior</button>`;
+          }
+          for (let i = 1; i <= data.pages; i++) {
+            if (i === 1 || i === data.pages || (i >= page - 1 && i <= page + 1)) {
+              pagination += `<button class="btn ${i === page ? 'btn--primary' : 'btn--ghost'} btn--sm" onclick="loadProducts(${i})">${i}</button>`;
+            } else if (i === page - 2 || i === page + 2) {
+              pagination += `<span style="color: rgba(255,255,255,0.5); padding: 0 8px;">...</span>`;
+            }
+          }
+          if (page < data.pages) {
+            pagination += `<button class="btn btn--ghost btn--sm" onclick="loadProducts(${page + 1})">Siguiente &#x25B6;</button>`;
+          }
+          paginationEl.innerHTML = pagination;
+        } else {
+          paginationEl.innerHTML = '';
+        }
+
+        // Update key filter dropdown (load all products for filter)
+        const allProductsRes = await fetch('./api/products?limit=1000');
+        const allProductsData = await allProductsRes.json();
+        if (allProductsData.ok) {
+          const keyFilter = document.getElementById('keyFilterProduct');
+          keyFilter.innerHTML = '<option value="">Todos los productos</option>' +
+            allProductsData.products.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+        }
       } catch (err) {
         console.error('Error loading products:', err);
       }
     }
 
-    async function loadKeys() {
+    async function loadKeys(page = 1) {
       try {
+        currentKeysPage = page;
         const productId = document.getElementById('keyFilterProduct').value;
         const status = document.getElementById('keyFilterStatus').value;
 
-        let url = './api/keys?';
+        let url = `./api/keys?page=${page}&limit=${ITEMS_PER_PAGE}&`;
         if (productId) url += `productId=${productId}&`;
         if (status) url += `status=${status}&`;
 
@@ -1454,9 +1503,11 @@
         if (!data.ok) return;
 
         const tbody = document.getElementById('keysTable');
+        const paginationEl = document.getElementById('keysPagination');
 
         if (data.keys.length === 0) {
           tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No hay keys</td></tr>';
+          paginationEl.innerHTML = '';
           return;
         }
 
@@ -1470,7 +1521,7 @@
         };
 
         tbody.innerHTML = data.keys.map(k => {
-          const status = statusLabels[k.status] || { text: k.status, class: 'badge-info' };
+          const statusInfo = statusLabels[k.status] || { text: k.status, class: 'badge-info' };
           let actions = `<button class="btn-icon" onclick="showKeyHistory(${k.id})" title="Ver historial">&#x1F4DC;</button>`;
 
           if (k.status === 'available') {
@@ -1489,7 +1540,7 @@
                 <span class="key-display">${escapeHtml(k.licenseKey)}</span>
                 ${k.sale ? `<br><small style="color: rgba(255,255,255,0.4);">Cliente: ${escapeHtml(k.sale.clientName)}</small>` : ''}
               </td>
-              <td><span class="badge ${status.class}">${status.text}</span></td>
+              <td><span class="badge ${statusInfo.class}">${statusInfo.text}</span></td>
               <td>${new Date(k.createdAt).toLocaleDateString('es-MX')}</td>
               <td>
                 <div style="display: flex; gap: 6px;">
@@ -1499,12 +1550,36 @@
             </tr>
           `;
         }).join('');
+
+        // Render pagination
+        if (data.pages > 1) {
+          let pagination = '';
+          if (page > 1) {
+            pagination += `<button class="btn btn--ghost btn--sm" onclick="loadKeys(${page - 1})">&#x25C0; Anterior</button>`;
+          }
+          for (let i = 1; i <= data.pages; i++) {
+            if (i === 1 || i === data.pages || (i >= page - 1 && i <= page + 1)) {
+              pagination += `<button class="btn ${i === page ? 'btn--primary' : 'btn--ghost'} btn--sm" onclick="loadKeys(${i})">${i}</button>`;
+            } else if (i === page - 2 || i === page + 2) {
+              pagination += `<span style="color: rgba(255,255,255,0.5); padding: 0 8px;">...</span>`;
+            }
+          }
+          if (page < data.pages) {
+            pagination += `<button class="btn btn--ghost btn--sm" onclick="loadKeys(${page + 1})">Siguiente &#x25B6;</button>`;
+          }
+          paginationEl.innerHTML = pagination;
+        } else {
+          paginationEl.innerHTML = '';
+        }
       } catch (err) {
         console.error('Error loading keys:', err);
       }
     }
 
+    let currentProductsPage = 1;
+    let currentKeysPage = 1;
     let currentSalesPage = 1;
+    const ITEMS_PER_PAGE = 10;
 
     async function loadSalesHistory(page = 1) {
       try {
@@ -1513,7 +1588,7 @@
         const endDate = document.getElementById('historyEndDate').value;
         const status = document.getElementById('historyStatusFilter').value;
 
-        let url = `./api/sales?page=${page}&limit=20`;
+        let url = `./api/sales?page=${page}&limit=${ITEMS_PER_PAGE}`;
         if (startDate) url += `&startDate=${startDate}`;
         if (endDate) url += `&endDate=${endDate}`;
         if (status) url += `&status=${status}`;
@@ -2033,8 +2108,8 @@
     // =====================
     // Key Filters
     // =====================
-    document.getElementById('keyFilterProduct').addEventListener('change', loadKeys);
-    document.getElementById('keyFilterStatus').addEventListener('change', loadKeys);
+    document.getElementById('keyFilterProduct').addEventListener('change', () => loadKeys(1));
+    document.getElementById('keyFilterStatus').addEventListener('change', () => loadKeys(1));
 
     // Modal click outside
     document.querySelectorAll('.modal-overlay').forEach(modal => {
