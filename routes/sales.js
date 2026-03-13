@@ -10,6 +10,38 @@ const requireRole = require("../middleware/requireRole");
 const emailService = require("../services/emailService");
 
 // ============================================
+// Helper Functions
+// ============================================
+
+/**
+ * Generate a unique slug for a product
+ * @param {string} name - Product name
+ * @param {number|null} excludeId - Product ID to exclude (for updates)
+ * @returns {Promise<string>} Unique slug
+ */
+async function generateUniqueSlug(name, excludeId = null) {
+  const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  let slug = baseSlug;
+  let counter = 1;
+
+  while (true) {
+    const existing = await prisma.salesProduct.findFirst({
+      where: {
+        slug,
+        ...(excludeId && { id: { not: excludeId } })
+      }
+    });
+
+    if (!existing) {
+      return slug;
+    }
+
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+}
+
+// ============================================
 // Dashboard Stats
 // ============================================
 
@@ -237,7 +269,7 @@ router.post("/api/products", requireAuth, requireRole(['admin']), async (req, re
       return res.status(400).json({ ok: false, error: 'Category and name are required' });
     }
 
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const slug = await generateUniqueSlug(name);
 
     const product = await prisma.salesProduct.create({
       data: {
@@ -262,20 +294,27 @@ router.post("/api/products", requireAuth, requireRole(['admin']), async (req, re
 router.put("/api/products/:id", requireAuth, requireRole(['admin']), async (req, res) => {
   try {
     const { id } = req.params;
+    const productId = parseInt(id);
     const { categoryId, name, description, priceCad, priceMxn, minStockAlert, isActive, sortOrder } = req.body;
 
+    const data = {
+      ...(categoryId && { categoryId: parseInt(categoryId) }),
+      ...(description !== undefined && { description }),
+      ...(priceCad !== undefined && { priceCad: parseFloat(priceCad) }),
+      ...(priceMxn !== undefined && { priceMxn: parseFloat(priceMxn) }),
+      ...(minStockAlert !== undefined && { minStockAlert: parseInt(minStockAlert) }),
+      ...(isActive !== undefined && { isActive }),
+      ...(sortOrder !== undefined && { sortOrder: parseInt(sortOrder) })
+    };
+
+    if (name) {
+      data.name = name;
+      data.slug = await generateUniqueSlug(name, productId);
+    }
+
     const product = await prisma.salesProduct.update({
-      where: { id: parseInt(id) },
-      data: {
-        ...(categoryId && { categoryId: parseInt(categoryId) }),
-        ...(name && { name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') }),
-        ...(description !== undefined && { description }),
-        ...(priceCad !== undefined && { priceCad: parseFloat(priceCad) }),
-        ...(priceMxn !== undefined && { priceMxn: parseFloat(priceMxn) }),
-        ...(minStockAlert !== undefined && { minStockAlert: parseInt(minStockAlert) }),
-        ...(isActive !== undefined && { isActive }),
-        ...(sortOrder !== undefined && { sortOrder: parseInt(sortOrder) })
-      }
+      where: { id: productId },
+      data
     });
 
     res.json({ ok: true, product });
