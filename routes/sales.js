@@ -41,6 +41,25 @@ const uploadProductImage = multer({
 // ============================================
 
 /**
+ * Format a date safely with fallback for missing locales
+ * @param {Date} date - Date to format
+ * @param {string} lang - Language code ('es' or 'en')
+ * @returns {string} Formatted date string
+ */
+function formatDateSafe(date, lang = 'es') {
+  try {
+    return date.toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-CA', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  } catch (err) {
+    // Fallback to simple ISO format if locale fails
+    return date.toISOString().split('T')[0];
+  }
+}
+
+/**
  * Generate a unique slug for a product
  * @param {string} name - Product name
  * @param {number|null} excludeId - Product ID to exclude (for updates)
@@ -793,12 +812,8 @@ router.post("/api/sales", requireAuth, requireRole(['admin']), async (req, res) 
       templateCode = `sale-generic-${lang}`;
     }
 
-    // Format date
-    const saleDate = new Date().toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-CA', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    // Format date (use safe function with fallback)
+    const saleDate = formatDateSafe(new Date(), lang);
 
     // Format prices
     const currencySymbol = currency === 'MXN' ? '$' : '$';
@@ -840,8 +855,9 @@ router.post("/api/sales", requireAuth, requireRole(['admin']), async (req, res) 
       }
     });
   } catch (err) {
-    console.error('[Sales] Register sale error:', err);
-    res.status(500).json({ ok: false, error: 'Error registering sale' });
+    console.error('[Sales] Register sale error:', err.message);
+    console.error('[Sales] Stack:', err.stack);
+    res.status(500).json({ ok: false, error: `Error registering sale: ${err.message}` });
   }
 });
 
@@ -942,18 +958,14 @@ router.post("/api/sales/:id/replace-key", requireAuth, requireRole(['admin']), a
     const lang = sale.language || 'es';
     const templateCode = `sale-generic-${lang}`;
 
-    const saleDate = new Date().toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-CA', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    const saleDate = formatDateSafe(new Date(), lang);
 
-    // Format prices for email
+    // Format prices for email (convert Prisma Decimal to Number first)
     const currencySymbol = sale.currency === 'MXN' ? '$' : '$';
     const currencyLabel = sale.currency === 'MXN' ? 'MXN' : 'CAD';
-    const formattedBasePrice = `${currencySymbol}${sale.basePrice.toFixed(2)} ${currencyLabel}`;
-    const formattedSupportPrice = sale.supportPrice ? `${currencySymbol}${sale.supportPrice.toFixed(2)} ${currencyLabel}` : null;
-    const formattedTotalPrice = `${currencySymbol}${sale.totalPrice.toFixed(2)} ${currencyLabel}`;
+    const formattedBasePrice = `${currencySymbol}${Number(sale.basePrice).toFixed(2)} ${currencyLabel}`;
+    const formattedSupportPrice = sale.supportPrice ? `${currencySymbol}${Number(sale.supportPrice).toFixed(2)} ${currencyLabel}` : null;
+    const formattedTotalPrice = `${currencySymbol}${Number(sale.totalPrice).toFixed(2)} ${currencyLabel}`;
 
     await emailService.sendEmail(templateCode, sale.clientEmail, {
       clientName: sale.clientName,
@@ -1009,18 +1021,14 @@ router.post("/api/sales/:id/resend", requireAuth, requireRole(['admin']), async 
       templateCode = `sale-generic-${sale.language}`;
     }
 
-    const saleDate = sale.createdAt.toLocaleDateString(sale.language === 'es' ? 'es-MX' : 'en-CA', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    const saleDate = formatDateSafe(sale.createdAt, sale.language || 'es');
 
-    // Format prices for email
+    // Format prices for email (convert Prisma Decimal to Number first)
     const currencySymbol = sale.currency === 'MXN' ? '$' : '$';
     const currencyLabel = sale.currency === 'MXN' ? 'MXN' : 'CAD';
-    const formattedBasePrice = `${currencySymbol}${sale.basePrice.toFixed(2)} ${currencyLabel}`;
-    const formattedSupportPrice = sale.supportPrice ? `${currencySymbol}${sale.supportPrice.toFixed(2)} ${currencyLabel}` : null;
-    const formattedTotalPrice = `${currencySymbol}${sale.totalPrice.toFixed(2)} ${currencyLabel}`;
+    const formattedBasePrice = `${currencySymbol}${Number(sale.basePrice).toFixed(2)} ${currencyLabel}`;
+    const formattedSupportPrice = sale.supportPrice ? `${currencySymbol}${Number(sale.supportPrice).toFixed(2)} ${currencyLabel}` : null;
+    const formattedTotalPrice = `${currencySymbol}${Number(sale.totalPrice).toFixed(2)} ${currencyLabel}`;
 
     const emailResult = await emailService.sendEmail(templateCode, sale.clientEmail, {
       clientName: sale.clientName,
