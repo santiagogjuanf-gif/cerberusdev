@@ -777,7 +777,6 @@ router.post("/api/sales", requireAuth, requireRole(['admin']), async (req, res) 
         currency: currency || 'CAD',
         language: language || 'es',
         includesSupport,
-        customInstructions,
         status: 'completed'
       }
     });
