@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const cron = require('node-cron');
 const { prisma } = require('../lib/prisma');
+const emailService = require('./emailService');
 
 // Folders to exclude from size calculation
 const EXCLUSIONS = [
@@ -247,7 +248,51 @@ function initStorageAgent() {
 
   cron.schedule(cronExpression, async () => {
     try {
-      await scanAllServices();
+      const results = await scanAllServices();
+
+      // Send email alerts for services exceeding thresholds
+      for (const result of results) {
+        if (!result.needsAlert) continue;
+
+        const canSend = await shouldSendAlert(result.serviceId);
+        if (!canSend) continue;
+
+        try {
+          // Get client info for this service
+          const service = await prisma.clientService.findUnique({
+            where: { id: result.serviceId },
+            include: {
+              client: { select: { email: true, name: true, username: true } }
+            }
+          });
+
+          if (!service?.client?.email) continue;
+
+          // Determine which template to use based on percentage
+          let templateCode = 'storage-warning';
+          if (result.percentage >= 95) {
+            templateCode = 'storage-critical';
+          } else if (result.percentage >= 90) {
+            templateCode = 'storage-danger';
+          }
+
+          const portalUrl = process.env.BASE_URL ? `${process.env.BASE_URL}/portal` : '/portal';
+
+          await emailService.sendEmail(templateCode, service.client.email, {
+            clientName: service.client.name || service.client.username,
+            serviceName: service.serviceName || result.serviceName,
+            percentage: result.percentage,
+            usedMb: result.usedMb,
+            limitMb: result.limitMb,
+            portalUrl
+          });
+
+          await markAlertSent(result.serviceId);
+          console.log(`[Storage Agent] Alert sent for service ${result.serviceId} (${result.percentage}%)`);
+        } catch (alertErr) {
+          console.error(`[Storage Agent] Failed to send alert for service ${result.serviceId}:`, alertErr.message);
+        }
+      }
     } catch (err) {
       console.error('[Storage Agent] Cron error:', err.message);
     }

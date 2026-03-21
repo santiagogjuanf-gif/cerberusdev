@@ -614,6 +614,26 @@ img { max-width: 100%; display: block; }
   transition: color var(--transition);
 }
 .footer-link:hover { color: var(--orange); }
+.footer-client-access {
+  color: var(--orange);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.footer-client-access::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--orange);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--orange); }
+  50% { opacity: 0.5; box-shadow: 0 0 8px var(--orange); }
+}
+.footer-client-access:hover { color: #fff; }
 .footer-dot { color: rgba(255,255,255,0.2); font-size: 10px; }
 
 /* Page layout */

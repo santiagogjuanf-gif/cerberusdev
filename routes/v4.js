@@ -283,6 +283,79 @@ router.get("/api/faq/categories", async (req, res) => {
 // PROJECT REQUIREMENTS (Internal)
 // ============================================
 
+// Get requirement options (for form dropdowns) - MUST be before :id route
+router.get("/api/requirements/options", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
+  const options = {
+    businessTypes: [
+      'Restaurante',
+      'Tienda/Comercio',
+      'Servicios Profesionales',
+      'Consultoria',
+      'Educacion',
+      'Salud',
+      'Tecnologia',
+      'Manufactura',
+      'Inmobiliaria',
+      'Otro'
+    ],
+    projectTypes: [
+      'Pagina Web Informativa',
+      'Tienda en Linea (E-commerce)',
+      'Sistema Web (Aplicacion)',
+      'API/Backend',
+      'Landing Page',
+      'Blog/Portal de Noticias',
+      'Otro'
+    ],
+    sections: [
+      'Inicio',
+      'Nosotros',
+      'Servicios',
+      'Productos',
+      'Galeria',
+      'Blog',
+      'Contacto',
+      'Login/Registro',
+      'Panel de Administracion',
+      'Carrito de Compras',
+      'Pasarela de Pagos'
+    ],
+    technologies: [
+      'HTML/CSS/JS',
+      'React',
+      'Vue.js',
+      'Next.js',
+      'Node.js',
+      'Express',
+      'PHP',
+      'Laravel',
+      'WordPress',
+      'MySQL',
+      'PostgreSQL',
+      'MongoDB',
+      'SQLite'
+    ],
+    budgetRanges: [
+      'Menos de $5,000 MXN',
+      '$5,000 - $15,000 MXN',
+      '$15,000 - $30,000 MXN',
+      '$30,000 - $50,000 MXN',
+      'Mas de $50,000 MXN',
+      'A definir'
+    ],
+    timelines: [
+      '1-2 semanas',
+      '2-4 semanas',
+      '1-2 meses',
+      '2-3 meses',
+      'Mas de 3 meses',
+      'Flexible'
+    ]
+  };
+
+  res.json({ ok: true, options });
+});
+
 // Get all requirements (admin/support)
 router.get("/api/requirements", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
   try {
@@ -543,79 +616,6 @@ router.delete("/api/requirements/:id", requireAuth, requireRole(['admin']), asyn
     console.error("[REQUIREMENTS]", err);
     res.status(500).json({ ok: false, error: err.message });
   }
-});
-
-// Get requirement options (for form dropdowns)
-router.get("/api/requirements/options", requireAuth, requireRole(['admin', 'support']), async (req, res) => {
-  const options = {
-    businessTypes: [
-      'Restaurante',
-      'Tienda/Comercio',
-      'Servicios Profesionales',
-      'Consultoria',
-      'Educacion',
-      'Salud',
-      'Tecnologia',
-      'Manufactura',
-      'Inmobiliaria',
-      'Otro'
-    ],
-    projectTypes: [
-      'Pagina Web Informativa',
-      'Tienda en Linea (E-commerce)',
-      'Sistema Web (Aplicacion)',
-      'API/Backend',
-      'Landing Page',
-      'Blog/Portal de Noticias',
-      'Otro'
-    ],
-    sections: [
-      'Inicio',
-      'Nosotros',
-      'Servicios',
-      'Productos',
-      'Galeria',
-      'Blog',
-      'Contacto',
-      'Login/Registro',
-      'Panel de Administracion',
-      'Carrito de Compras',
-      'Pasarela de Pagos'
-    ],
-    technologies: [
-      'HTML/CSS/JS',
-      'React',
-      'Vue.js',
-      'Next.js',
-      'Node.js',
-      'Express',
-      'PHP',
-      'Laravel',
-      'WordPress',
-      'MySQL',
-      'PostgreSQL',
-      'MongoDB',
-      'SQLite'
-    ],
-    budgetRanges: [
-      'Menos de $5,000 MXN',
-      '$5,000 - $15,000 MXN',
-      '$15,000 - $30,000 MXN',
-      '$30,000 - $50,000 MXN',
-      'Mas de $50,000 MXN',
-      'A definir'
-    ],
-    timelines: [
-      '1-2 semanas',
-      '2-4 semanas',
-      '1-2 meses',
-      '2-3 meses',
-      'Mas de 3 meses',
-      'Flexible'
-    ]
-  };
-
-  res.json({ ok: true, options });
 });
 
 // ============================================
@@ -884,9 +884,263 @@ router.get("/email-admin", requireAuth, requireRole(['admin']), (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "admin", "email-admin.html"));
 });
 
+// Email templates page
+router.get("/email-templates", requireAuth, requireRole(['admin']), (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "views", "admin", "email-templates.html"));
+});
+
 // FAQ public page (for clients)
 router.get("/faq", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "..", "views", "admin", "faq.html"));
+});
+
+// ============================================
+// EMAIL TEMPLATES API
+// ============================================
+
+// Default templates with variables info
+const defaultTemplates = [
+  {
+    code: 'user-created',
+    name: 'Bienvenida - Usuario Creado',
+    subject: 'Bienvenido a Cerberus Dev',
+    variables: ['{{name}}', '{{username}}', '{{password}}', '{{loginUrl}}'],
+    description: 'Se envía cuando se crea un nuevo usuario'
+  },
+  {
+    code: 'ticket-created',
+    name: 'Ticket Creado',
+    subject: 'Ticket #{{ticketId}} creado: {{subject}}',
+    variables: ['{{ticketId}}', '{{subject}}', '{{category}}', '{{priority}}', '{{message}}', '{{ticketUrl}}'],
+    description: 'Se envía al crear un nuevo ticket'
+  },
+  {
+    code: 'ticket-response',
+    name: 'Respuesta en Ticket',
+    subject: 'Respuesta en Ticket #{{ticketId}}: {{subject}}',
+    variables: ['{{ticketId}}', '{{subject}}', '{{responderName}}', '{{message}}', '{{ticketUrl}}'],
+    description: 'Se envía cuando hay una nueva respuesta'
+  },
+  {
+    code: 'ticket-closed',
+    name: 'Ticket Cerrado',
+    subject: 'Ticket #{{ticketId}} cerrado',
+    variables: ['{{ticketId}}', '{{subject}}', '{{ticketUrl}}'],
+    description: 'Se envía cuando se cierra un ticket'
+  },
+  {
+    code: 'storage-warning',
+    name: 'Alerta de Almacenamiento (80%)',
+    subject: 'Aviso: Tu almacenamiento está al {{percentage}}%',
+    variables: ['{{clientName}}', '{{serviceName}}', '{{percentage}}', '{{usedMb}}', '{{limitMb}}', '{{portalUrl}}'],
+    description: 'Alerta cuando el storage llega al 80%'
+  },
+  {
+    code: 'storage-danger',
+    name: 'Alerta de Almacenamiento (90%)',
+    subject: 'Urgente: Tu almacenamiento está al {{percentage}}%',
+    variables: ['{{clientName}}', '{{serviceName}}', '{{percentage}}', '{{usedMb}}', '{{limitMb}}', '{{portalUrl}}'],
+    description: 'Alerta urgente cuando el storage llega al 90%'
+  },
+  {
+    code: 'storage-critical',
+    name: 'Almacenamiento Crítico (95%+)',
+    subject: 'CRÍTICO: Tu almacenamiento está al {{percentage}}%',
+    variables: ['{{clientName}}', '{{serviceName}}', '{{percentage}}', '{{usedMb}}', '{{limitMb}}', '{{portalUrl}}'],
+    description: 'Alerta crítica cuando el storage supera el 95%'
+  },
+  {
+    code: 'maintenance-notice',
+    name: 'Aviso de Mantenimiento',
+    subject: 'Aviso de Mantenimiento: {{title}}',
+    variables: ['{{title}}', '{{message}}', '{{startAt}}', '{{endAt}}'],
+    description: 'Notificación de mantenimiento programado'
+  },
+  {
+    code: 'password-reset',
+    name: 'Restablecer Contraseña',
+    subject: 'Restablece tu contraseña - Cerberus Dev',
+    variables: ['{{name}}', '{{resetUrl}}', '{{expiresIn}}'],
+    description: 'Email para restablecer contraseña (con link)'
+  },
+  {
+    code: 'password-recovery',
+    name: 'Recuperación de Contraseña',
+    subject: 'Recuperacion de Contrasena - Cerberus Dev',
+    variables: ['{{name}}', '{{username}}', '{{password}}', '{{loginUrl}}'],
+    description: 'Se envía al cliente con nueva contraseña temporal'
+  },
+  {
+    code: 'ticket-client-confirmation',
+    name: 'Confirmación de Ticket (Cliente)',
+    subject: 'Tu ticket #{{ticketId}} ha sido creado',
+    variables: ['{{ticketId}}', '{{subject}}', '{{category}}', '{{priority}}', '{{message}}', '{{ticketUrl}}', '{{clientName}}'],
+    description: 'Confirmación enviada al cliente cuando crea un ticket'
+  }
+];
+
+// Get all email templates
+router.get("/api/email-templates", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    // Get saved templates from database
+    const savedTemplates = await prisma.emailTemplate.findMany();
+
+    // Create a map for quick lookup
+    const savedMap = {};
+    savedTemplates.forEach(t => { savedMap[t.code] = t; });
+
+    // Always return ALL default templates, merged with saved data
+    const allTemplates = defaultTemplates.map(d => {
+      const saved = savedMap[d.code];
+      return {
+        code: d.code,
+        name: saved?.name || d.name,
+        subject: saved?.subject || d.subject,
+        htmlContent: saved?.htmlContent || '',
+        isActive: saved?.isActive ?? true,
+        variables: d.variables,
+        description: d.description,
+        isSaved: !!saved
+      };
+    });
+
+    res.json({ ok: true, templates: allTemplates });
+  } catch (err) {
+    console.error("[EMAIL-TEMPLATES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Get single template
+router.get("/api/email-templates/:code", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const { code } = req.params;
+
+    let template = await prisma.emailTemplate.findUnique({
+      where: { code }
+    });
+
+    const defaultTpl = defaultTemplates.find(d => d.code === code);
+
+    if (!template && defaultTpl) {
+      // Return default info without saved content
+      return res.json({
+        ok: true,
+        template: {
+          code: defaultTpl.code,
+          name: defaultTpl.name,
+          subject: defaultTpl.subject,
+          htmlContent: '',
+          isActive: true,
+          variables: defaultTpl.variables,
+          description: defaultTpl.description,
+          isDefault: true
+        }
+      });
+    }
+
+    if (!template) {
+      return res.status(404).json({ ok: false, error: 'Template no encontrado' });
+    }
+
+    res.json({
+      ok: true,
+      template: {
+        ...template,
+        variables: defaultTpl?.variables || [],
+        description: defaultTpl?.description || ''
+      }
+    });
+  } catch (err) {
+    console.error("[EMAIL-TEMPLATES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Update or create template
+router.put("/api/email-templates/:code", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const { code } = req.params;
+    const { name, subject, html_content, is_active } = req.body;
+
+    const defaultTpl = defaultTemplates.find(d => d.code === code);
+    if (!defaultTpl) {
+      return res.status(400).json({ ok: false, error: 'Código de template inválido' });
+    }
+
+    const template = await prisma.emailTemplate.upsert({
+      where: { code },
+      update: {
+        name: name || defaultTpl.name,
+        subject: subject || defaultTpl.subject,
+        htmlContent: html_content || '',
+        isActive: is_active !== false
+      },
+      create: {
+        code,
+        name: name || defaultTpl.name,
+        subject: subject || defaultTpl.subject,
+        htmlContent: html_content || '',
+        isActive: is_active !== false
+      }
+    });
+
+    res.json({ ok: true, template });
+  } catch (err) {
+    console.error("[EMAIL-TEMPLATES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// Send test email with template
+router.post("/api/email-templates/:code/test", requireAuth, requireRole(['admin']), async (req, res) => {
+  try {
+    const { code } = req.params;
+    const { to_email } = req.body;
+
+    if (!to_email) {
+      return res.status(400).json({ ok: false, error: 'Email requerido' });
+    }
+
+    const emailService = require('../services/emailService');
+
+    // Sample data for testing
+    const testData = {
+      name: 'Usuario de Prueba',
+      username: 'usuario_test',
+      password: 'Password123!',
+      loginUrl: 'https://cerberusdev.pro/login',
+      ticketId: '12345',
+      subject: 'Asunto de prueba',
+      category: 'support',
+      priority: 'medium',
+      message: 'Este es un mensaje de prueba para verificar el template.',
+      ticketUrl: 'https://cerberusdev.pro/ticket/12345',
+      responderName: 'Soporte Cerberus',
+      clientName: 'Cliente de Prueba',
+      serviceName: 'Hosting Premium',
+      percentage: 85,
+      usedMb: 850,
+      limitMb: 1000,
+      portalUrl: 'https://cerberusdev.pro/portal',
+      title: 'Mantenimiento Programado',
+      startAt: new Date().toLocaleString('es-MX'),
+      endAt: new Date(Date.now() + 3600000).toLocaleString('es-MX'),
+      resetUrl: 'https://cerberusdev.pro/reset?token=abc123',
+      expiresIn: '24 horas'
+    };
+
+    const result = await emailService.sendEmail(code, to_email, testData);
+
+    if (result.success) {
+      res.json({ ok: true, message: 'Email de prueba enviado' });
+    } else {
+      res.status(500).json({ ok: false, error: result.error });
+    }
+  } catch (err) {
+    console.error("[EMAIL-TEMPLATES]", err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 module.exports = router;
