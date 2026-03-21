@@ -60,6 +60,22 @@ function formatDateSafe(date, lang = 'es') {
 }
 
 /**
+ * Convert relative image URL to absolute URL for emails
+ * @param {string} imageUrl - Relative or absolute image URL
+ * @returns {string} Absolute URL
+ */
+function getAbsoluteImageUrl(imageUrl) {
+  if (!imageUrl) return '';
+  // If already absolute, return as-is
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  // Convert relative path to absolute URL
+  const baseUrl = process.env.SITE_URL || 'https://cerberusdev.pro';
+  return `${baseUrl}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+}
+
+/**
  * Generate a unique slug for a product
  * @param {string} name - Product name
  * @param {number|null} excludeId - Product ID to exclude (for updates)
@@ -825,7 +841,7 @@ router.post("/api/sales", requireAuth, requireRole(['admin']), async (req, res) 
     const emailResult = await emailService.sendEmail(templateCode, clientEmail, {
       clientName,
       productName: product.name,
-      productImage: product.imageUrl || '',
+      productImage: getAbsoluteImageUrl(product.imageUrl),
       licenseKey: licenseKeyToSend,
       saleDate,
       basePrice: formattedBasePrice,
@@ -969,7 +985,7 @@ router.post("/api/sales/:id/replace-key", requireAuth, requireRole(['admin']), a
     await emailService.sendEmail(templateCode, sale.clientEmail, {
       clientName: sale.clientName,
       productName: sale.product.name,
-      productImage: sale.product.imageUrl || '',
+      productImage: getAbsoluteImageUrl(sale.product.imageUrl),
       licenseKey: newKey.licenseKey,
       saleDate,
       basePrice: formattedBasePrice,
@@ -1032,7 +1048,7 @@ router.post("/api/sales/:id/resend", requireAuth, requireRole(['admin']), async 
     const emailResult = await emailService.sendEmail(templateCode, sale.clientEmail, {
       clientName: sale.clientName,
       productName: sale.product.name,
-      productImage: sale.product.imageUrl || '',
+      productImage: getAbsoluteImageUrl(sale.product.imageUrl),
       licenseKey,
       saleDate,
       basePrice: formattedBasePrice,
